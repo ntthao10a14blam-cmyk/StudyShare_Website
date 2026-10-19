@@ -1,0 +1,37 @@
+# === CẤU HÌNH RIÊNG MỖI MÁY ===
+config/database.local.php
+config/config.local.php
+.env
+
+# === FILE UPLOAD CỦA NGƯỜI DÙNG ===
+storage/documents/*
+storage/images/avatars/*
+storage/images/document_images/*
+storage/images/question_images/*
+storage/temp/*
+
+# Giữ lại các thư mục (placeholder)
+!storage/documents/.gitkeep
+!storage/images/avatars/.gitkeep
+!storage/images/document_images/.gitkeep
+!storage/images/question_images/.gitkeep
+!storage/temp/.gitkeep
+
+# === EDITOR & OS ===
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+desktop.ini
+
+# === PHP ===
+*.log
+error_log
+
+# === NODE (nếu dùng npm cho tool build) ===
+node_modules/
+
+# === BACKUP & ZIP ===
+*.sql.bak
+*.zip
+*.rar

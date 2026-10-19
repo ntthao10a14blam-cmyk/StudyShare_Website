@@ -1,0 +1,299 @@
+/*
+ * MAIN.CSS — CSS chung của StudyHub
+ *
+ * TV4 phụ trách file này.
+ * Thành viên khác KHÔNG được sửa trực tiếp.
+ * Nếu cần style riêng cho module: tạo file css/<module>.css
+ * và set $extraCss trong controller.
+ *
+ * Cấu trúc:
+ *   1. CSS Variables (Design Tokens)
+ *   2. Reset & Base
+ *   3. Typography
+ *   4. Components (Card, Badge, Alert, Pagination, Form)
+ *   5. Layout (Sidebar, Content area)
+ *   6. Utilities
+ *   7. Responsive
+ */
+
+/* ============================================================
+   1. CSS VARIABLES — DESIGN TOKENS
+   ============================================================ */
+:root {
+    --color-primary:        #2563eb;
+    --color-primary-dark:   #1d4ed8;
+    --color-primary-light:  #dbeafe;
+    --color-secondary:      #64748b;
+    --color-success:        #16a34a;
+    --color-danger:         #dc2626;
+    --color-warning:        #d97706;
+    --color-info:           #0891b2;
+
+    --color-bg:             #f8fafc;
+    --color-surface:        #ffffff;
+    --color-border:         #e2e8f0;
+    --color-text:           #1e293b;
+    --color-text-muted:     #64748b;
+
+    --font-family:          'Inter', system-ui, -apple-system, sans-serif;
+    --font-size-base:       0.9375rem;   /* 15px */
+    --font-size-sm:         0.8125rem;   /* 13px */
+
+    --border-radius:        0.5rem;
+    --border-radius-lg:     0.75rem;
+    --border-radius-pill:   50rem;
+
+    --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow:     0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+    --transition: 0.2s ease;
+}
+
+/* ============================================================
+   2. RESET & BASE
+   ============================================================ */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    background-color: var(--color-bg);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color var(--transition);
+}
+
+a:hover {
+    color: var(--color-primary-dark);
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ============================================================
+   3. TYPOGRAPHY
+   ============================================================ */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--color-text);
+}
+
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    border-left: 4px solid var(--color-primary);
+    padding-left: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ============================================================
+   4. COMPONENTS
+   ============================================================ */
+
+/* --- Card --- */
+.card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition), transform var(--transition);
+    background: var(--color-surface);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.card-doc:hover {
+    transform: translateY(-2px);
+}
+
+/* --- Badge trạng thái tài liệu --- */
+.badge-status-not_submitted { background-color: var(--color-secondary); color: #fff; }
+.badge-status-pending        { background-color: var(--color-warning);   color: #fff; }
+.badge-status-approved       { background-color: var(--color-success);   color: #fff; }
+.badge-status-rejected       { background-color: var(--color-danger);    color: #fff; }
+.badge-status-hidden         { background-color: #374151;                color: #fff; }
+
+/* --- Badge visibility --- */
+.badge-private { background-color: var(--color-secondary); color: #fff; }
+.badge-public  { background-color: var(--color-primary);   color: #fff; }
+
+/* --- Form --- */
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.35rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.15);
+}
+
+.form-control.is-invalid:focus {
+    box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.15);
+}
+
+/* --- Buttons --- */
+.btn {
+    font-weight: 500;
+    border-radius: var(--border-radius);
+    transition: all var(--transition);
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+}
+
+/* --- Alert --- */
+.alert {
+    border-radius: var(--border-radius);
+    border: none;
+    font-size: var(--font-size-base);
+}
+
+/* --- Pagination --- */
+.pagination .page-link {
+    color: var(--color-primary);
+    border-radius: var(--border-radius) !important;
+    margin: 0 2px;
+    border-color: var(--color-border);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+/* --- File badge (tag/subject) --- */
+.badge-tag {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary-dark);
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: var(--border-radius-pill);
+    padding: 0.2em 0.6em;
+}
+
+/* --- Avatar --- */
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-sm { width: 28px; height: 28px; }
+.avatar-lg { width: 64px; height: 64px; }
+.avatar-xl { width: 96px; height: 96px; }
+
+/* --- PDF Viewer iframe --- */
+.pdf-viewer {
+    width: 100%;
+    height: 70vh;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+}
+
+/* ============================================================
+   5. LAYOUT
+   ============================================================ */
+.page-wrapper {
+    padding: 2rem 0;
+}
+
+.sidebar {
+    min-width: 240px;
+}
+
+/* ============================================================
+   6. NAVBAR
+   ============================================================ */
+.navbar {
+    background-color: var(--color-primary) !important;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+/* ============================================================
+   7. FOOTER
+   ============================================================ */
+.footer {
+    border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+/* ============================================================
+   8. UTILITIES
+   ============================================================ */
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.text-truncate-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.cursor-pointer { cursor: pointer; }
+
+.object-fit-cover { object-fit: cover; }
+
+/* Spinner loading */
+.spinner-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+/* ============================================================
+   9. RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+    .page-title {
+        font-size: 1.25rem;
+    }
+
+    .pdf-viewer {
+        height: 55vh;
+    }
+}
