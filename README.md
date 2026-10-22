@@ -18,18 +18,7 @@ Website cộng đồng học tập và chia sẻ tài liệu dành cho sinh viê
 
 ### 1. Clone repository
 
-```bash
-git clone <URL-repository>
-cd study_website
-```
-
 ### 2. Cấu hình database
-
-Sao chép file cấu hình mẫu và điền thông tin máy của bạn:
-
-```bash
-copy config\database.example.php config\database.local.php
-```
 
 Mở `config/database.local.php` và sửa:
 
@@ -73,7 +62,7 @@ mkdir storage\temp
 ### 5. Cấu hình XAMPP
 
 - DocumentRoot trỏ vào thư mục `public/` của dự án
-- Hoặc truy cập: `http://localhost/study_website/public/`
+- Hoặc truy cập: `http://localhost/study_website/public/` *ví dụ
 
 ---
 
@@ -88,16 +77,6 @@ mkdir storage\temp
 ---
 
 ## Cập nhật database (khi có migration mới)
-
-Khi nhận thông báo từ nhóm, chạy file migration mới nhất:
-
-```bash
-mysql -u root -p studyhub_db < database/migrations/00X_ten_migration.sql
-```
-
-Xem danh sách migration cần chạy trong file: `database/migrations/MIGRATION_LOG.md`
-
----
 
 ## Cấu trúc thư mục
 
