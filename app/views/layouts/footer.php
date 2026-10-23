@@ -45,12 +45,12 @@
                             <i class="bi bi-mortarboard-fill"></i>
                         </div>
                         <div class="brand-copy">
-                            <strong class="text-white fs-5">Kho Tài Liệu Sinh Viên</strong>
-                            <small class="text-white-50 d-block" style="font-size: 10px;">STUDYHUB PLATFORM</small>
+                            <strong class="text-white fs-5">StudyShare</strong>
+                            <small class="text-white-50 d-block" style="font-size: 10px;">PLATFORM</small>
                         </div>
                     </a>
                     <p class="text-white-50 small pe-lg-3 lh-base">
-                        Kho giáo trình, bài giảng, đề thi, bài tập và tài liệu tham khảo theo trường, môn học và loại tài liệu dành cho sinh viên Việt Nam.
+                        Website cộng đồng học tập và chia sẻ tài liệu dành cho sinh viên.
                     </p>
                     <div class="footer-social d-flex gap-2 mt-3">
                         <span class="social-icon" title="Facebook"><i class="bi bi-facebook"></i></span>
@@ -73,7 +73,7 @@
 
                 <!-- Cột 3: Về trang web & Quy định -->
                 <div class="col-lg-3 col-md-6 footer-col">
-                    <h3 class="footer-heading">Về Kho Tài Liệu</h3>
+                    <h3 class="footer-heading">Về StudyShare</h3>
                     <ul class="list-unstyled d-flex flex-column gap-2 small">
                         <li><a href="<?= url('/') ?>">Giới thiệu dự án</a></li>
                         <li><a href="<?= url('/') ?>">Đội ngũ biên soạn</a></li>
@@ -89,7 +89,7 @@
                     <div class="d-flex flex-column gap-2 small text-white-50 mb-3">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-envelope text-warning"></i>
-                            <a href="mailto:support@khotailieusinhvien.com" class="text-white-50 text-decoration-none">support@khotailieusinhvien.com</a>
+                            <a href="mailto:[EMAIL_ADDRESS]" class="text-white-50 text-decoration-none">[EMAIL_ADDRESS]</a>
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-telephone text-warning"></i>
@@ -103,7 +103,7 @@
 
                     <!-- Nút báo link lỗi -->
                     <a class="footer-contact-action d-flex align-items-center gap-2 p-2 rounded mb-2 text-decoration-none"
-                       href="mailto:support@khotailieusinhvien.com?subject=Bao%20link%20loi">
+                       href="mailto:[EMAIL_ADDRESS]?subject=Bao%20link%20loi">
                         <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
                         <div>
                             <b class="d-block text-white" style="font-size: 12px;">Báo link tài liệu lỗi</b>
@@ -124,7 +124,7 @@
         <!-- Chân trang bản quyền -->
         <div class="footer-bottom d-flex flex-column flex-md-row justify-content-between align-items-center py-3">
             <span class="text-white-50 small mb-2 mb-md-0">
-                &copy; <?= date('Y') ?> Kho Tài Liệu Sinh Viên — StudyHub. All rights reserved.
+                &copy; <?= date('Y') ?> StudyShare. All rights reserved.
             </span>
             <div class="d-flex gap-3 small">
                 <a href="<?= url('/') ?>">Bảo mật</a>
