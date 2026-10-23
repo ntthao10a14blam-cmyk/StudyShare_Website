@@ -41,8 +41,8 @@ $currentModule = preg_replace('/[^a-z0-9_-]/i', '', get('module', 'home'));
                 <i class="bi bi-mortarboard-fill"></i>
             </div>
             <div class="brand-copy">
-                <strong>Kho Tài Liệu Sinh Viên</strong>
-                <small>KHO DÀNH CHO SINH VIÊN VIỆT NAM</small>
+                <strong>StudyShare</strong>
+                <small>CỘNG ĐỒNG CHIA SẺ TÀI LIỆU HỌC TẬP</small>
             </div>
         </a>
 
