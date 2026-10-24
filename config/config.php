@@ -6,11 +6,26 @@
  * File này được đưa lên Git — không chứa thông tin nhạy cảm.
  */
 
+// Tải cấu hình local nếu có (nằm trong .gitignore)
+$localConfig = __DIR__ . '/config.local.php';
+if (file_exists($localConfig)) {
+    require_once $localConfig;
+}
+
 // ============================================================
 // URL GỐC CỦA WEBSITE
 // ============================================================
-// Điều chỉnh nếu cần (ví dụ deploy lên server)
-define('BASE_URL', 'http://localhost/study_website/public');
+// Tự động nhận diện URL theo request, hoặc ghi đè trong config.local.php
+if (!defined('BASE_URL')) {
+    if (!empty($_SERVER['HTTP_HOST'])) {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+        $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
+        $scriptDir = rtrim($scriptDir, '/');
+        define('BASE_URL', $scheme . $_SERVER['HTTP_HOST'] . $scriptDir);
+    } else {
+        define('BASE_URL', 'http://localhost:8080/StudyShare_Website/public');
+    }
+}
 define('BASE_PATH', dirname(__DIR__));          // thư mục gốc dự án
 
 // ============================================================

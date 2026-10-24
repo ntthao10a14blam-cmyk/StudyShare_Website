@@ -47,12 +47,7 @@ class Database
         try {
             $this->pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
         } catch (PDOException $e) {
-            // Không hiện thông tin kết nối khi production
-            if (APP_ENV === 'development') {
-                die('<b>Không thể kết nối database:</b> ' . $e->getMessage());
-            } else {
-                die('Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.');
-            }
+            throw $e;
         }
     }
 
