@@ -14,10 +14,10 @@ USE studyhub_db;
 -- Khi đăng nhập: password_verify($input, $row['password'])
 -- -------------------------------------------------------------
 INSERT INTO users (full_name, email, password, role, status) VALUES
-('Quản Trị Viên',  'admin@studyhub.vn', '123456789', 'admin', 'active'),
-('Nguyễn Văn An',  'user1@studyhub.vn', '123456789', 'user',  'active'),
-('Trần Thị Bình',  'user2@studyhub.vn', '123456789', 'user',  'active'),
-('Lê Hoàng Cường', 'user3@studyhub.vn', '123456789', 'user',  'active');
+('Quản Trị Viên',  'admin@studyhub.vn', '$2y$10$PMiEWd9HXf4fCR006l40o.t7/xFTQm0R1h4aRTuCKDvmrX7jWEz7q', 'admin', 'active'),
+('Nguyễn Văn An',  'user1@studyhub.vn', '$2y$10$j1o.vG1uOFXTkd3pffmGKu6dGAaaZZOYuAYyq.Qj2Yj.LkEONA.wC', 'user',  'active'),
+('Trần Thị Bình',  'user2@studyhub.vn', '$2y$10$j1o.vG1uOFXTkd3pffmGKu6dGAaaZZOYuAYyq.Qj2Yj.LkEONA.wC', 'user',  'active'),
+('Lê Hoàng Cường', 'user3@studyhub.vn', '$2y$10$j1o.vG1uOFXTkd3pffmGKu6dGAaaZZOYuAYyq.Qj2Yj.LkEONA.wC', 'user',  'active');
 
 -- Môn học mẫu
 -- -------------------------------------------------------------

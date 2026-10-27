@@ -41,7 +41,20 @@ $routes = [
 if (isset($routes[$module]) && file_exists($routes[$module])) {
     require_once $routes[$module];
     // Mỗi controller tự xử lý $action và render view
-    $controllerClass = ucfirst($module === 'community' ? 'Community' : $module) . 'Controller';
+    $controllerMap = [
+        'documents'   => 'DocumentController',
+        'collections' => 'CollectionController',
+        'questions'   => 'QuestionController',
+        'community'   => 'CommunityController',
+        'auth'        => 'AuthController',
+        'admin'       => 'AdminController',
+        'home'        => 'HomeController',
+        'serve'       => 'ServeController',
+    ];
+    $controllerClass = $controllerMap[$module] ?? (ucfirst($module) . 'Controller');
+    if (!class_exists($controllerClass)) {
+        $controllerClass = ucfirst($module) . 'Controller';
+    }
 
     // Gọi hàm tương ứng action nếu class tồn tại
     if (class_exists($controllerClass)) {
