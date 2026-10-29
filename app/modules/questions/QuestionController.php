@@ -32,7 +32,7 @@
 
 require_once BASE_PATH . '/app/modules/questions/QuestionModel.php';
 
-class QuestionController
+class QuestionsController
 {
     private QuestionModel $model;
 
