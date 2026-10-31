@@ -4,7 +4,7 @@
  *
  * Hiển thị khác nhau tuỳ theo vai trò:
  *   - Guest: Đăng nhập / Đăng ký
- *   - User:  Tài liệu của tôi, Bộ sưu tập, Hỏi đáp, hồ sơ
+ *   - User:  Tài liệu của tôi, Bộ sưu tập, Tài liệu yêu thích, Hỏi đáp, hồ sơ
  *   - Admin: Các menu quản trị
  *
  * TV4 phụ trách giao diện file này.
@@ -72,6 +72,13 @@ $currentModule = preg_replace('/[^a-z0-9_-]/i', '', get('module', 'home'));
                         <a class="nav-link <?= $currentModule === 'collections' ? 'active' : '' ?>"
                            href="<?= url('?module=collections&action=index') ?>">
                             <i class="bi bi-collection"></i> Bộ sưu tập
+                        </a>
+                    </li>
+                    <!-- Tài liệu yêu thích -->
+                    <li class="nav-item">
+                        <a class="nav-link <?= $currentModule === 'collections' && get('action') === 'favorites' ? 'active' : '' ?>"
+                           href="<?= url('?module=collections&action=favorites') ?>">
+                            <i class="bi bi-heart"></i> Yêu thích
                         </a>
                     </li>
                 <?php endif; ?>
