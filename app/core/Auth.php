@@ -57,7 +57,9 @@ class Auth
      */
     public static function login(array $user): void
     {
-        session_regenerate_id(true); // Chống session fixation
+        if (!headers_sent()) {
+            session_regenerate_id(true); // Chống session fixation
+        }
         $_SESSION[self::KEY_USER_ID]   = (int) $user['id'];
         $_SESSION[self::KEY_ROLE]      = $user['role'];
         $_SESSION[self::KEY_STATUS]    = $user['status'];
