@@ -106,6 +106,12 @@ a:hover {
     color: var(--color-primary-dark);
 }
 
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
 .hover-primary:hover {
     color: var(--color-primary) !important;
 }
@@ -541,6 +547,16 @@ h6 {
     gap: 0.85rem;
 }
 
+/* Thông báo khi chưa có tài liệu / bộ sưu tập */
+.empty-state {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--color-text-muted);
+    background: var(--color-surface);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--border-radius);
+}
+
 /* --- Search Bar Tối Giản --- */
 .community-search-box {
     position: relative;
@@ -618,7 +634,7 @@ h6 {
 
 .badge-status-pending {
     background-color: var(--color-warning);
-    color: #fff;
+    color: var(--color-text);
 }
 
 .badge-status-approved {
@@ -705,6 +721,17 @@ h6 {
     background-color: var(--color-primary-light);
     border-color: var(--color-primary-border);
     color: var(--color-primary-dark);
+}
+
+/* Phân trang danh sách */
+.pagination .page-link {
+    color: var(--color-primary);
+    border-color: var(--color-border);
+}
+.pagination .page-item.active .page-link {
+    color: #fff;
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
 /* --- Form Controls --- */
