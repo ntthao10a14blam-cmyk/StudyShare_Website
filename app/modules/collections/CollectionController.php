@@ -189,7 +189,6 @@ class CollectionController
         $tv4UserId = $this->userId;
         $layout = __DIR__ . '/../../views/layouts/';
         require $layout . 'header.php';
-        require $layout . 'navbar.php';
         require __DIR__ . '/views/' . $page . '.php';
         require $layout . 'footer.php';
     }

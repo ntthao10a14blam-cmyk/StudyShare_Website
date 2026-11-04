@@ -135,7 +135,7 @@ $hasFilter = $filters['q'] !== '' || $filters['subject_id'] || $filters['tag_id'
         </div>
 
         <!-- PHÂN TRANG -->
-        <?php if ($pg['pages'] > 1): ?>
+        <!-- <?php if ($pg['pages'] > 1): ?>
             <nav class="mt-4" aria-label="Phân trang">
                 <ul class="pagination justify-content-center flex-wrap">
                     <?php for ($p = 1; $p <= $pg['pages']; $p++): ?>
@@ -146,7 +146,7 @@ $hasFilter = $filters['q'] !== '' || $filters['subject_id'] || $filters['tag_id'
                 </ul>
             </nav>
         <?php endif; ?>
-    <?php endif; ?>
+    <?php endif; ?> -->
 
 </div>
 

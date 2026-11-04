@@ -338,7 +338,7 @@ $paginationBaseUrl = url('?' . ($queryString ? $queryString . '&' : '') . 'page=
         </div>
 
         <!-- 5. PHÂN TRANG -->
-        <?php if ($pagination['pages'] > 1): ?>
+        <!-- <?php if ($pagination['pages'] > 1): ?>
             <nav class="mt-4 d-flex justify-content-center" aria-label="Phân trang tài liệu">
                 <ul class="pagination pagination-sm mb-0">
                     <!-- Nút Trang trước -->
@@ -363,7 +363,7 @@ $paginationBaseUrl = url('?' . ($queryString ? $queryString . '&' : '') . 'page=
                     </li>
                 </ul>
             </nav>
-        <?php endif; ?>
+        <?php endif; ?> -->
 
     <?php endif; ?>
 

@@ -323,7 +323,7 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                 </div>
 
                 <!-- PHÂN TRANG (Pagination) -->
-                <?php if ($pagination['pages'] > 1): ?>
+                <!-- <?php if ($pagination['pages'] > 1): ?>
                     <nav class="mt-4 d-flex justify-content-center" aria-label="Phân trang tài liệu">
                         <ul class="pagination pagination-sm">
                             <li class="page-item <?= $pagination['page'] <= 1 ? 'disabled' : '' ?>">
@@ -351,7 +351,7 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                             </li>
                         </ul>
                     </nav>
-                <?php endif; ?>
+                <?php endif; ?> -->
 
             <?php else: ?>
                 <!-- Trạng thái trống (Empty State) -->
