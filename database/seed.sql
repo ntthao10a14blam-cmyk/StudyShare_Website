@@ -47,3 +47,6 @@ INSERT INTO tags (name) VALUES
 ('ôn tập'),
 ('chương trình mẫu'),
 ('công thức');
+
+UPDATE users 
+SET password = '$2y$10$eozmIFIVPDoknCzOU/.fduOJNdK5EB/AbfiNwF0fp7zjEzzUZ6DdC';
