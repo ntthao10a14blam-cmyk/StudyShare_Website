@@ -17,7 +17,7 @@ class AdminController
 
     public function dashboard(): void
 {
-    // Auth::requireAdmin();
+    Auth::requireAdmin();
     $stats = [
         'users' => $this->model->countUsers(),
         'documents' => $this->model->countDocuments(),
@@ -38,7 +38,7 @@ class AdminController
 
     public function users(): void
     {
-        // Auth::requireAdmin();
+        Auth::requireAdmin();
 
         $users = $this->model->getUsers();
 
@@ -51,7 +51,7 @@ class AdminController
 
     public function toggleLock(): void
     {
-        // Auth::requireAdmin();
+        Auth::requireAdmin();
         verifyCsrf();
 
         $userId = (int) ($_POST['user_id'] ?? 0);
@@ -71,7 +71,7 @@ class AdminController
 
     public function subjects(): void
     {
-        // Auth::requireAdmin();
+        Auth::requireAdmin();
 
         $subjects = $this->model->getSubjects();
 
@@ -84,7 +84,7 @@ class AdminController
 
     public function createSubject(): void
     {
-        // Auth::requireAdmin();
+        Auth::requireAdmin();
         verifyCsrf();
 
         $name = trim($_POST['name'] ?? '');
@@ -104,7 +104,7 @@ class AdminController
 
     public function editSubject(): void
     {
-        // Auth::requireAdmin();
+        Auth::requireAdmin();
         verifyCsrf();
 
         $id = (int) ($_POST['id'] ?? 0);
@@ -126,7 +126,7 @@ class AdminController
 
     public function deleteSubject(): void
     {
-        // Auth::requireAdmin();
+        Auth::requireAdmin();
         verifyCsrf();
 
         $id = (int) ($_POST['id'] ?? 0);
@@ -146,7 +146,7 @@ class AdminController
 
     public function tags(): void
     {
-        // Auth::requireAdmin();
+        Auth::requireAdmin();
 
         $tags = $this->model->getTags();
 
@@ -159,7 +159,7 @@ class AdminController
 
     public function createTag(): void
     {
-        // Auth::requireAdmin();
+        Auth::requireAdmin();
         verifyCsrf();
 
         $name = trim($_POST['name'] ?? '');
@@ -175,7 +175,7 @@ class AdminController
 
     public function editTag(): void
     {
-        // Auth::requireAdmin();
+        Auth::requireAdmin();
         verifyCsrf();
 
         $id = (int) ($_POST['id'] ?? 0);
@@ -192,7 +192,7 @@ class AdminController
 
     public function deleteTag(): void
     {
-        // Auth::requireAdmin();
+        Auth::requireAdmin();
         verifyCsrf();
 
         $id = (int) ($_POST['id'] ?? 0);
@@ -212,7 +212,7 @@ class AdminController
 
     public function pendingDocs(): void
     {
-        // Auth::requireAdmin();
+        Auth::requireAdmin();
 
         $documents = $this->model->getPendingDocuments();
 
@@ -225,7 +225,7 @@ class AdminController
 
     public function reviewDoc(): void
     {
-        // Auth::requireAdmin();
+        Auth::requireAdmin();
         verifyCsrf();
 
         $documentId = (int) ($_POST['document_id'] ?? 0);
@@ -258,7 +258,7 @@ class AdminController
 
     public function hideDoc(): void
     {
-        // Auth::requireAdmin();
+        Auth::requireAdmin();
         verifyCsrf();
 
         $documentId = (int) ($_POST['document_id'] ?? 0);
@@ -282,7 +282,7 @@ class AdminController
 
     public function reports(): void
     {
-        // Auth::requireAdmin();
+        Auth::requireAdmin();
 
         $reports = $this->model->getReports();
 
@@ -295,7 +295,7 @@ class AdminController
 
     public function handleReport(): void
     {
-        // Auth::requireAdmin();
+        Auth::requireAdmin();
         verifyCsrf();
 
         $reportId = (int) ($_POST['report_id'] ?? 0);
@@ -324,7 +324,7 @@ class AdminController
 
     public function hideContent(): void
     {
-        // Auth::requireAdmin();
+        Auth::requireAdmin();
         verifyCsrf();
 
         $type = $_POST['type'] ?? '';
