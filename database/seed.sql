@@ -11,13 +11,13 @@ USE studyhub_db;
 -- Tài khoản mẫu
 -- Password "Admin@123" và "User@123" — đã hash bằng PASSWORD_BCRYPT
 -- Trong code PHP dùng: password_hash('Admin@123', PASSWORD_BCRYPT)
--- Khi đăng nhập: password_verify($input, $row['password'])
+-- Khi đăng nhập: password_verify($input, $row['123456789'])
 -- -------------------------------------------------------------
 INSERT INTO users (full_name, email, password, role, status) VALUES
-('Quản Trị Viên',  'admin@studyhub.vn', '123456789', 'admin', 'active'),
-('Nguyễn Văn An',  'user1@studyhub.vn', '123456789', 'user',  'active'),
-('Trần Thị Bình',  'user2@studyhub.vn', '123456789', 'user',  'active'),
-('Lê Hoàng Cường', 'user3@studyhub.vn', '123456789', 'user',  'active');
+('Quản Trị Viên',  'admin@studyhub.vn', '$2y$10$eozmIFIVPDoknCzOU/.fduOJNdK5EB/AbfiNwF0fp7zjEzzUZ6DdC', 'admin', 'active'),
+('Nguyễn Văn An',  'user1@studyhub.vn', '$2y$10$eozmIFIVPDoknCzOU/.fduOJNdK5EB/AbfiNwF0fp7zjEzzUZ6DdC', 'user',  'active'),
+('Trần Thị Bình',  'user2@studyhub.vn', '$2y$10$eozmIFIVPDoknCzOU/.fduOJNdK5EB/AbfiNwF0fp7zjEzzUZ6DdC', 'user',  'active'),
+('Lê Hoàng Cường', 'user3@studyhub.vn', '$2y$10$eozmIFIVPDoknCzOU/.fduOJNdK5EB/AbfiNwF0fp7zjEzzUZ6DdC', 'user',  'active');
 
 -- Môn học mẫu
 -- -------------------------------------------------------------
@@ -48,5 +48,3 @@ INSERT INTO tags (name) VALUES
 ('chương trình mẫu'),
 ('công thức');
 
-UPDATE users 
-SET password = '$2y$10$eozmIFIVPDoknCzOU/.fduOJNdK5EB/AbfiNwF0fp7zjEzzUZ6DdC';
