@@ -11,6 +11,10 @@ $formData = $_SESSION['form_data']   ?? [];
 unset($_SESSION['form_errors'], $_SESSION['form_data']);
 ?>
 
+<!-- EasyMDE Markdown Editor (CDN) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+
 <div class="container py-4">
 
     <!-- BREADCRUMB -->
@@ -196,6 +200,37 @@ unset($_SESSION['form_errors'], $_SESSION['form_data']);
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // 0. Khởi tạo Markdown Editor (EasyMDE) cho mô tả tài liệu
+    const descTextarea = document.getElementById('descriptionInput');
+    let easyMDE = null;
+    if (descTextarea && typeof EasyMDE !== 'undefined') {
+        easyMDE = new EasyMDE({
+            element: descTextarea,
+            placeholder: 'Mô tả tóm tắt tài liệu: gồm các chương nào, đề thi kỳ nào, tác giả biên soạn, lưu ý khi ôn tập...',
+            spellChecker: false,
+            autosave: { enabled: false },
+            status: false,
+            minHeight: '180px',
+            toolbar: [
+                'bold', 'italic', 'heading', '|',
+                'quote', 'unordered-list', 'ordered-list', '|',
+                'link', 'table', '|',
+                'preview', 'side-by-side', 'fullscreen', '|',
+                'guide'
+            ]
+        });
+
+        // Đảm bảo đồng bộ dữ liệu vào textarea trước khi submit form
+        const form = descTextarea.closest('form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                if (easyMDE) {
+                    descTextarea.value = easyMDE.value();
+                }
+            });
+        }
+    }
+
     // 1. Hiển thị tên file PDF khi chọn
     const pdfInput = document.getElementById('documentFileInput');
     const pdfFileName = document.getElementById('pdfFileName');

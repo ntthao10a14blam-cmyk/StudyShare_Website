@@ -202,9 +202,8 @@ $statusInfo = $statusMap[$doc['moderation_status']] ?? $statusMap['not_submitted
                     <i class="bi bi-card-text me-1 text-primary"></i> Mô tả nội dung tài liệu
                 </h6>
                 <?php if (!empty($doc['description'])): ?>
-                    <div class="text-secondary" style="line-height: 1.7; white-space: pre-line;">
-                        <?= h($doc['description']) ?>
-                    </div>
+                    <!-- Nội dung được escape sẵn (an toàn khi tắt JS); JS sẽ render Markdown + lọc XSS bằng DOMPurify -->
+                    <div id="docDescription" class="text-secondary doc-markdown" style="line-height: 1.7; white-space: pre-line;"><?= h($doc['description']) ?></div>
                 <?php else: ?>
                     <p class="text-muted small fst-italic mb-0">Chưa có thông tin mô tả chi tiết cho tài liệu này.</p>
                 <?php endif; ?>
@@ -334,5 +333,23 @@ $statusInfo = $statusMap[$doc['moderation_status']] ?? $statusMap['not_submitted
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const el = document.getElementById('docDescription');
+    if (!el || typeof marked === 'undefined' || typeof DOMPurify === 'undefined') return;
+    // textContent trả về đúng chuỗi Markdown gốc (trình duyệt đã giải mã các thực thể HTML)
+    const html = marked.parse(el.textContent, { breaks: true, gfm: true });
+    el.innerHTML = DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+    el.style.whiteSpace = 'normal';
+    el.querySelectorAll('a').forEach(function (a) {
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener noreferrer nofollow');
+    });
+    el.querySelectorAll('table').forEach(function (t) { t.classList.add('table', 'table-bordered', 'table-sm'); });
+});
+</script>
 
 <?php require_once BASE_PATH . '/app/views/layouts/footer.php'; ?>

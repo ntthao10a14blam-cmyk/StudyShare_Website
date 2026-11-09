@@ -51,7 +51,10 @@ class DocumentModel
             SELECT d.*,
                    s.name AS subject_name,
                    (SELECT COUNT(*) FROM document_images di WHERE di.document_id = d.id) AS image_count,
-                   (SELECT image_path FROM document_images di WHERE di.document_id = d.id ORDER BY di.sort_order ASC, di.id ASC LIMIT 1) AS thumbnail_path
+                   (SELECT image_path FROM document_images di WHERE di.document_id = d.id ORDER BY di.sort_order ASC, di.id ASC LIMIT 1) AS thumbnail_path,
+                   (SELECT dr.reason FROM document_reviews dr WHERE dr.document_id = d.id AND dr.action = 'rejected' ORDER BY dr.created_at DESC, dr.id DESC LIMIT 1) AS rejection_reason,
+                   (SELECT u.full_name FROM document_reviews dr JOIN users u ON dr.admin_id = u.id WHERE dr.document_id = d.id AND dr.action = 'rejected' ORDER BY dr.created_at DESC, dr.id DESC LIMIT 1) AS reviewer_name,
+                   (SELECT dr.created_at FROM document_reviews dr WHERE dr.document_id = d.id AND dr.action = 'rejected' ORDER BY dr.created_at DESC, dr.id DESC LIMIT 1) AS rejected_at
             FROM documents d
             LEFT JOIN subjects s ON d.subject_id = s.id
             WHERE d.user_id = :user_id

@@ -11,6 +11,21 @@ $queryParams = $_GET;
 unset($queryParams['page']);
 $queryString = http_build_query($queryParams);
 $paginationBaseUrl = url('?' . ($queryString ? $queryString . '&' : '') . 'page=');
+
+/**
+ * Chuyển Markdown mô tả thành văn bản thuần để xem trước trên thẻ (bỏ **, #, [..](..), `...`).
+ */
+if (!function_exists('mdPlainPreview')) {
+    function mdPlainPreview(?string $md): string
+    {
+        $t = strip_tags((string) $md);
+        $t = preg_replace('/```.*?```/s', ' ', $t);
+        $t = preg_replace('/!?\[([^\]]*)\]\([^)]*\)/u', '$1', $t);
+        $t = preg_replace('/^\s{0,3}(#{1,6}|>|[-*+]|\d+\.)\s+/mu', '', $t);
+        $t = preg_replace('/[*_`~|]+/u', '', $t);
+        return trim(preg_replace('/\s+/u', ' ', $t));
+    }
+}
 ?>
 
 <div class="container py-4">
@@ -198,17 +213,27 @@ $paginationBaseUrl = url('?' . ($queryString ? $queryString . '&' : '') . 'page=
                                     <!-- Badge Moderation Status -->
                                     <?php
                                     $statusMap = [
-                                        'approved'      => ['label' => 'Đã duyệt',      'cls' => 'badge-status-approved',      'icon' => 'bi-check-lg'],
-                                        'pending'       => ['label' => 'Chờ duyệt',    'cls' => 'badge-status-pending',       'icon' => 'bi-hourglass-split'],
-                                        'rejected'      => ['label' => 'Bị từ chối',   'cls' => 'badge-status-rejected',      'icon' => 'bi-x-lg'],
-                                        'hidden'        => ['label' => 'Bị ẩn',        'cls' => 'badge-status-hidden',        'icon' => 'bi-eye-slash'],
-                                        'not_submitted' => ['label' => 'Chưa gửi',     'cls' => 'badge-status-not_submitted', 'icon' => 'bi-pencil'],
+                                        'not_submitted' => ['label' => 'Bản nháp',   'cls' => 'badge-status-not_submitted', 'icon' => 'bi-file-earmark',      'desc' => 'Tài liệu cá nhân chưa gửi duyệt'],
+                                        'pending'       => ['label' => 'Chờ duyệt',  'cls' => 'badge-status-pending',       'icon' => 'bi-hourglass-split',   'desc' => 'Đang chờ Ban quản trị phê duyệt'],
+                                        'approved'      => ['label' => 'Đã duyệt',   'cls' => 'badge-status-approved',      'icon' => 'bi-check-circle-fill', 'desc' => 'Đã duyệt hiển thị công khai'],
+                                        'rejected'      => ['label' => 'Bị từ chối', 'cls' => 'badge-status-rejected',      'icon' => 'bi-x-circle-fill',     'desc' => 'Bị từ chối duyệt bởi Admin'],
+                                        'hidden'        => ['label' => 'Bị ẩn',      'cls' => 'badge-status-hidden',        'icon' => 'bi-eye-slash-fill',    'desc' => 'Bị ẩn do vi phạm quy chuẩn'],
                                     ];
                                     $st = $statusMap[$doc['moderation_status']] ?? $statusMap['not_submitted'];
                                     ?>
-                                    <span class="badge <?= $st['cls'] ?>" style="font-size: 11px;" title="Trạng thái kiểm duyệt">
-                                        <i class="bi <?= $st['icon'] ?> me-1"></i><?= $st['label'] ?>
-                                    </span>
+                                    <?php if ($doc['moderation_status'] === 'rejected'): ?>
+                                        <button type="button" class="badge <?= $st['cls'] ?> border-0 text-white d-inline-flex align-items-center gap-1 shadow-xs"
+                                                data-bs-toggle="modal" data-bs-target="#rejectionModal<?= $doc['id'] ?>"
+                                                title="Bấm để xem lý do từ chối từ Ban quản trị" style="cursor: pointer; font-size: 11px;">
+                                            <i class="bi <?= $st['icon'] ?>"></i>
+                                            <span><?= $st['label'] ?></span>
+                                            <i class="bi bi-info-circle-fill ms-1" style="font-size: 10px;"></i>
+                                        </button>
+                                    <?php else: ?>
+                                        <span class="badge <?= $st['cls'] ?>" style="font-size: 11px;" title="<?= h($st['desc']) ?>">
+                                            <i class="bi <?= $st['icon'] ?> me-1"></i><?= $st['label'] ?>
+                                        </span>
+                                    <?php endif; ?>
                                 </div>
                             </div>
 
@@ -221,10 +246,24 @@ $paginationBaseUrl = url('?' . ($queryString ? $queryString . '&' : '') . 'page=
                                 </a>
                             </h6>
 
+                            <!-- Cảnh báo lý do từ chối (nếu bị Admin từ chối duyệt) -->
+                            <?php if ($doc['moderation_status'] === 'rejected'): ?>
+                                <div class="alert alert-danger py-1 px-2 my-2 d-flex align-items-center justify-content-between small" style="font-size: 11.5px; border-radius: 6px;">
+                                    <div class="text-truncate me-2" title="<?= h($doc['rejection_reason'] ?? 'Không đạt chuẩn kiểm duyệt.') ?>">
+                                        <i class="bi bi-exclamation-triangle-fill text-danger me-1"></i>
+                                        <strong>Lý do:</strong> <?= h(mb_substr($doc['rejection_reason'] ?: 'Không đạt chuẩn kiểm duyệt.', 0, 30, 'UTF-8')) ?>...
+                                    </div>
+                                    <button type="button" class="btn btn-link btn-sm p-0 text-danger fw-semibold text-decoration-underline flex-shrink-0"
+                                            data-bs-toggle="modal" data-bs-target="#rejectionModal<?= $doc['id'] ?>" style="font-size: 11px;">
+                                        Xem chi tiết
+                                    </button>
+                                </div>
+                            <?php endif; ?>
+
                             <!-- Mô tả tóm tắt nếu có -->
                             <?php if (!empty($doc['description'])): ?>
                                 <p class="text-muted small mb-2 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 12.5px;">
-                                    <?= h(strip_tags($doc['description'])) ?>
+                                    <?= h(mdPlainPreview($doc['description'])) ?>
                                 </p>
                             <?php else: ?>
                                 <p class="text-muted small fst-italic mb-2 flex-grow-1" style="font-size: 12.5px;">Không có mô tả chi tiết.</p>
@@ -282,6 +321,7 @@ $paginationBaseUrl = url('?' . ($queryString ? $queryString . '&' : '') . 'page=
                                           onsubmit="return confirm('Bạn có chắc muốn gửi tài liệu này để ban quản trị phê duyệt?');">
                                         <?php csrfField(); ?>
                                         <input type="hidden" name="id" value="<?= $doc['id'] ?>">
+                                        <input type="hidden" name="redirect_to" value="<?= h($_SERVER['REQUEST_URI'] ?? '?module=documents&action=index') ?>">
                                         <button type="submit" class="btn btn-outline-success btn-sm py-1 px-2" title="Gửi yêu cầu duyệt">
                                             <i class="bi bi-send-check"></i>
                                         </button>
@@ -291,6 +331,7 @@ $paginationBaseUrl = url('?' . ($queryString ? $queryString . '&' : '') . 'page=
                                           onsubmit="return confirm('Thu hồi tài liệu về chế độ riêng tư?');">
                                         <?php csrfField(); ?>
                                         <input type="hidden" name="id" value="<?= $doc['id'] ?>">
+                                        <input type="hidden" name="redirect_to" value="<?= h($_SERVER['REQUEST_URI'] ?? '?module=documents&action=index') ?>">
                                         <button type="submit" class="btn btn-outline-warning btn-sm py-1 px-2" title="Thu hồi về riêng tư">
                                             <i class="bi bi-lock"></i>
                                         </button>
@@ -307,6 +348,61 @@ $paginationBaseUrl = url('?' . ($queryString ? $queryString . '&' : '') . 'page=
 
                     </div>
                 </div>
+
+                <!-- MODAL XEM LÝ DO TỪ CHỐI TÀI LIỆU TỪ ADMIN -->
+                <?php if ($doc['moderation_status'] === 'rejected'): ?>
+                    <div class="modal fade" id="rejectionModal<?= $doc['id'] ?>" tabindex="-1" aria-labelledby="rejectionModalLabel<?= $doc['id'] ?>" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0 shadow">
+                                <div class="modal-header bg-danger-subtle border-0">
+                                    <h6 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="rejectionModalLabel<?= $doc['id'] ?>">
+                                        <i class="bi bi-shield-x fs-5"></i>
+                                        Lý do từ chối từ Ban Quản Trị
+                                    </h6>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                                </div>
+                                <div class="modal-body p-3">
+                                    <div class="mb-3">
+                                        <span class="text-muted small d-block mb-1">Tài liệu:</span>
+                                        <strong class="text-dark fs-6"><?= h($doc['title']) ?></strong>
+                                    </div>
+
+                                    <div class="p-3 bg-danger-subtle rounded border border-danger-subtle mb-3">
+                                        <div class="fw-bold text-danger mb-1 small d-flex align-items-center gap-1">
+                                            <i class="bi bi-chat-left-dots-fill"></i> Phản hồi từ Quản trị viên:
+                                        </div>
+                                        <div class="text-dark small" style="white-space: pre-line; line-height: 1.6;">
+                                            <?= h($doc['rejection_reason'] ?: 'Tài liệu chưa đạt tiêu chuẩn nội dung hoặc vi phạm quy định cộng đồng. Vui lòng rà soát lại thông tin mô tả và tệp PDF.') ?>
+                                        </div>
+                                    </div>
+
+                                    <?php if (!empty($doc['rejected_at'])): ?>
+                                        <div class="text-muted small mb-3">
+                                            <i class="bi bi-clock me-1"></i> Thời điểm từ chối: <strong><?= formatDateTime($doc['rejected_at']) ?></strong>
+                                            <?php if (!empty($doc['reviewer_name'])): ?>
+                                                · Người duyệt: <strong><?= h($doc['reviewer_name']) ?></strong>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <div class="alert alert-info py-2 px-3 small mb-0 d-flex align-items-start gap-2">
+                                        <i class="bi bi-lightbulb-fill text-warning fs-5 flex-shrink-0"></i>
+                                        <div>
+                                            <strong>Gợi ý khắc phục:</strong> Bạn có thể chỉnh sửa lại tài liệu (thay đổi file PDF hoặc mô tả) theo phản hồi của Admin, sau đó gửi duyệt lại để được xuất bản công khai.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer border-0 pt-0">
+                                    <button type="button" class="btn btn-light-subtle btn-sm px-3" data-bs-dismiss="modal">Đóng</button>
+                                    <a href="<?= url('?module=documents&action=edit&id=' . $doc['id']) ?>" class="btn btn-primary btn-sm px-3 d-inline-flex align-items-center gap-1">
+                                        <i class="bi bi-pencil-square"></i>
+                                        <span>Chỉnh sửa tài liệu ngay</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
 
                 <!-- MODAL XÁC NHẬN XÓA TÀI LIỆU -->
                 <div class="modal fade" id="deleteDocModal<?= $doc['id'] ?>" tabindex="-1" aria-hidden="true">
@@ -338,7 +434,7 @@ $paginationBaseUrl = url('?' . ($queryString ? $queryString . '&' : '') . 'page=
         </div>
 
         <!-- 5. PHÂN TRANG -->
-        <!-- <?php if ($pagination['pages'] > 1): ?>
+        <?php if ($pagination['pages'] > 1): ?>
             <nav class="mt-4 d-flex justify-content-center" aria-label="Phân trang tài liệu">
                 <ul class="pagination pagination-sm mb-0">
                     <!-- Nút Trang trước -->
@@ -363,7 +459,7 @@ $paginationBaseUrl = url('?' . ($queryString ? $queryString . '&' : '') . 'page=
                     </li>
                 </ul>
             </nav>
-        <?php endif; ?> -->
+        <?php endif; ?>
 
     <?php endif; ?>
 
