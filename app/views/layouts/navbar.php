@@ -102,8 +102,9 @@ $currentAction = preg_replace('/[^a-z0-9_-]/i', '', get('action', 'index'));
                        id="userMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <img src="<?= $currentUser['avatar'] ?? url('assets/images/default-avatar.png') ?>"
                              alt="Avatar" width="30" height="30"
-                             class="rounded-circle object-fit-cover bg-light">
-                        <span class="small fw-semibold text-truncate" style="max-width: 120px;">
+                             class="rounded-circle object-fit-cover bg-light flex-shrink-0"
+                             style="width: 30px; height: 30px; min-width: 30px; min-height: 30px;">
+                        <span class="small fw-semibold text-truncate d-none d-sm-inline" style="max-width: 140px;">
                             <?= h($currentUser['full_name']) ?>
                         </span>
                     </a>
