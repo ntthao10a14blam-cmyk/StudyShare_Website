@@ -71,35 +71,43 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
 
             <!-- CỘT THỐNG KÊ NHANH -->
             <div class="col-lg-4 mt-4 mt-lg-0">
-                <div class="row g-2">
-                    <div class="col-6 col-lg-12">
-                        <div class="p-3 rounded-3 d-flex align-items-center gap-3"
-                             style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2);">
-                            <div class="fs-2 text-warning"><i class="bi bi-file-earmark-pdf"></i></div>
-                            <div>
-                                <div class="fs-4 fw-bold text-white"><?= number_format($stats['documents']) ?>+</div>
-                                <div class="small text-white text-opacity-75">Tài liệu học tập</div>
-                            </div>
+                <div class="d-flex flex-column gap-3">
+                    <!-- Ô 1: Tài liệu học tập -->
+                    <div class="p-3 rounded-4 d-flex align-items-center gap-3 transition-all"
+                         style="background: rgba(255, 255, 255, 0.16); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.18);">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                             style="width: 50px; height: 50px; background: rgba(255, 193, 7, 0.22); border: 1.5px solid #ffc107; box-shadow: 0 0 16px rgba(255, 193, 7, 0.45);">
+                            <i class="bi bi-file-earmark-pdf-fill fs-4 text-warning"></i>
+                        </div>
+                        <div>
+                            <div class="fs-4 fw-bold text-white lh-1 mb-1"><?= number_format($stats['documents']) ?>+</div>
+                            <div class="small text-white text-opacity-90 fw-medium">Tài liệu học tập</div>
                         </div>
                     </div>
-                    <div class="col-6 col-lg-12">
-                        <div class="p-3 rounded-3 d-flex align-items-center gap-3"
-                             style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2);">
-                            <div class="fs-2 text-info"><i class="bi bi-question-circle"></i></div>
-                            <div>
-                                <div class="fs-4 fw-bold text-white"><?= number_format($stats['questions']) ?>+</div>
-                                <div class="small text-white text-opacity-75">Câu hỏi thảo luận</div>
-                            </div>
+
+                    <!-- Ô 2: Câu hỏi thảo luận -->
+                    <div class="p-3 rounded-4 d-flex align-items-center gap-3 transition-all"
+                         style="background: rgba(255, 255, 255, 0.16); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.18);">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                             style="width: 50px; height: 50px; background: rgba(13, 202, 240, 0.22); border: 1.5px solid #0dcaf0; box-shadow: 0 0 16px rgba(13, 202, 240, 0.45);">
+                            <i class="bi bi-question-circle-fill fs-4 text-info"></i>
+                        </div>
+                        <div>
+                            <div class="fs-4 fw-bold text-white lh-1 mb-1"><?= number_format($stats['questions']) ?>+</div>
+                            <div class="small text-white text-opacity-90 fw-medium">Câu hỏi thảo luận</div>
                         </div>
                     </div>
-                    <div class="col-12">
-                        <div class="p-3 rounded-3 d-flex align-items-center gap-3"
-                             style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2);">
-                            <div class="fs-2 text-success"><i class="bi bi-people"></i></div>
-                            <div>
-                                <div class="fs-4 fw-bold text-white"><?= number_format($stats['users']) ?>+</div>
-                                <div class="small text-white text-opacity-75">Sinh viên tham gia</div>
-                            </div>
+
+                    <!-- Ô 3: Sinh viên tham gia -->
+                    <div class="p-3 rounded-4 d-flex align-items-center gap-3 transition-all"
+                         style="background: rgba(255, 255, 255, 0.16); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.18);">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                             style="width: 50px; height: 50px; background: rgba(25, 135, 84, 0.28); border: 1.5px solid #20c997; box-shadow: 0 0 16px rgba(32, 201, 151, 0.45);">
+                            <i class="bi bi-people-fill fs-4" style="color: #20c997;"></i>
+                        </div>
+                        <div>
+                            <div class="fs-4 fw-bold text-white lh-1 mb-1"><?= number_format($stats['users']) ?>+</div>
+                            <div class="small text-white text-opacity-90 fw-medium">Sinh viên tham gia</div>
                         </div>
                     </div>
                 </div>
