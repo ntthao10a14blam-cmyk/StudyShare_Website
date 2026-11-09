@@ -23,6 +23,8 @@ class Auth
     private const KEY_ROLE      = 'auth_role';
     private const KEY_STATUS    = 'auth_status';
     private const KEY_FULL_NAME = 'auth_full_name';
+    private const KEY_AVATAR    = 'auth_avatar';
+    private const KEY_EMAIL     = 'auth_email';
 
     // ============================================================
     // KHỞI TẠO SESSION
@@ -62,6 +64,8 @@ class Auth
         $_SESSION[self::KEY_ROLE]      = $user['role'];
         $_SESSION[self::KEY_STATUS]    = $user['status'];
         $_SESSION[self::KEY_FULL_NAME] = $user['full_name'];
+        $_SESSION[self::KEY_AVATAR]    = $user['avatar_path'] ?? null;
+        $_SESSION[self::KEY_EMAIL]     = $user['email'] ?? null;
     }
 
     /**
@@ -135,7 +139,8 @@ class Auth
      */
     public static function owns(int $ownerId): bool
     {
-        return self::id() === $ownerId;
+        $currentId = self::id();
+        return $currentId !== null && $currentId === $ownerId;
     }
 
     /**
@@ -145,11 +150,14 @@ class Auth
     public static function currentUser(): ?array
     {
         if (!self::check()) return null;
+        $avatar = $_SESSION[self::KEY_AVATAR] ?? null;
         return [
             'id'        => $_SESSION[self::KEY_USER_ID],
             'full_name' => $_SESSION[self::KEY_FULL_NAME],
             'role'      => $_SESSION[self::KEY_ROLE],
             'status'    => $_SESSION[self::KEY_STATUS],
+            'avatar'    => $avatar ? storageUrl($avatar) : null,
+            'email'     => $_SESSION[self::KEY_EMAIL] ?? null,
         ];
     }
 

@@ -145,8 +145,9 @@ class AuthController
 
             if (empty($errors)) {
                 $this->model->updateProfile(Auth::id(), $fullName, $avatarPath);
-                // Cập nhật tên trong session
+                // Cập nhật tên và avatar ngay lập tức trong session
                 $_SESSION['auth_full_name'] = $fullName;
+                $_SESSION['auth_avatar']    = $avatarPath;
                 redirect('?module=auth&action=profile', 'Cập nhật hồ sơ thành công!', 'success');
             }
         }
