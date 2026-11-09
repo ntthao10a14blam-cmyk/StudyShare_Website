@@ -19,18 +19,14 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
          ============================================================ -->
     <div class="card border-0 rounded-4 shadow-sm p-4 p-md-5 mb-4 text-white position-relative overflow-hidden" 
          style="background: linear-gradient(135deg, #075e57 0%, #0b766e 60%, #115e59 100%);">
-        
-        <!-- Họa tiết trang trí nền -->
-        <div class="position-absolute end-0 top-0 opacity-10 pointer-events-none d-none d-md-block" style="transform: translate(15%, -15%);">
-            <i class="bi bi-mortarboard-fill" style="font-size: 20rem; color: #fff;"></i>
-        </div>
 
         <div class="row align-items-center position-relative" style="z-index: 2;">
-            <div class="col-lg-8">
+            <div class="col-lg-8 pe-lg-4">
                 <!-- Badge định hướng -->
-                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-white bg-opacity-20 text-white small fw-medium mb-3">
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" 
+                     style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); font-size: 0.85rem;">
                     <i class="bi bi-check-circle-fill text-warning"></i>
-                    <span>Tài liệu đúng trường, đúng môn, đúng nhu cầu</span>
+                    <span class="text-white fw-medium">Tài liệu đúng trường, đúng môn, đúng nhu cầu</span>
                 </div>
 
                 <h1 class="display-6 fw-bold mb-2 text-white">
@@ -60,14 +56,15 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                     <?php if (!empty($popularTags)): ?>
                         <?php foreach (array_slice($popularTags, 0, 6) as $tag): ?>
                             <a href="<?= url('?module=community&action=index&tag_id=' . (int)$tag['id']) ?>"
-                               class="text-decoration-none badge bg-white bg-opacity-15 text-white border border-white border-opacity-25 rounded-pill px-2 py-1">
+                               class="text-decoration-none rounded-pill px-2 py-1 text-white"
+                               style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.25); font-size: 0.8rem;">
                                 #<?= h($tag['name']) ?>
                             </a>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <span class="badge bg-white bg-opacity-15 text-white">#đề thi</span>
-                        <span class="badge bg-white bg-opacity-15 text-white">#bài tập</span>
-                        <span class="badge bg-white bg-opacity-15 text-white">#tóm tắt lý thuyết</span>
+                        <span class="rounded-pill px-2 py-1 text-white" style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.25); font-size: 0.8rem;">#đề thi</span>
+                        <span class="rounded-pill px-2 py-1 text-white" style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.25); font-size: 0.8rem;">#bài tập</span>
+                        <span class="rounded-pill px-2 py-1 text-white" style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.25); font-size: 0.8rem;">#tóm tắt lý thuyết</span>
                     <?php endif; ?>
                 </div>
             </div>
@@ -76,7 +73,8 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
             <div class="col-lg-4 mt-4 mt-lg-0">
                 <div class="row g-2">
                     <div class="col-6 col-lg-12">
-                        <div class="p-3 rounded-3 bg-white bg-opacity-10 border border-white border-opacity-20 d-flex align-items-center gap-3">
+                        <div class="p-3 rounded-3 d-flex align-items-center gap-3"
+                             style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2);">
                             <div class="fs-2 text-warning"><i class="bi bi-file-earmark-pdf"></i></div>
                             <div>
                                 <div class="fs-4 fw-bold text-white"><?= number_format($stats['documents']) ?>+</div>
@@ -85,7 +83,8 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                         </div>
                     </div>
                     <div class="col-6 col-lg-12">
-                        <div class="p-3 rounded-3 bg-white bg-opacity-10 border border-white border-opacity-20 d-flex align-items-center gap-3">
+                        <div class="p-3 rounded-3 d-flex align-items-center gap-3"
+                             style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2);">
                             <div class="fs-2 text-info"><i class="bi bi-question-circle"></i></div>
                             <div>
                                 <div class="fs-4 fw-bold text-white"><?= number_format($stats['questions']) ?>+</div>
@@ -94,7 +93,8 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                         </div>
                     </div>
                     <div class="col-12">
-                        <div class="p-3 rounded-3 bg-white bg-opacity-10 border border-white border-opacity-20 d-flex align-items-center gap-3">
+                        <div class="p-3 rounded-3 d-flex align-items-center gap-3"
+                             style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2);">
                             <div class="fs-2 text-success"><i class="bi bi-people"></i></div>
                             <div>
                                 <div class="fs-4 fw-bold text-white"><?= number_format($stats['users']) ?>+</div>
