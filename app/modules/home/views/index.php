@@ -123,7 +123,10 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
         <!-- Cột trái (8): Feed Tài liệu & Diễn đàn -->
         <div class="col-lg-8">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <a href="<?= url('?module=community&action=index') ?>" class="btn btn-sm btn-light border text-decoration-none ms-auto">
+                <div>
+                    <span class="text-uppercase fw-bold text-primary small" style="letter-spacing: 0.08em;">HỌC LIỆU MỚI</span>
+                </div>
+                <a href="<?= url('?module=community&action=index') ?>" class="btn btn-sm btn-light border text-decoration-none">
                     Xem tất cả tài liệu <i class="bi bi-chevron-right ms-1"></i>
                 </a>
             </div>
@@ -176,7 +179,10 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                  4. GÓC HỎI ĐÁP HỌC TẬP SINH VIÊN
                  ============================================================ -->
             <div class="d-flex justify-content-between align-items-center mb-3 mt-5">
-                <a href="<?= url('?module=questions&action=index') ?>" class="btn btn-sm btn-light border text-decoration-none ms-auto">
+                <div>
+                    <span class="text-uppercase fw-bold text-primary small" style="letter-spacing: 0.08em;">DIỄN ĐÀN THẢO LUẬN</span>
+                </div>
+                <a href="<?= url('?module=questions&action=index') ?>" class="btn btn-sm btn-light border text-decoration-none">
                     Xem tất cả câu hỏi <i class="bi bi-chevron-right ms-1"></i>
                 </a>
             </div>
