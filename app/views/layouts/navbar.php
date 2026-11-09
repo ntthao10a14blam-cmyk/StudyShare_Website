@@ -36,37 +36,56 @@ $currentAction = preg_replace('/[^a-z0-9_-]/i', '', get('action', 'index'));
 
         <!-- 2. MENU ĐIỀU HƯỚNG CHÍNH -->
         <nav class="public-menu collapse d-lg-flex align-items-center gap-1" id="publicMenu">
-            <!-- Trang chủ -->
-            <a class="<?= $currentModule === 'home' ? 'active' : '' ?>" href="<?= url('/') ?>">
-                <i class="bi bi-house-door"></i> Trang chủ
-            </a>
-
-            <!-- Kho tài liệu cộng đồng (Chức năng 3) -->
-            <a class="<?= $currentModule === 'community' ? 'active' : '' ?>" href="<?= url('?module=community&action=index') ?>">
-                <i class="bi bi-folder2-open"></i> Tài liệu
-            </a>
-
-            <!-- Hỏi đáp học tập (Chức năng 5) -->
-            <a class="<?= $currentModule === 'questions' ? 'active' : '' ?>" href="<?= url('?module=questions&action=index') ?>">
-                <i class="bi bi-question-circle"></i> Hỏi đáp
-            </a>
-
-            <!-- Lối tắt riêng cho User đã đăng nhập (Chức năng 2 & 4) -->
-            <?php if ($isLoggedIn && $isActive): ?>
-                <a class="<?= $currentModule === 'documents' ? 'active' : '' ?>" href="<?= url('?module=documents&action=index') ?>">
-                    <i class="bi bi-file-earmark-person"></i> Tài liệu của tôi
+            <?php if ($isAdmin): ?>
+                <!-- MENU DÀNH RIÊNG CHO QUẢN TRỊ VIÊN -->
+                <a class="<?= $currentModule === 'admin' && $currentAction === 'dashboard' ? 'active' : '' ?>" href="<?= url('?module=admin&action=dashboard') ?>">
+                    <i class="bi bi-speedometer2"></i> Bảng điều khiển
                 </a>
-                <a class="<?= $currentModule === 'collections' ? 'active' : '' ?>" href="<?= url('?module=collections&action=index') ?>">
-                    <i class="bi bi-collection"></i> Bộ sưu tập
+                <a class="<?= $currentModule === 'admin' && $currentAction === 'pendingDocs' ? 'active' : '' ?>" href="<?= url('?module=admin&action=pendingDocs') ?>">
+                    <i class="bi bi-hourglass-split"></i> Duyệt tài liệu
                 </a>
+                <a class="<?= $currentModule === 'admin' && $currentAction === 'users' ? 'active' : '' ?>" href="<?= url('?module=admin&action=users') ?>">
+                    <i class="bi bi-people"></i> Người dùng
+                </a>
+                <a class="<?= $currentModule === 'admin' && $currentAction === 'subjects' ? 'active' : '' ?>" href="<?= url('?module=admin&action=subjects') ?>">
+                    <i class="bi bi-journal-bookmark"></i> Môn học & Tags
+                </a>
+                <a class="<?= $currentModule === 'admin' && $currentAction === 'reports' ? 'active' : '' ?>" href="<?= url('?module=admin&action=reports') ?>">
+                    <i class="bi bi-flag"></i> Báo cáo
+                </a>
+            <?php else: ?>
+                <!-- MENU DÀNH CHO SINH VIÊN & KHÁCH -->
+                <a class="<?= $currentModule === 'home' ? 'active' : '' ?>" href="<?= url('/') ?>">
+                    <i class="bi bi-house-door"></i> Trang chủ
+                </a>
+                <a class="<?= $currentModule === 'community' ? 'active' : '' ?>" href="<?= url('?module=community&action=index') ?>">
+                    <i class="bi bi-folder2-open"></i> Tài liệu
+                </a>
+                <a class="<?= $currentModule === 'questions' ? 'active' : '' ?>" href="<?= url('?module=questions&action=index') ?>">
+                    <i class="bi bi-question-circle"></i> Hỏi đáp
+                </a>
+                <?php if ($isLoggedIn && $isActive): ?>
+                    <a class="<?= $currentModule === 'documents' ? 'active' : '' ?>" href="<?= url('?module=documents&action=index') ?>">
+                        <i class="bi bi-file-earmark-person"></i> Tài liệu của tôi
+                    </a>
+                    <a class="<?= $currentModule === 'collections' ? 'active' : '' ?>" href="<?= url('?module=collections&action=index') ?>">
+                        <i class="bi bi-collection"></i> Bộ sưu tập
+                    </a>
+                <?php endif; ?>
             <?php endif; ?>
         </nav>
 
         <!-- 3. KHU VỰC TÁC VỤ & TÀI KHOẢN -->
         <div class="header-actions d-none d-lg-flex align-items-center gap-2">
             
-            <?php if ($isLoggedIn && $isActive): ?>
-                <!-- NÚT ĐĂNG TẢI NHANH (Upload tài liệu hoặc Đặt câu hỏi) -->
+            <?php if ($isAdmin): ?>
+                <!-- NÚT XEM TRANG USER DÀNH CHO ADMIN -->
+                <a href="<?= url('/') ?>" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1 d-flex align-items-center gap-1" target="_blank" title="Xem giao diện sinh viên">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                    <span>Xem trang Web</span>
+                </a>
+            <?php elseif ($isLoggedIn && $isActive): ?>
+                <!-- NÚT ĐĂNG TẢI NHANH (CHO SINH VIÊN) -->
                 <div class="dropdown">
                     <button class="btn btn-primary btn-sm dropdown-toggle d-flex align-items-center gap-1 px-3 py-2 fw-semibold"
                             type="button" id="quickPostDropdown" data-bs-toggle="dropdown" aria-expanded="false">
