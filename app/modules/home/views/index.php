@@ -117,117 +117,14 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
 
 
     <!-- ============================================================
-         2. BA LỐI VÀO CỐT LÕI (THE 3 CORE ACCESS PATHWAYS)
-         Đặc trưng cốt lõi của https://www.khotailieusinhvien.com/:
-         - Theo Trường: Trường -> Môn học
-         - Theo Môn: Môn học -> Tài liệu
-         - Theo Loại: Giáo trình, Bài giảng, Đề thi, Đồ án
-         ============================================================ -->
-    <div class="mb-5">
-        <div class="d-flex align-items-center justify-content-between mb-3">
-            <div>
-                <span class="text-uppercase fw-bold text-primary small" style="letter-spacing: 0.08em;">TRA CỨU CÓ CẤU TRÚC</span>
-                <h2 class="h4 fw-bold text-dark mb-0">3 Lối vào tìm tài liệu nhanh chóng</h2>
-            </div>
-            <a href="<?= url('?module=community&action=index') ?>" class="btn btn-outline-primary btn-sm rounded-pill px-3">
-                Xem toàn bộ kho tài liệu <i class="bi bi-arrow-right"></i>
-            </a>
-        </div>
-
-        <div class="row g-3">
-            <!-- Lối vào 1: Theo Trường -->
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm rounded-3 p-4 bg-white hover-shadow transition-all border-top border-4 border-primary">
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="rounded-circle p-3 bg-primary-subtle text-primary fs-4 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
-                            <i class="bi bi-building"></i>
-                        </div>
-                        <div>
-                            <h3 class="h5 fw-bold text-dark mb-0">Theo Trường</h3>
-                            <small class="text-muted">Trường &rarr; Môn học</small>
-                        </div>
-                    </div>
-                    <p class="text-muted small mb-3">
-                        Dành cho sinh viên muốn tìm chính xác đề cương, giáo trình và đề thi thuộc trường đại học của mình.
-                    </p>
-                    <div class="d-flex flex-wrap gap-1 mt-auto">
-                        <a href="<?= url('?module=community&action=index&keyword=' . urlencode('Đại học')) ?>" class="badge bg-light text-dark text-decoration-none border py-2 px-3 rounded-pill">
-                            <i class="bi bi-search me-1"></i> Tra cứu theo trường
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Lối vào 2: Theo Môn -->
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm rounded-3 p-4 bg-white hover-shadow transition-all border-top border-4 border-success">
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="rounded-circle p-3 bg-success-subtle text-success fs-4 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
-                            <i class="bi bi-book"></i>
-                        </div>
-                        <div>
-                            <h3 class="h5 fw-bold text-dark mb-0">Theo Môn Học</h3>
-                            <small class="text-muted">Môn học &rarr; Tài liệu</small>
-                        </div>
-                    </div>
-                    <p class="text-muted small mb-3">
-                        Đi thẳng vào trục kiến thức của môn học: Lập trình, CSDL, Mạng, Giải tích, Vật lý, AI...
-                    </p>
-                    <div class="d-flex flex-wrap gap-1 mt-auto">
-                        <?php if (!empty($popularSubjects)): ?>
-                            <?php foreach (array_slice($popularSubjects, 0, 4) as $sub): ?>
-                                <a href="<?= url('?module=community&action=index&subject_id=' . (int)$sub['id']) ?>" 
-                                   class="badge bg-light text-primary text-decoration-none border py-1 px-2 rounded-2">
-                                    <?= h($sub['name']) ?>
-                                </a>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Lối vào 3: Theo Loại -->
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm rounded-3 p-4 bg-white hover-shadow transition-all border-top border-4 border-warning">
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="rounded-circle p-3 bg-warning-subtle text-warning fs-4 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
-                            <i class="bi bi-folder2-open"></i>
-                        </div>
-                        <div>
-                            <h3 class="h5 fw-bold text-dark mb-0">Theo Loại Tài Liệu</h3>
-                            <small class="text-muted">Mục đích ôn tập</small>
-                        </div>
-                    </div>
-                    <p class="text-muted small mb-3">
-                        Lọc nhanh theo định dạng sử dụng: Đề thi cuối kỳ, Slide bài giảng, Bài tập thực hành, Đồ án mẫu.
-                    </p>
-                    <div class="d-flex flex-wrap gap-1 mt-auto">
-                        <a href="<?= url('?module=community&action=index&keyword=' . urlencode('đề thi')) ?>" class="badge bg-light text-dark text-decoration-none border py-1 px-2">Đề thi</a>
-                        <a href="<?= url('?module=community&action=index&keyword=' . urlencode('giáo trình')) ?>" class="badge bg-light text-dark text-decoration-none border py-1 px-2">Giáo trình</a>
-                        <a href="<?= url('?module=community&action=index&keyword=' . urlencode('slide')) ?>" class="badge bg-light text-dark text-decoration-none border py-1 px-2">Bài giảng</a>
-                        <a href="<?= url('?module=community&action=index&keyword=' . urlencode('đồ án')) ?>" class="badge bg-light text-dark text-decoration-none border py-1 px-2">Đồ án</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- ============================================================
-         3. DANH SÁCH TÀI LIỆU MỚI ĐĂNG TẢI (CARD THIẾT KẾ RÕ RÀNG)
+         3. DANH SÁCH TÀI LIỆU (FEED CHÍNH)
          ============================================================ -->
     <div class="row g-4 mb-5">
         <!-- Cột trái (8): Feed Tài liệu & Diễn đàn -->
         <div class="col-lg-8">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <span class="text-uppercase fw-bold text-primary small" style="letter-spacing: 0.08em;">HỌC LIỆU MỚI</span>
-                    <h2 class="h5 fw-bold text-dark mb-0 d-flex align-items-center gap-2">
-                        <i class="bi bi-file-earmark-check text-primary"></i> Tài liệu vừa chia sẻ
-                    </h2>
-                </div>
-                <a href="<?= url('?module=community&action=index') ?>" class="btn btn-sm btn-light border text-decoration-none">
-                    Xem tất cả <i class="bi bi-chevron-right ms-1"></i>
+                <a href="<?= url('?module=community&action=index') ?>" class="btn btn-sm btn-light border text-decoration-none ms-auto">
+                    Xem tất cả tài liệu <i class="bi bi-chevron-right ms-1"></i>
                 </a>
             </div>
 
@@ -279,13 +176,7 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                  4. GÓC HỎI ĐÁP HỌC TẬP SINH VIÊN
                  ============================================================ -->
             <div class="d-flex justify-content-between align-items-center mb-3 mt-5">
-                <div>
-                    <span class="text-uppercase fw-bold text-primary small" style="letter-spacing: 0.08em;">DIỄN ĐÀN THẢO LUẬN</span>
-                    <h2 class="h5 fw-bold text-dark mb-0 d-flex align-items-center gap-2">
-                        <i class="bi bi-chat-square-dots text-primary"></i> Câu hỏi học tập gần đây
-                    </h2>
-                </div>
-                <a href="<?= url('?module=questions&action=index') ?>" class="btn btn-sm btn-light border text-decoration-none">
+                <a href="<?= url('?module=questions&action=index') ?>" class="btn btn-sm btn-light border text-decoration-none ms-auto">
                     Xem tất cả câu hỏi <i class="bi bi-chevron-right ms-1"></i>
                 </a>
             </div>
