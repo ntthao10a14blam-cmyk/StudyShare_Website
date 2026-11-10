@@ -5,7 +5,7 @@
  * Chức năng:
  *  1. Toggle hiện/ẩn mật khẩu (tất cả các form auth)
  *  2. Thanh đánh giá độ mạnh mật khẩu (register + password-change)
- *  3. Validate realtime: mật khẩu xác nhận khớp chưa
+ *  3. Validate realtime: mật khẩu xác nhận khớp chưa + Email RFC regex
  *  4. Preview ảnh avatar trước khi upload (profile)
  *  5. Drag & Drop avatar (profile)
  *  6. Xoá ảnh đã chọn (profile)
@@ -18,12 +18,6 @@
        1. TOGGLE HIỆN / ẨN MẬT KHẨU
        ============================================================ */
 
-    /**
-     * Khai báo chung: mỗi nút `.auth-toggle-pw` toggle input ngay trước nó.
-     * Hỗ trợ cả hai pattern:
-     *   a) data-target="input_id"  → dùng ở password.php (nhiều nút)
-     *   b) Không có data-target   → tìm input trong cùng .input-group
-     */
     function initPasswordToggle() {
         document.querySelectorAll('.auth-toggle-pw').forEach(function (btn) {
             btn.addEventListener('click', function () {
@@ -33,7 +27,6 @@
                 if (targetId) {
                     input = document.getElementById(targetId);
                 } else {
-                    // Tìm input[type=password] trong cùng .input-group
                     var group = btn.closest('.input-group');
                     input = group ? group.querySelector('input[type="password"], input[type="text"]') : null;
                 }
@@ -55,13 +48,6 @@
        2. ĐỘ MẠNH MẬT KHẨU
        ============================================================ */
 
-    /**
-     * Trả về điểm 0-4 dựa trên các tiêu chí:
-     *   +1: ít nhất 8 ký tự
-     *   +1: có chữ thường
-     *   +1: có chữ in hoa hoặc số
-     *   +1: có ký tự đặc biệt
-     */
     function calcStrength(pwd) {
         if (!pwd) return 0;
         var score = 0;
@@ -73,15 +59,14 @@
     }
 
     var STRENGTH_MAP = [
-        { cls: '',               label: ''        },
-        { cls: 'strength-weak',  label: 'Yếu'     },
-        { cls: 'strength-fair',  label: 'Trung bình' },
-        { cls: 'strength-good',  label: 'Khá'     },
-        { cls: 'strength-strong',label: 'Mạnh'    },
+        { cls: '',                label: '' },
+        { cls: 'strength-weak',   label: 'Yếu' },
+        { cls: 'strength-fair',   label: 'Trung bình' },
+        { cls: 'strength-good',   label: 'Khá' },
+        { cls: 'strength-strong', label: 'Mạnh' },
     ];
 
     function initPasswordStrength() {
-        // Trang đăng ký dùng #password, trang đổi mật khẩu dùng #new_password
         var pwInput = document.getElementById('password') || document.getElementById('new_password');
         var fill    = document.getElementById('pwStrengthFill');
         var label   = document.getElementById('pwStrengthLabel');
@@ -92,7 +77,6 @@
             var score = calcStrength(this.value);
             var map   = STRENGTH_MAP[score];
 
-            // Reset class
             fill.className = 'password-strength-fill';
             if (map.cls) fill.classList.add(map.cls);
             label.textContent = map.label;
@@ -100,31 +84,103 @@
     }
 
     /* ============================================================
-       3. VALIDATE REALTIME: MẬT KHẨU XÁC NHẬN
+       3. VALIDATE REALTIME: MẬT KHẨU XÁC NHẬN & EMAIL RFC REGEX
        ============================================================ */
 
-    function initPasswordConfirmValidation() {
+    function initFormRealtimeValidation() {
         var pwInput      = document.getElementById('password') || document.getElementById('new_password');
         var confirmInput = document.getElementById('password_confirm') || document.getElementById('confirm_password');
+        var emailInput   = document.getElementById('email');
+        var regForm      = document.getElementById('registerForm') || document.getElementById('passwordForm');
 
-        if (!pwInput || !confirmInput) return;
+        // Regex RFC 5322 chuẩn kiểm tra email
+        function isValidEmail(email) {
+            var re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+            return re.test(email);
+        }
 
-        function check() {
-            if (confirmInput.value === '') {
-                confirmInput.setCustomValidity('');
-                return;
+        function getErrorElement(input) {
+            var parent = input.closest('.mb-3') || input.closest('.mb-4') || input.parentElement;
+            var errDiv = parent.querySelector('.client-error-msg');
+            if (!errDiv) {
+                errDiv = document.createElement('div');
+                errDiv.className = 'client-error-msg invalid-feedback d-block mt-1';
+                parent.appendChild(errDiv);
             }
+            return errDiv;
+        }
+
+        function clearError(input) {
+            var parent = input.closest('.mb-3') || input.closest('.mb-4') || input.parentElement;
+            var errDiv = parent.querySelector('.client-error-msg');
+            if (errDiv) errDiv.textContent = '';
+            input.classList.remove('is-invalid');
+        }
+
+        function checkPasswordMatch() {
+            if (!pwInput || !confirmInput) return true;
+            var submitBtn = (regForm) ? regForm.querySelector('button[type="submit"]') : null;
+            var errDiv = getErrorElement(confirmInput);
+
+            if (confirmInput.value === '') {
+                clearError(confirmInput);
+                if (submitBtn) submitBtn.disabled = false;
+                return true;
+            }
+
             if (pwInput.value !== confirmInput.value) {
-                confirmInput.setCustomValidity('Mật khẩu xác nhận không khớp.');
                 confirmInput.classList.add('is-invalid');
+                errDiv.textContent = 'Mật khẩu xác nhận không khớp.';
+                errDiv.style.color = '#dc3545';
+                if (submitBtn) submitBtn.disabled = true;
+                return false;
             } else {
-                confirmInput.setCustomValidity('');
                 confirmInput.classList.remove('is-invalid');
+                errDiv.textContent = '';
+                if (submitBtn) submitBtn.disabled = false;
+                return true;
             }
         }
 
-        pwInput.addEventListener('input', check);
-        confirmInput.addEventListener('input', check);
+        function checkEmail() {
+            if (!emailInput) return true;
+            var val = emailInput.value.trim();
+            var errDiv = getErrorElement(emailInput);
+
+            if (val === '') {
+                clearError(emailInput);
+                return true;
+            }
+
+            if (!isValidEmail(val)) {
+                emailInput.classList.add('is-invalid');
+                errDiv.textContent = 'Định dạng email không hợp lệ (ví dụ: sinhvien@studyhub.vn).';
+                errDiv.style.color = '#dc3545';
+                return false;
+            } else {
+                clearError(emailInput);
+                return true;
+            }
+        }
+
+        if (pwInput && confirmInput) {
+            pwInput.addEventListener('input', checkPasswordMatch);
+            confirmInput.addEventListener('input', checkPasswordMatch);
+        }
+
+        if (emailInput) {
+            emailInput.addEventListener('input', checkEmail);
+        }
+
+        if (regForm) {
+            regForm.addEventListener('submit', function (e) {
+                var emailOk = checkEmail();
+                var passOk = checkPasswordMatch();
+                if (!emailOk || !passOk) {
+                    e.preventDefault();
+                }
+            });
+        }
     }
 
     /* ============================================================
@@ -142,11 +198,9 @@
 
         if (!fileInput) return;
 
-        // Hiển thị preview ảnh + tên file
         function handleFile(file) {
             if (!file || !file.type.startsWith('image/')) return;
 
-            // Kiểm tra kích thước (tối đa 2 MB)
             if (file.size > 2 * 1024 * 1024) {
                 alert('Ảnh quá lớn! Vui lòng chọn ảnh nhỏ hơn 2 MB.');
                 fileInput.value = '';
@@ -173,7 +227,6 @@
             }
         });
 
-        // Drag & Drop
         if (dropZone) {
             dropZone.addEventListener('dragover', function (e) {
                 e.preventDefault();
@@ -187,18 +240,16 @@
                 dropZone.classList.remove('drag-over');
                 var file = e.dataTransfer.files[0];
                 if (file) {
-                    // Gán file vào input (DataTransfer)
                     try {
                         var dt = new DataTransfer();
                         dt.items.add(file);
                         fileInput.files = dt.files;
-                    } catch (_) { /* Trình duyệt cũ không hỗ trợ */ }
+                    } catch (_) {}
                     handleFile(file);
                 }
             });
         }
 
-        // Nút xóa ảnh đã chọn
         if (clearBtn) {
             clearBtn.addEventListener('click', function () {
                 fileInput.value = '';
@@ -215,9 +266,8 @@
     document.addEventListener('DOMContentLoaded', function () {
         initPasswordToggle();
         initPasswordStrength();
-        initPasswordConfirmValidation();
+        initFormRealtimeValidation();
         initAvatarUpload();
     });
 
 })();
-
