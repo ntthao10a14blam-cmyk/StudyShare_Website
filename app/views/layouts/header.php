@@ -29,6 +29,7 @@
         <?php endforeach; ?>
     <?php endif; ?>
 </head>
+
 <body class="d-flex flex-column min-vh-100">
 
 <?php

@@ -1,10 +1,4 @@
-
 <?php
-/**
- * Admin Navbar - TV6
- * Thanh điều hướng riêng dành cho quản trị viên.
- */
-
 $pendingCount = (int) ($pendingCount ?? 0);
 
 $adminName = $adminName
@@ -24,7 +18,6 @@ $isActive = function (string $action) use ($currentModule, $currentAction): stri
 <nav class="navbar navbar-expand-lg admin-navbar">
     <div class="container-fluid">
 
-        <!-- Logo -->
         <a class="navbar-brand admin-brand"
            href="<?= url('?module=admin&action=dashboard') ?>">
             <i class="bi bi-mortarboard-fill"></i>
@@ -32,17 +25,18 @@ $isActive = function (string $action) use ($currentModule, $currentAction): stri
             <span class="admin-brand-label">ADMIN</span>
         </a>
 
-        <!-- Mobile toggle -->
         <button class="navbar-toggler"
                 type="button"
                 data-bs-toggle="collapse"
-                data-bs-target="#adminNavbarContent">
+                data-bs-target="#adminNavbarContent"
+                aria-controls="adminNavbarContent"
+                aria-expanded="false"
+                aria-label="Mở menu">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="adminNavbarContent">
 
-            <!-- Admin menu -->
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
                 <li class="nav-item">
@@ -61,9 +55,17 @@ $isActive = function (string $action) use ($currentModule, $currentAction): stri
 
                         <?php if ($pendingCount > 0): ?>
                             <span class="badge bg-danger ms-1">
-                                <?= (int) $pendingCount ?>
+                                <?= $pendingCount ?>
                             </span>
                         <?php endif; ?>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link <?= $isActive('publicDocs') ?>"
+                       href="<?= url('?module=admin&action=publicDocs') ?>">
+                        <i class="bi bi-file-earmark-check"></i>
+                        Tài liệu công khai
                     </a>
                 </li>
 
@@ -101,10 +103,8 @@ $isActive = function (string $action) use ($currentModule, $currentAction): stri
 
             </ul>
 
-            <!-- Right menu -->
             <ul class="navbar-nav align-items-lg-center">
 
-                <!-- Switch to User -->
                 <li class="nav-item me-lg-3">
                     <a class="btn btn-outline-primary btn-sm"
                        href="<?= url('?module=home') ?>">
@@ -113,7 +113,6 @@ $isActive = function (string $action) use ($currentModule, $currentAction): stri
                     </a>
                 </li>
 
-                <!-- Admin dropdown -->
                 <li class="nav-item dropdown">
 
                     <a class="nav-link dropdown-toggle admin-account"
@@ -141,7 +140,9 @@ $isActive = function (string $action) use ($currentModule, $currentAction): stri
                             </a>
                         </li>
 
-                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
 
                         <li>
                             <a class="dropdown-item text-danger"

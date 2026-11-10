@@ -35,3 +35,4 @@ node_modules/
 *.sql.bak
 *.zip
 *.rar
+oracleJdk-27/

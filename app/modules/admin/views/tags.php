@@ -1,216 +1,314 @@
 <?php
-$pageTitle = $pageTitle ?? 'Quản lý từ khoá';
-require_once BASE_PATH . '/app/views/layouts/header.php';
+$tags = $tags ?? [];
+
+$e = static function ($value): string {
+    return htmlspecialchars((string) ($value ?? ''), ENT_QUOTES, 'UTF-8');
+};
+
+$csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
 ?>
 
 <div class="admin-page">
     <div class="admin-content">
 
+        <!-- HEADER -->
         <div class="page-header">
             <div>
-                <h1>Quản lý Tags</h1>
-                <p>Quản lý các thẻ dùng để phân loại tài liệu.</p>
+                <h1>
+                    <i class="bi bi-tags-fill"></i>
+                    Quản lý Tags
+                </h1>
+                <p>Quản lý các thẻ dùng để phân loại tài liệu và câu hỏi</p>
             </div>
+
+            <button type="button"
+                    class="btn btn-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#addTagModal">
+                <i class="bi bi-plus-circle"></i>
+                Thêm Tag
+            </button>
         </div>
 
-        <!-- Thêm Tag -->
-        <section class="admin-section">
+        <!-- THÔNG BÁO -->
+        <?php if (!empty($_SESSION['success'])): ?>
+            <div class="alert alert-success alert-dismissible fade show">
+                <i class="bi bi-check-circle-fill"></i>
+                <?= $e($_SESSION['success']) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <?php unset($_SESSION['success']); ?>
+        <?php endif; ?>
 
-            <div class="section-header">
+        <?php if (!empty($_SESSION['error'])): ?>
+            <div class="alert alert-danger alert-dismissible fade show">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <?= $e($_SESSION['error']) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <?php unset($_SESSION['error']); ?>
+        <?php endif; ?>
+
+        <!-- DANH SÁCH TAGS -->
+        <div class="admin-panel">
+
+            <div class="admin-panel-header">
                 <div>
-                    <h2>Thêm Tag</h2>
-                    <p>Tạo tag mới cho hệ thống.</p>
+                    <h5>
+                        <i class="bi bi-collection-fill"></i>
+                        Danh sách Tags
+                    </h5>
+                    <p>Tổng cộng <?= count($tags) ?> Tags</p>
                 </div>
             </div>
 
-            <div class="table-card">
-
-                <form
-                    method="POST"
-                    action="?module=admin&action=createTag"
-                    class="admin-form"
-                >
-
-                    <input
-                        type="hidden"
-                        name="csrf_token"
-                        value="<?= h(csrfToken()) ?>"
-                    >
-
-                    <div class="form-group">
-                        <label for="tag_name">Tên Tag</label>
-
-                        <input
-                            type="text"
-                            id="tag_name"
-                            name="name"
-                            class="form-control"
-                            placeholder="Ví dụ: Python"
-                            required
-                        >
-                    </div>
-
-                    <button type="submit" class="btn-primary">
-                        <i class="bi bi-plus-circle"></i>
-                        Thêm Tag
-                    </button>
-
-                </form>
-
-            </div>
-
-        </section>
-
-        <!-- Danh sách Tag -->
-        <section class="admin-section">
-
-            <div class="section-header">
-                <div>
-                    <h2>Danh sách Tags</h2>
-                    <p>Các tag đang được sử dụng trong hệ thống.</p>
-                </div>
-            </div>
-
-            <div class="table-card">
-
-                <table class="admin-table">
-
+            <div class="table-responsive">
+                <table class="table admin-table align-middle">
                     <thead>
                         <tr>
-                            <th>#</th>
-                            <th>Tag</th>
-                            <th>Số tài liệu</th>
+                            <th>ID</th>
+                            <th>Tên Tag</th>
+                            <th>Tài liệu liên kết</th>
+                            <th>Câu hỏi liên kết</th>
                             <th>Ngày tạo</th>
-                            <th>Thao tác</th>
+                            <th class="text-center">Thao tác</th>
                         </tr>
                     </thead>
 
                     <tbody>
-
                     <?php if (empty($tags)): ?>
-
                         <tr>
-                            <td colspan="5">
-
-                                <div class="empty-state">
-                                    <i class="bi bi-tags"></i>
-                                    <h3>Chưa có Tag</h3>
-                                    <p>Hãy thêm Tag đầu tiên.</p>
-                                </div>
-
+                            <td colspan="6" class="text-center py-5">
+                                <i class="bi bi-tags fs-1 text-muted d-block mb-2"></i>
+                                Chưa có Tag nào.
                             </td>
                         </tr>
-
                     <?php else: ?>
 
-                        <?php foreach ($tags as $index => $tag): ?>
+                        <?php foreach ($tags as $tag): ?>
+                            <?php
+                                $tagId = (int) ($tag['id'] ?? 0);
+                                $documentCount = (int) ($tag['document_count'] ?? $tag['documents_count'] ?? 0);
+                                $questionCount = (int) ($tag['question_count'] ?? $tag['questions_count'] ?? 0);
+                            ?>
 
                             <tr>
-
                                 <td>
-                                    <?= $index + 1 ?>
+                                    <span class="text-muted">#<?= $tagId ?></span>
                                 </td>
 
                                 <td>
-                                    <span class="tag">
-                                        <?= h($tag['name'] ?? 'Không có tên') ?>
+                                    <span class="badge bg-primary-subtle text-primary fs-6">
+                                        <i class="bi bi-tag-fill"></i>
+                                        <?= $e($tag['name'] ?? '') ?>
                                     </span>
                                 </td>
 
                                 <td>
-                                    <?= (int) ($tag['document_count'] ?? 0) ?>
+                                    <span class="badge bg-info-subtle text-info">
+                                        <?= number_format($documentCount) ?>
+                                    </span>
                                 </td>
 
                                 <td>
-                                    <?=
-                                        !empty($tag['created_at'])
-                                            ? date('d/m/Y', strtotime($tag['created_at']))
-                                            : '—'
-                                    ?>
+                                    <span class="badge bg-success-subtle text-success">
+                                        <?= number_format($questionCount) ?>
+                                    </span>
                                 </td>
 
                                 <td>
+                                    <?= !empty($tag['created_at'])
+                                        ? $e(date('d/m/Y', strtotime($tag['created_at'])))
+                                        : '—' ?>
+                                </td>
 
-                                    <!-- Sửa Tag -->
-                                    <form
-                                        method="POST"
-                                        action="?module=admin&action=editTag"
-                                        style="display:inline;"
-                                    >
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2">
 
-                                        <input
-                                            type="hidden"
-                                            name="csrf_token"
-                                            value="<?= h(csrfToken()) ?>"
-                                        >
-
-                                        <input
-                                            type="hidden"
-                                            name="id"
-                                            value="<?= (int) $tag['id'] ?>"
-                                        >
-
-                                        <input
-                                            type="hidden"
-                                            name="name"
-                                            value="<?= h($tag['name'] ?? '') ?>"
-                                        >
-
+                                        <!-- SỬA -->
                                         <button
-                                            type="submit"
-                                            class="btn-small"
+                                            type="button"
+                                            class="btn btn-sm btn-outline-primary"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editTagModal"
+                                            data-id="<?= $tagId ?>"
+                                            data-name="<?= $e($tag['name'] ?? '') ?>"
                                         >
+                                            <i class="bi bi-pencil-square"></i>
                                             Sửa
                                         </button>
 
-                                    </form>
-
-                                    <!-- Xóa Tag -->
-                                    <form
-                                        method="POST"
-                                        action="?module=admin&action=deleteTag"
-                                        style="display:inline;"
-                                    >
-
-                                        <input
-                                            type="hidden"
-                                            name="csrf_token"
-                                            value="<?= h(csrfToken()) ?>"
+                                        <!-- XÓA -->
+                                        <form
+                                            method="POST"
+                                            action="<?= url('?module=admin&action=deleteTag') ?>"
+                                            class="d-inline"
+                                            onsubmit="return confirm('Bạn có chắc chắn muốn xóa Tag này không?');"
                                         >
+                                            <input type="hidden" name="csrf_token"
+                                                   value="<?= $e($csrfToken) ?>">
 
-                                        <input
-                                            type="hidden"
-                                            name="id"
-                                            value="<?= (int) $tag['id'] ?>"
-                                        >
+                                            <input type="hidden" name="id"
+                                                   value="<?= $tagId ?>">
 
-                                        <button
-                                            type="submit"
-                                            class="btn-small danger"
-                                            data-confirm="Bạn có chắc muốn xóa Tag này?"
-                                        >
-                                            Xóa
-                                        </button>
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i>
+                                                Xóa
+                                            </button>
+                                        </form>
 
-                                    </form>
-
+                                    </div>
                                 </td>
-
                             </tr>
 
                         <?php endforeach; ?>
 
                     <?php endif; ?>
-
                     </tbody>
-
                 </table>
-
             </div>
 
-        </section>
-
+        </div>
     </div>
 </div>
 
-<?php require_once BASE_PATH . '/app/views/layouts/footer.php'; ?>
+<!-- MODAL THÊM TAG -->
+<div class="modal fade" id="addTagModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <form method="POST"
+                  action="<?= url('?module=admin&action=createTag') ?>">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-plus-circle text-primary"></i>
+                        Thêm Tag mới
+                    </h5>
+
+                    <button type="button" class="btn-close"
+                            data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <input type="hidden" name="csrf_token"
+                           value="<?= $e($csrfToken) ?>">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Tên Tag <span class="text-danger">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            name="name"
+                            class="form-control"
+                            maxlength="50"
+                            placeholder="Ví dụ: PHP, HTML, Database..."
+                            required
+                        >
+
+                        <small class="text-muted">
+                            Tên Tag không được vượt quá 50 ký tự.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light"
+                            data-bs-dismiss="modal">
+                        Hủy
+                    </button>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i>
+                        Lưu Tag
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL SỬA TAG -->
+<div class="modal fade" id="editTagModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <form method="POST"
+                  action="<?= url('?module=admin&action=editTag') ?>">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square text-primary"></i>
+                        Chỉnh sửa Tag
+                    </h5>
+
+                    <button type="button" class="btn-close"
+                            data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <input type="hidden" name="csrf_token"
+                           value="<?= $e($csrfToken) ?>">
+
+                    <input type="hidden" name="id" id="editTagId">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Tên Tag <span class="text-danger">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            name="name"
+                            id="editTagName"
+                            class="form-control"
+                            maxlength="50"
+                            required
+                        >
+
+                        <small class="text-muted">
+                            Tối đa 50 ký tự.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light"
+                            data-bs-dismiss="modal">
+                        Hủy
+                    </button>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i>
+                        Cập nhật
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const editModal = document.getElementById('editTagModal');
+
+    if (!editModal) return;
+
+    editModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+
+        if (!button) return;
+
+        document.getElementById('editTagId').value =
+            button.getAttribute('data-id') || '';
+
+        document.getElementById('editTagName').value =
+            button.getAttribute('data-name') || '';
+    });
+});
+</script>
