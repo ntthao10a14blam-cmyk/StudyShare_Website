@@ -15,6 +15,14 @@ $isLoggedIn  = Auth::check();
 $isAdmin     = Auth::isAdmin();
 $isActive    = Auth::isActive();
 
+// Nếu là Quản trị viên, hiển thị thanh điều hướng riêng của Admin (TV6)
+if ($isAdmin && file_exists(__DIR__ . '/admin_navbar.php')) {
+    $adminName = $currentUser['full_name'] ?? 'Quản trị viên';
+    $pendingCount = $pendingCount ?? 0;
+    require __DIR__ . '/admin_navbar.php';
+    return;
+}
+
 // Xác định trang hiện tại để active menu
 $currentModule = preg_replace('/[^a-z0-9_-]/i', '', get('module', 'home'));
 ?>

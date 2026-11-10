@@ -2,32 +2,6 @@
 /**
  * ADMINCONTROLLER.PHP — Quản trị hệ thống
  * Phụ trách: TV6
- *
- * Actions:
- *   dashboard      — Thống kê tổng quan
- *   users          — Danh sách tài khoản
- *   toggleLock     — Khóa / mở khóa tài khoản
- *   subjects       — Quản lý môn học
- *   createSubject  — Thêm môn học
- *   editSubject    — Sửa môn học
- *   deleteSubject  — Xóa môn học (kiểm tra dữ liệu liên quan)
- *   tags           — Quản lý từ khoá
- *   createTag      — Thêm tag
- *   editTag        — Sửa tag
- *   deleteTag      — Xóa tag (kiểm tra dữ liệu liên quan)
- *   pendingDocs    — Danh sách tài liệu chờ duyệt
- *   reviewDoc      — Phê duyệt / từ chối tài liệu
- *   hideDoc        — Ẩn tài liệu vi phạm
- *   reports        — Danh sách báo cáo
- *   handleReport   — Xử lý báo cáo (resolved / dismissed)
- *   hideContent    — Ẩn câu hỏi / câu trả lời / bình luận
- *
- * Lưu ý bắt buộc:
- *   - TẤT CẢ action đều gọi Auth::requireAdmin() đầu tiên
- *   - Xóa môn học/tag: kiểm tra ràng buộc FK trước (ON DELETE RESTRICT)
- *   - Admin khóa tài khoản đang đăng nhập: session của người đó sẽ bị chặn bởi Auth::requireActiveUser()
- *   - Tài liệu bị Admin ẩn (hidden): chủ sở hữu KHÔNG được submit lại
- *   - Từ chối tài liệu: bắt buộc nhập reason
  */
 
 require_once BASE_PATH . '/app/modules/admin/AdminModel.php';
@@ -42,18 +16,36 @@ class AdminController
     }
 
     public function dashboard(): void
-    {
-        Auth::requireAdmin();
-        // TODO: TV6 — thống kê: users, tài liệu public, chờ duyệt, lượt tải, câu hỏi
+{
+    Auth::requireAdmin();
+    $stats = [
+        'users' => $this->model->countUsers(),
+        'documents' => $this->model->countDocuments(),
+        'subjects' => $this->model->countSubjects(),
+        'pending' => $this->model->countPendingDocuments(),
+        'downloads' => $this->model->countDownloads(),
+        'questions' => $this->model->countQuestions(),
+    ];
+
+        $pendingDocuments = $this->model->getPendingDocuments();
+
         $pageTitle = 'Bảng điều khiển Admin';
-        require_once BASE_PATH . '/app/modules/admin/views/dashboard.php';
-    }
+        $extraCss = ['admin.css'];
+        $extraJs = ['admin.js'];
+
+    require_once BASE_PATH . '/app/modules/admin/views/dashboard.php';
+}
 
     public function users(): void
     {
         Auth::requireAdmin();
-        // TODO: TV6 — tìm kiếm, phân trang, hiển thị trạng thái
+
+        $users = $this->model->getUsers();
+
         $pageTitle = 'Quản lý tài khoản';
+        $extraCss = ['admin.css'];
+        $extraJs = ['admin.js'];
+
         require_once BASE_PATH . '/app/modules/admin/views/users.php';
     }
 
@@ -61,15 +53,32 @@ class AdminController
     {
         Auth::requireAdmin();
         verifyCsrf();
-        // TODO: TV6 — đổi status active ↔ locked; không được tự khóa chính mình
+
+        $userId = (int) ($_POST['user_id'] ?? 0);
+
+        if ($userId <= 0) {
+            redirect('?module=admin&action=users');
+        }
+
+        if ($userId === (int) ($_SESSION['user_id'] ?? 0)) {
+            redirect('?module=admin&action=users');
+        }
+
+        $this->model->toggleUserLock($userId);
+
         redirect('?module=admin&action=users');
     }
 
     public function subjects(): void
     {
         Auth::requireAdmin();
-        // TODO: TV6
+
+        $subjects = $this->model->getSubjects();
+
         $pageTitle = 'Quản lý môn học';
+        $extraCss = ['admin.css'];
+        $extraJs = ['admin.js'];
+
         require_once BASE_PATH . '/app/modules/admin/views/subjects.php';
     }
 
@@ -77,7 +86,19 @@ class AdminController
     {
         Auth::requireAdmin();
         verifyCsrf();
-        // TODO: TV6
+
+        $name = trim($_POST['name'] ?? '');
+        $description = trim($_POST['description'] ?? '');
+
+        if ($name === '') {
+            redirect('?module=admin&action=subjects');
+        }
+
+        $this->model->createSubject(
+            $name,
+            $description !== '' ? $description : null
+        );
+
         redirect('?module=admin&action=subjects');
     }
 
@@ -85,7 +106,21 @@ class AdminController
     {
         Auth::requireAdmin();
         verifyCsrf();
-        // TODO: TV6
+
+        $id = (int) ($_POST['id'] ?? 0);
+        $name = trim($_POST['name'] ?? '');
+        $description = trim($_POST['description'] ?? '');
+
+        if ($id <= 0 || $name === '') {
+            redirect('?module=admin&action=subjects');
+        }
+
+        $this->model->updateSubject(
+            $id,
+            $name,
+            $description !== '' ? $description : null
+        );
+
         redirect('?module=admin&action=subjects');
     }
 
@@ -93,15 +128,32 @@ class AdminController
     {
         Auth::requireAdmin();
         verifyCsrf();
-        // TODO: TV6 — QUAN TRỌNG: kiểm tra còn tài liệu/câu hỏi dùng môn học này không
+
+        $id = (int) ($_POST['id'] ?? 0);
+
+        if ($id <= 0) {
+            redirect('?module=admin&action=subjects');
+        }
+
+        if (!$this->model->canDeleteSubject($id)) {
+            redirect('?module=admin&action=subjects');
+        }
+
+        $this->model->deleteSubject($id);
+
         redirect('?module=admin&action=subjects');
     }
 
     public function tags(): void
     {
         Auth::requireAdmin();
-        // TODO: TV6
+
+        $tags = $this->model->getTags();
+
         $pageTitle = 'Quản lý từ khoá';
+        $extraCss = ['admin.css'];
+        $extraJs = ['admin.js'];
+
         require_once BASE_PATH . '/app/modules/admin/views/tags.php';
     }
 
@@ -109,6 +161,15 @@ class AdminController
     {
         Auth::requireAdmin();
         verifyCsrf();
+
+        $name = trim($_POST['name'] ?? '');
+
+        if ($name === '') {
+            redirect('?module=admin&action=tags');
+        }
+
+        $this->model->createTag($name);
+
         redirect('?module=admin&action=tags');
     }
 
@@ -116,6 +177,16 @@ class AdminController
     {
         Auth::requireAdmin();
         verifyCsrf();
+
+        $id = (int) ($_POST['id'] ?? 0);
+        $name = trim($_POST['name'] ?? '');
+
+        if ($id <= 0 || $name === '') {
+            redirect('?module=admin&action=tags');
+        }
+
+        $this->model->updateTag($id, $name);
+
         redirect('?module=admin&action=tags');
     }
 
@@ -123,15 +194,32 @@ class AdminController
     {
         Auth::requireAdmin();
         verifyCsrf();
-        // TODO: TV6 — kiểm tra FK trước khi xóa
+
+        $id = (int) ($_POST['id'] ?? 0);
+
+        if ($id <= 0) {
+            redirect('?module=admin&action=tags');
+        }
+
+        if (!$this->model->canDeleteTag($id)) {
+            redirect('?module=admin&action=tags');
+        }
+
+        $this->model->deleteTag($id);
+
         redirect('?module=admin&action=tags');
     }
 
     public function pendingDocs(): void
     {
         Auth::requireAdmin();
-        // TODO: TV6 — danh sách moderation_status = 'pending'
+
+        $documents = $this->model->getPendingDocuments();
+
         $pageTitle = 'Tài liệu chờ duyệt';
+        $extraCss = ['admin.css'];
+        $extraJs = ['admin.js'];
+
         require_once BASE_PATH . '/app/modules/admin/views/pending_docs.php';
     }
 
@@ -139,8 +227,32 @@ class AdminController
     {
         Auth::requireAdmin();
         verifyCsrf();
-        // TODO: TV6 — action: approved (set visibility=public) hoặc rejected (bắt buộc reason)
-        //          Ghi vào bảng document_reviews
+
+        $documentId = (int) ($_POST['document_id'] ?? 0);
+        $action = $_POST['action'] ?? '';
+        $reason = trim($_POST['reason'] ?? '');
+
+        if ($documentId <= 0) {
+            redirect('?module=admin&action=pendingDocs');
+        }
+
+        if (!in_array($action, ['approved', 'rejected'], true)) {
+            redirect('?module=admin&action=pendingDocs');
+        }
+
+        if ($action === 'rejected' && $reason === '') {
+            redirect('?module=admin&action=pendingDocs');
+        }
+
+        $adminId = (int) ($_SESSION['user_id'] ?? 0);
+
+        $this->model->reviewDocument(
+            $documentId,
+            $adminId,
+            $action,
+            $reason !== '' ? $reason : null
+        );
+
         redirect('?module=admin&action=pendingDocs');
     }
 
@@ -148,15 +260,36 @@ class AdminController
     {
         Auth::requireAdmin();
         verifyCsrf();
-        // TODO: TV6 — set moderation_status='hidden', visibility='private', bắt buộc reason
+
+        $documentId = (int) ($_POST['document_id'] ?? 0);
+        $reason = trim($_POST['reason'] ?? '');
+
+        if ($documentId <= 0 || $reason === '') {
+            redirect('?module=admin&action=pendingDocs');
+        }
+
+        $adminId = (int) ($_SESSION['user_id'] ?? 0);
+
+        $this->model->reviewDocument(
+            $documentId,
+            $adminId,
+            'hidden',
+            $reason
+        );
+
         redirect('?module=admin&action=pendingDocs');
     }
 
     public function reports(): void
     {
         Auth::requireAdmin();
-        // TODO: TV6 — danh sách báo cáo, lọc theo trạng thái
+
+        $reports = $this->model->getReports();
+
         $pageTitle = 'Quản lý báo cáo';
+        $extraCss = ['admin.css'];
+        $extraJs = ['admin.js'];
+
         require_once BASE_PATH . '/app/modules/admin/views/reports.php';
     }
 
@@ -164,7 +297,28 @@ class AdminController
     {
         Auth::requireAdmin();
         verifyCsrf();
-        // TODO: TV6 — đánh dấu resolved hoặc dismissed, ghi resolution_note
+
+        $reportId = (int) ($_POST['report_id'] ?? 0);
+        $status = $_POST['status'] ?? '';
+        $resolutionNote = trim($_POST['resolution_note'] ?? '');
+
+        if ($reportId <= 0) {
+            redirect('?module=admin&action=reports');
+        }
+
+        if (!in_array($status, ['resolved', 'dismissed'], true)) {
+            redirect('?module=admin&action=reports');
+        }
+
+        $adminId = (int) ($_SESSION['user_id'] ?? 0);
+
+        $this->model->handleReport(
+            $reportId,
+            $adminId,
+            $status,
+            $resolutionNote !== '' ? $resolutionNote : null
+        );
+
         redirect('?module=admin&action=reports');
     }
 
@@ -172,7 +326,34 @@ class AdminController
     {
         Auth::requireAdmin();
         verifyCsrf();
-        // TODO: TV6 — ẩn câu hỏi / câu trả lời / bình luận (set status='hidden')
-        redirect($_SERVER['HTTP_REFERER'] ?? url('?module=admin&action=reports'));
+
+        $type = $_POST['type'] ?? '';
+        $id = (int) ($_POST['id'] ?? 0);
+
+        if ($id <= 0) {
+            redirect(
+                $_SERVER['HTTP_REFERER']
+                ?? url('?module=admin&action=reports')
+            );
+        }
+
+        switch ($type) {
+            case 'question':
+                $this->model->hideQuestion($id);
+                break;
+
+            case 'answer':
+                $this->model->hideAnswer($id);
+                break;
+
+            case 'comment':
+                $this->model->hideComment($id);
+                break;
+        }
+
+        redirect(
+            $_SERVER['HTTP_REFERER']
+            ?? url('?module=admin&action=reports')
+        );
     }
 }
