@@ -1,0 +1,343 @@
+/*
+ * AUTH.CSS — Style riêng cho module xác thực (Đăng nhập / Đăng ký / Hồ sơ)
+ * Phụ trách: TV1
+ *
+ * Kế thừa toàn bộ biến màu và font từ main.css.
+ * Chỉ định nghĩa các component đặc thù của trang auth.
+ */
+
+/* ============================================================
+   1. AUTH PAGE LAYOUT — Căn giữa dọc + ngang (login/register)
+   ============================================================ */
+.auth-page {
+    min-height: calc(100vh - 140px);
+    /* trừ header + footer xấp xỉ */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    background-color: var(--color-bg);
+}
+
+/* Card khung auth */
+.auth-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    width: 100%;
+    max-width: 420px;
+    padding: 2.25rem 2rem;
+}
+
+/* Card rộng hơn cho trang đăng ký (4 trường) */
+.auth-card-wide {
+    max-width: 460px;
+}
+
+/* ============================================================
+   2. BRAND / LOGO KHU VỰC TRÊN AUTH CARD
+   ============================================================ */
+.auth-brand {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.auth-brand-icon {
+    width: 44px;
+    height: 44px;
+    background: var(--color-primary);
+    color: #fff;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.auth-brand-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+    letter-spacing: -0.02em;
+}
+
+.auth-title {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0.75rem 0 0.25rem;
+}
+
+.auth-subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* ============================================================
+   3. FORM INPUT — Icon bên trái, toggle hiện mật khẩu
+   ============================================================ */
+
+/* Icon prefix cho input-group */
+.auth-input-icon {
+    background: var(--color-primary-light);
+    border-color: var(--color-border);
+    color: var(--color-primary);
+    font-size: 0.9rem;
+    border-right: none;
+    min-width: 38px;
+    justify-content: center;
+}
+
+/* Override Bootstrap: loại bỏ border trái nhọn của input khi có input-group-text */
+.input-group .auth-input-icon+.form-control {
+    border-left: none;
+}
+
+.input-group .auth-input-icon+.form-control:focus {
+    border-color: var(--color-primary-border);
+    box-shadow: 0 0 0 0.2rem rgba(11, 118, 110, 0.15);
+    border-left: none;
+}
+
+/* Nút hiện/ẩn mật khẩu */
+.auth-toggle-pw {
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-left: none;
+    color: var(--color-text-light);
+    padding: 0.375rem 0.75rem;
+    border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+    transition: color var(--transition);
+    line-height: 1;
+}
+
+.auth-toggle-pw:hover {
+    color: var(--color-primary);
+    background: var(--color-primary-light);
+}
+
+/* ============================================================
+   4. NÚT SUBMIT AUTH
+   ============================================================ */
+.auth-btn-submit {
+    font-weight: 600;
+    font-size: 0.9375rem;
+    padding: 0.6rem 1.25rem;
+    border-radius: var(--border-radius);
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    transition: background-color var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+
+.auth-btn-submit:hover,
+.auth-btn-submit:focus {
+    background-color: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+    box-shadow: 0 0 0 0.2rem rgba(11, 118, 110, 0.25);
+}
+
+/* ============================================================
+   5. DIVIDER "HOẶC"
+   ============================================================ */
+.auth-divider {
+    position: relative;
+    text-align: center;
+    margin: 1.25rem 0;
+}
+
+.auth-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--color-border);
+}
+
+.auth-divider span {
+    position: relative;
+    background: var(--color-surface);
+    padding: 0 0.75rem;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-light);
+}
+
+/* ============================================================
+   6. SWITCH TEXT (Chưa có tài khoản? / Đã có tài khoản?)
+   ============================================================ */
+.auth-switch-text {
+    text-align: center;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+.auth-switch-text a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.auth-switch-text a:hover {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
+}
+
+/* ============================================================
+   7. THANH ĐỘ MẠNH MẬT KHẨU
+   ============================================================ */
+.password-strength {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.password-strength-track {
+    flex: 1;
+    height: 4px;
+    background: var(--color-border);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.password-strength-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 99px;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    background-color: var(--color-border);
+}
+
+.password-strength-fill.strength-weak {
+    width: 25%;
+    background-color: var(--color-danger);
+}
+
+.password-strength-fill.strength-fair {
+    width: 50%;
+    background-color: var(--color-warning);
+}
+
+.password-strength-fill.strength-good {
+    width: 75%;
+    background-color: var(--color-info);
+}
+
+.password-strength-fill.strength-strong {
+    width: 100%;
+    background-color: var(--color-success);
+}
+
+.password-strength-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    white-space: nowrap;
+    min-width: 48px;
+    color: var(--color-text-muted);
+}
+
+/* ============================================================
+   8. PROFILE — AVATAR
+   ============================================================ */
+.profile-avatar-wrap {
+    position: relative;
+    width: 96px;
+    height: 96px;
+}
+
+.profile-avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--color-primary-light);
+    display: block;
+}
+
+.profile-avatar-placeholder {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    font-size: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid var(--color-primary-light);
+}
+
+/* ============================================================
+   9. PROFILE — UPLOAD AVATAR
+   ============================================================ */
+.profile-upload-area {
+    border: 2px dashed var(--color-border);
+    border-radius: var(--border-radius);
+    padding: 1.5rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color var(--transition), background-color var(--transition);
+    position: relative;
+    background: var(--color-bg);
+}
+
+.profile-upload-area:hover,
+.profile-upload-area.drag-over {
+    border-color: var(--color-primary-border);
+    background: var(--color-primary-light);
+}
+
+/* Ẩn input file gốc, thay bằng giao diện tùy chỉnh */
+.profile-upload-input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.profile-upload-body {
+    pointer-events: none;
+    /* Nhấn vào body vẫn trigger input */
+}
+
+.profile-upload-body label {
+    pointer-events: auto;
+}
+
+/* Thông tin file đã chọn */
+.profile-file-info {
+    display: flex;
+    align-items: center;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    background: var(--color-primary-light);
+    border-radius: var(--border-radius-sm);
+    padding: 0.375rem 0.75rem;
+}
+
+/* ============================================================
+   10. RESPONSIVE
+   ============================================================ */
+@media (max-width: 575.98px) {
+
+    .auth-card,
+    .auth-card-wide {
+        padding: 1.5rem 1.25rem;
+        border-radius: var(--border-radius);
+        box-shadow: none;
+        border: none;
+        background: transparent;
+    }
+
+    .auth-page {
+        align-items: flex-start;
+        padding: 1rem;
+    }
+}

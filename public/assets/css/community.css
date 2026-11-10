@@ -1,0 +1,399 @@
+/* ============================================================
+   COMMUNITY.CSS — Giao diện phân hệ Cộng đồng StudyHub
+   Phong cách chuẩn tailieu.vn & Tuân thủ QUY_CHUAN_THIET_KE_UI.md
+   ============================================================ */
+
+/* --- Hero Search Box (Phong cách tailieu.vn) --- */
+.community-hero {
+    background: #f8fafc;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-lg);
+    padding: 2rem 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.community-hero-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 0.5rem;
+}
+
+.community-hero-subtitle {
+    color: var(--color-text-muted);
+    font-size: 0.9375rem;
+    margin-bottom: 1.25rem;
+    max-width: 680px;
+}
+
+.community-search-box {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-lg);
+    padding: 0.35rem 0.6rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.community-search-box .form-control {
+    border: none;
+    box-shadow: none;
+    font-size: 0.9375rem;
+    color: var(--color-text);
+}
+
+.community-search-box .form-control:focus {
+    box-shadow: none;
+}
+
+/* --- Sidebar Box (tailieu.vn style) --- */
+.community-sidebar-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-lg);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.community-sidebar-header {
+    padding: 0.75rem 1.15rem;
+    border-bottom: 1px solid var(--color-border);
+    background-color: #fafbfc;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.community-subject-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.65rem 1.15rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--color-text);
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: background-color var(--transition), color var(--transition);
+}
+
+.community-subject-item:last-child {
+    border-bottom: none;
+}
+
+.community-subject-item:hover,
+.community-subject-item.active {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary-dark);
+    font-weight: 500;
+}
+
+.community-subject-count {
+    font-size: 0.75rem;
+    background: #edf2f7;
+    color: var(--color-text-muted);
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--border-radius-pill);
+}
+
+.community-subject-item.active .community-subject-count {
+    background: var(--color-primary);
+    color: #ffffff;
+}
+
+/* --- Document Card Grid (tailieu.vn Book Card Style) --- */
+.tailieu-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-lg);
+    padding: 1rem;
+    display: flex;
+    gap: 1.15rem;
+    margin-bottom: 1rem;
+    transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+    position: relative;
+}
+
+.tailieu-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-primary-border, #bfdbfe);
+}
+
+/* Book Cover Thumbnail mô phỏng trang tài liệu tailieu.vn */
+.tailieu-thumb-book {
+    width: 64px;
+    height: 84px;
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.tailieu-thumb-book::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: #dc2626;
+}
+
+.tailieu-thumb-book .pdf-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: #dc2626;
+    color: #fff;
+    font-size: 0.625rem;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 2px;
+}
+
+.tailieu-thumb-book i {
+    font-size: 1.85rem;
+    color: #dc2626;
+    margin-top: 6px;
+}
+
+.tailieu-card-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.tailieu-card-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--color-text);
+    line-height: 1.4;
+    margin-bottom: 0.35rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-decoration: none;
+    transition: color var(--transition);
+}
+
+.tailieu-card-title:hover {
+    color: var(--color-primary);
+}
+
+.tailieu-card-desc {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    margin-bottom: 0.65rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.tailieu-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.85rem;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+}
+
+.tailieu-card-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+/* --- Document Detail Show Page (tailieu.vn style) --- */
+.tailieu-breadcrumb {
+    font-size: 0.85rem;
+    margin-bottom: 1.25rem;
+}
+
+.tailieu-breadcrumb .breadcrumb-item a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+}
+
+.tailieu-breadcrumb .breadcrumb-item a:hover {
+    color: var(--color-primary);
+}
+
+.tailieu-detail-box {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.tailieu-detail-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--color-text);
+    line-height: 1.35;
+    margin-bottom: 0.85rem;
+}
+
+.tailieu-metric-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-top: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    margin-bottom: 1.25rem;
+}
+
+.tailieu-action-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Online PDF Reader Box */
+.tailieu-reader-wrapper {
+    background: #474b4e;
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+}
+
+.tailieu-reader-toolbar {
+    background: #323639;
+    color: #e2e8f0;
+    padding: 0.65rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+}
+
+.tailieu-reader-frame {
+    width: 100%;
+    height: 700px;
+    border: none;
+    display: block;
+    background: #ffffff;
+}
+
+/* Tóm tắt & Trích đoạn nội dung */
+.tailieu-content-box {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.tailieu-content-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    border-left: 3px solid var(--color-primary);
+    padding-left: 0.65rem;
+    margin-bottom: 1rem;
+}
+
+.tailieu-text-body {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--color-text);
+}
+
+/* Sidebar Specifications Card */
+.tailieu-spec-table td {
+    padding: 0.55rem 0;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.tailieu-spec-table tr:last-child td {
+    border-bottom: none;
+}
+
+.tailieu-spec-table .spec-label {
+    color: var(--color-text-muted);
+    width: 45%;
+}
+
+.tailieu-spec-table .spec-value {
+    color: var(--color-text);
+    font-weight: 500;
+    text-align: right;
+}
+
+/* Mini Related Documents */
+.tailieu-related-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f1f5f9;
+    text-decoration: none;
+    color: var(--color-text);
+}
+
+.tailieu-related-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.tailieu-related-thumb {
+    width: 42px;
+    height: 56px;
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #dc2626;
+    flex-shrink: 0;
+    font-size: 1.25rem;
+}
+
+.tailieu-related-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.tailieu-related-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+}
+
+.tailieu-related-item:hover .tailieu-related-title {
+    color: var(--color-primary);
+}
+
+.tailieu-related-meta {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    display: flex;
+    justify-content: space-between;
+}
