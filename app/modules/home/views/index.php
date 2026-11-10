@@ -13,10 +13,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
 
 <div class="container py-4">
 
-    <!-- ============================================================
-         1. HERO BANNER CHUẨN KHOTAILIEUSINHVIEN.COM
-         "Kho Học Liệu Rõ Ràng Cho Hành Trình Đại Học"
-         ============================================================ -->
     <div class="card border-0 rounded-4 shadow-sm p-4 p-md-5 mb-4 text-white position-relative overflow-hidden" 
          style="background: linear-gradient(135deg, #075e57 0%, #0b766e 60%, #115e59 100%);">
 
