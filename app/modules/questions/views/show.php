@@ -19,6 +19,7 @@ $avatar = function (?string $path, string $name): string {
     return '<i class="bi bi-person-circle fs-4 text-secondary"></i>';
 };
 ?>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.css">
 <div class="container py-4">
 
     <nav aria-label="breadcrumb" class="mb-3">
@@ -52,7 +53,7 @@ $avatar = function (?string $path, string $name): string {
         </div>
 
         <!-- Hiển thị an toàn: escape HTML rồi mới đổi xuống dòng -->
-        <div class="q-body mb-3"><?= nl2br(h($question['content'])) ?></div>
+        <div class="q-body md-render mb-3"><?= h($question['content']) ?></div>
 
         <?php if ($images): ?>
             <?php if (Auth::check()): ?>
@@ -108,10 +109,10 @@ $avatar = function (?string $path, string $name): string {
         ?>
         <article id="answer-<?= $aid ?>" class="card card-body <?= $isAccept ? 'q-answer-accepted' : '' ?>">
             <?php if ($isAccept): ?>
-                <div class="text-success fw-semibold mb-2"><i class="bi bi-check-circle-fill"></i> Câu trả lời được chấp nhận</div>
+                <div class="mb-2"><span class="badge bg-success">✔ Đã được giải đáp</span></div>
             <?php endif; ?>
 
-            <div class="q-body mb-3"><?= nl2br(h($a['content'])) ?></div>
+            <div class="q-body md-render mb-3"><?= h($a['content']) ?></div>
 
             <div class="d-flex flex-wrap align-items-center gap-2">
                 <?= $avatar($a['author_avatar'], $a['author_name']) ?>
@@ -125,9 +126,9 @@ $avatar = function (?string $path, string $name): string {
                             <input type="hidden" name="question_id" value="<?= $qid ?>">
                             <input type="hidden" name="answer_id" value="<?= $aid ?>">
                             <?php if ($isAccept): ?>
-                                <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-x-circle"></i> Bỏ chấp nhận</button>
+                                <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-x-circle"></i> Bỏ đánh dấu</button>
                             <?php else: ?>
-                                <button class="btn btn-sm btn-outline-success"><i class="bi bi-check-circle"></i> Chấp nhận</button>
+                                <button class="btn btn-sm btn-outline-success"><i class="bi bi-check-circle"></i> Đánh dấu câu trả lời đúng</button>
                             <?php endif; ?>
                         </form>
                     <?php endif; ?>
@@ -163,7 +164,7 @@ $avatar = function (?string $path, string $name): string {
                         <?php csrfField(); ?>
                         <input type="hidden" name="question_id" value="<?= $qid ?>">
                         <input type="hidden" name="answer_id" value="<?= $aid ?>">
-                        <textarea name="content" rows="5" class="form-control mb-2" required><?= h($a['content']) ?></textarea>
+                        <textarea name="content" rows="5" class="form-control md-editor mb-2"><?= h($a['content']) ?></textarea>
                         <button class="btn btn-sm btn-primary">Lưu</button>
                     </form>
                 </div>
@@ -179,7 +180,7 @@ $avatar = function (?string $path, string $name): string {
             <form method="post" action="<?= url('?module=questions&action=answer') ?>">
                 <?php csrfField(); ?>
                 <input type="hidden" name="question_id" value="<?= $qid ?>">
-                <textarea name="content" rows="6" class="form-control mb-2" required
+                <textarea name="content" rows="6" class="form-control md-editor mb-2"
                           placeholder="Viết câu trả lời của bạn..."></textarea>
                 <button class="btn btn-primary"><i class="bi bi-send me-1"></i> Đăng trả lời</button>
             </form>
@@ -224,5 +225,10 @@ $avatar = function (?string $path, string $name): string {
 </div>
 <?php endif; ?>
 </div>
+
+<!-- Thư viện Editor + hiển thị Markdown (nạp trước questions.js ở footer) -->
+<script src="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 
 <?php require_once BASE_PATH . '/app/views/layouts/footer.php'; ?>
