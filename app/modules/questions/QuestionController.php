@@ -25,14 +25,15 @@
  *   - Xóa câu hỏi: soft delete (deleted_at), cần kiểm tra không làm hỏng accepted_answer_id
  *
  * Về nội dung câu hỏi / câu trả lời:
- *   Lưu dạng văn bản thuần. Khi hiển thị luôn dùng nl2br(h($text)) nên không thể
- *   chèn HTML/JS (chống XSS). Nếu sau này đổi sang editor HTML (Quill...) thì
- *   BẮT BUỘC lọc HTML an toàn trước khi lưu hoặc trước khi hiển thị.
+ *   Soạn bằng editor Markdown (EasyMDE), lưu dạng văn bản Markdown thuần trong DB.
+ *   Khi hiển thị, view luôn escape bằng h() trước, rồi questions.js dùng marked.js
+ *   đổi sang HTML và lọc bằng DOMPurify (chống XSS). Không echo nội dung thô
+ *   ra HTML mà không qua h().
  */
 
 require_once BASE_PATH . '/app/modules/questions/QuestionModel.php';
 
-class QuestionsController
+class QuestionController
 {
     private QuestionModel $model;
 

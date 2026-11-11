@@ -32,17 +32,33 @@ $hasFilter = $filters['q'] !== '' || $filters['subject_id'] || $filters['tag_id'
         <?php endif; ?>
     </div>
 
+    <!-- TAB LỌC THEO TRẠNG THÁI -->
+    <ul class="nav nav-tabs q-tabs mb-3">
+        <?php
+        $tabs = ['' => 'Tất cả câu hỏi', 'unanswered' => 'Chưa được giải đáp', 'answered' => 'Đã có câu trả lời đúng'];
+        foreach ($tabs as $val => $label):
+            $qs = $baseQuery;
+            if ($val === '') unset($qs['status']); else $qs['status'] = $val;
+        ?>
+            <li class="nav-item">
+                <a class="nav-link <?= $filters['status'] === $val ? 'active' : '' ?>"
+                   href="<?= url('?' . http_build_query($qs)) ?>"><?= h($label) ?></a>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+
     <!-- BỘ LỌC -->
     <form method="get" action="<?= url('/') ?>" class="card card-body mb-4 q-filter">
         <input type="hidden" name="module" value="questions">
         <input type="hidden" name="action" value="index">
+        <input type="hidden" name="status" value="<?= h($filters['status']) ?>">
         <div class="row g-2 align-items-end">
             <div class="col-lg-4">
                 <label class="form-label small mb-1" for="f-q">Từ khóa</label>
                 <input type="search" id="f-q" name="q" class="form-control"
                        placeholder="Tìm theo tiêu đề, nội dung..." value="<?= h($filters['q']) ?>">
             </div>
-            <div class="col-6 col-lg-2">
+            <div class="col-6 col-lg-3">
                 <label class="form-label small mb-1" for="f-subject">Môn học</label>
                 <select id="f-subject" name="subject" class="form-select">
                     <option value="">Tất cả</option>
@@ -53,7 +69,7 @@ $hasFilter = $filters['q'] !== '' || $filters['subject_id'] || $filters['tag_id'
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="col-6 col-lg-2">
+            <div class="col-6 col-lg-3">
                 <label class="form-label small mb-1" for="f-tag">Từ khóa gắn</label>
                 <select id="f-tag" name="tag" class="form-select">
                     <option value="">Tất cả</option>
@@ -64,15 +80,7 @@ $hasFilter = $filters['q'] !== '' || $filters['subject_id'] || $filters['tag_id'
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="col-6 col-lg-2">
-                <label class="form-label small mb-1" for="f-status">Trạng thái</label>
-                <select id="f-status" name="status" class="form-select">
-                    <option value="">Tất cả</option>
-                    <option value="answered"   <?= $filters['status'] === 'answered'   ? 'selected' : '' ?>>Đã có đáp án</option>
-                    <option value="unanswered" <?= $filters['status'] === 'unanswered' ? 'selected' : '' ?>>Chưa có đáp án</option>
-                </select>
-            </div>
-            <div class="col-6 col-lg-2 d-flex gap-2">
+            <div class="col-12 col-lg-2 d-flex gap-2">
                 <button class="btn btn-primary flex-grow-1" type="submit"><i class="bi bi-search"></i> Lọc</button>
                 <?php if ($hasFilter): ?>
                     <a class="btn btn-outline-secondary" href="<?= url('?module=questions&action=index') ?>" title="Xóa bộ lọc">
@@ -114,7 +122,9 @@ $hasFilter = $filters['q'] !== '' || $filters['subject_id'] || $filters['tag_id'
                                 <span class="badge bg-success ms-1"><i class="bi bi-check-lg"></i> Đã có đáp án</span>
                             <?php endif; ?>
                         </h2>
-                        <p class="text-muted mb-2 text-truncate-2"><?= h(mb_strimwidth($q['content'], 0, 220, '…')) ?></p>
+                        <p class="text-muted small mb-2">
+                            <?= h(mb_strimwidth(preg_replace('/[#*_`>~\[\]]+/u', '', $q['content']), 0, 220, '…')) ?>
+                        </p>
                         <div class="d-flex flex-wrap align-items-center gap-2">
                             <a class="badge badge-tag"
                                href="<?= url('?module=questions&action=index&subject=' . (int) $q['subject_id']) ?>">
@@ -135,7 +145,7 @@ $hasFilter = $filters['q'] !== '' || $filters['subject_id'] || $filters['tag_id'
         </div>
 
         <!-- PHÂN TRANG -->
-        <!-- <?php if ($pg['pages'] > 1): ?>
+        <?php if ($pg['pages'] > 1): ?>
             <nav class="mt-4" aria-label="Phân trang">
                 <ul class="pagination justify-content-center flex-wrap">
                     <?php for ($p = 1; $p <= $pg['pages']; $p++): ?>
@@ -146,7 +156,7 @@ $hasFilter = $filters['q'] !== '' || $filters['subject_id'] || $filters['tag_id'
                 </ul>
             </nav>
         <?php endif; ?>
-    <?php endif; ?> -->
+    <?php endif; ?>
 
 </div>
 
