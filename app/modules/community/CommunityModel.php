@@ -1,4 +1,5 @@
 <?php
+
 /**
  * COMMUNITYMODEL.PHP — Truy vấn database phân hệ Cộng đồng & Chia sẻ tài liệu
  * Phụ trách: TV3
@@ -140,6 +141,17 @@ class CommunityModel
         );
         $stmt->execute([':id' => $id]);
         return $stmt->fetch();
+    }
+
+    /**
+     * Tăng lượt tải của tài liệu.
+     */
+    public function incrementDownloadCount(int $documentId): void
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE documents SET download_count = download_count + 1 WHERE id = :id"
+        );
+        $stmt->execute([':id' => $documentId]);
     }
 
     /**
