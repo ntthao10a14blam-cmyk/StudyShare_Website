@@ -107,6 +107,85 @@ class CommunityController
     }
 
     /**
+     * Tải xuống tài liệu công khai đã được duyệt.
+     */
+    public function download(): void
+    {
+        $id = (int) get('id', 0);
+        $document = $id > 0 ? $this->model->getDocumentById($id) : false;
+
+        if (
+            !$document
+            || $document['visibility'] !== 'public'
+            || $document['moderation_status'] !== 'approved'
+        ) {
+            http_response_code(404);
+            exit('Không tìm thấy tài liệu.');
+        }
+
+        $relativePath = str_replace('\\', '/', (string) $document['file_path']);
+        if (str_starts_with($relativePath, 'documents/')) {
+            $relativePath = substr($relativePath, strlen('documents/'));
+        }
+
+        if (
+            $relativePath === ''
+            || str_contains($relativePath, '..')
+            || str_contains($relativePath, "\0")
+            || basename($relativePath) !== $relativePath
+            || strtolower(pathinfo($relativePath, PATHINFO_EXTENSION)) !== 'pdf'
+        ) {
+            http_response_code(404);
+            exit('Không tìm thấy tài liệu.');
+        }
+
+        $documentsDirectory = realpath(STORAGE_DOCUMENTS);
+        $filePath = $documentsDirectory === false
+            ? false
+            : realpath($documentsDirectory . DIRECTORY_SEPARATOR . $relativePath);
+
+        if (
+            $documentsDirectory === false
+            || $filePath === false
+            || !is_file($filePath)
+            || !str_starts_with($filePath, $documentsDirectory . DIRECTORY_SEPARATOR)
+        ) {
+            http_response_code(404);
+            exit('Không tìm thấy tài liệu.');
+        }
+
+        $file = fopen($filePath, 'rb');
+        if ($file === false) {
+            http_response_code(404);
+            exit('Không thể đọc tài liệu.');
+        }
+
+        $this->model->incrementDownloadCount($id);
+
+        $downloadName = basename(str_replace('\\', '/', (string) $document['original_file_name']));
+        $downloadName = str_replace(["\r", "\n"], '', $downloadName);
+        if ($downloadName === '') {
+            $downloadName = 'document-' . $id . '.pdf';
+        }
+        $fallbackName = preg_replace('/[^A-Za-z0-9._-]/', '_', $downloadName);
+        if ($fallbackName === '') {
+            $fallbackName = 'document-' . $id . '.pdf';
+        }
+
+        header('Content-Type: application/pdf');
+        header(
+            'Content-Disposition: attachment; filename="' . $fallbackName
+            . '"; filename*=UTF-8\'\'' . rawurlencode($downloadName)
+        );
+        header('X-Content-Type-Options: nosniff');
+        header('Cache-Control: private, no-store');
+
+        fpassthru($file);
+        fclose($file);
+        exit;
+    }
+
+    /**
      * Thêm bình luận
      */
     public function comment(): void

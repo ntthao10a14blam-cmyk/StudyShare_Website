@@ -32,7 +32,7 @@ if (!str_starts_with($docFilePath, 'documents/')) {
     $docFilePath = 'documents/' . $docFilePath;
 }
 $serveUrl    = 'serve.php?file=' . urlencode($docFilePath);
-$downloadUrl = 'serve.php?file=' . urlencode($docFilePath) . '&download=1';
+$downloadUrl = url('?module=community&action=download&id=' . (int) $document['id']);
 ?>
 
 <div class="container py-4">
