@@ -31,7 +31,7 @@ $docFilePath = $document['file_path'];
 if (!str_starts_with($docFilePath, 'documents/')) {
     $docFilePath = 'documents/' . $docFilePath;
 }
-$serveUrl    = 'serve.php?file=' . urlencode($docFilePath);
+$serveUrl    = storageUrl($docFilePath);
 $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id']);
 ?>
 
@@ -146,13 +146,13 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
                 <div class="tailieu-reader-toolbar">
                     <div class="d-flex align-items-center gap-2">
                         <i class="bi bi-file-pdf text-danger fs-5"></i>
-                        <span class="text-truncate fw-medium" style="max-width: 480px;">
+                        <span class="text-truncate fw-medium tailieu-reader-filename">
                             <?= h($document['original_file_name'] ?? $document['title']) ?>
                         </span>
                     </div>
                     <div>
                         <a href="<?= $serveUrl ?>" target="_blank" 
-                           class="btn btn-sm btn-outline-light py-0 px-2" style="font-size: 0.8125rem;">
+                           rel="noopener" class="btn btn-sm btn-outline-primary py-0 px-2">
                             <i class="bi bi-arrows-fullscreen me-1"></i> Phóng to
                         </a>
                     </div>
@@ -161,13 +161,13 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
                 <!-- Trình xem PDF hoặc Hộp nhắc đăng nhập -->
                 <?php if ($isLoggedIn): ?>
                     <iframe src="<?= $serveUrl ?>" 
-                            class="tailieu-reader-frame" title="Xem trực tuyến tài liệu">
+                            class="tailieu-reader-frame" title="Xem trước PDF: <?= h($document['title']) ?>">
                     </iframe>
                 <?php else: ?>
-                    <div class="p-5 text-center bg-white text-muted">
+                    <div class="tailieu-reader-login text-center">
                         <i class="bi bi-file-earmark-lock display-4 text-warning mb-3 d-block"></i>
                         <h5 class="fw-bold text-dark mb-2">Tài liệu phục vụ học tập sinh viên StudyHub</h5>
-                        <p class="small text-muted mb-3" style="max-width: 460px; margin: 0 auto;">
+                        <p class="small text-muted mb-3 tailieu-reader-login-copy">
                             Theo quy chuẩn bảo mật học liệu của hệ thống, vui lòng đăng nhập tài khoản để đọc toàn bộ tài liệu trực tuyến và tải file về máy.
                         </p>
                         <a href="<?= url('?module=auth&action=login') ?>" class="btn btn-primary btn-sm px-4 fw-medium">
@@ -186,10 +186,12 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
                     <div class="row g-3">
                         <?php foreach ($images as $img): ?>
                             <div class="col-md-6">
-                                <div class="border rounded p-1 bg-light">
-                                    <a href="serve.php?file=<?= urlencode($img['image_path']) ?>" target="_blank">
-                                        <img src="serve.php?file=<?= urlencode($img['image_path']) ?>" 
-                                             alt="Trang xem trước" class="img-fluid rounded" loading="lazy">
+                                <div class="tailieu-preview-card">
+                                    <a href="<?= h(storageUrl($img['image_path'])) ?>" target="_blank" rel="noopener"
+                                       aria-label="Mở ảnh minh họa kích thước đầy đủ">
+                                        <img src="<?= h(storageUrl($img['image_path'])) ?>"
+                                             alt="Ảnh minh họa tài liệu: <?= h($document['title']) ?>"
+                                             class="tailieu-preview-image" loading="lazy">
                                     </a>
                                 </div>
                             </div>
