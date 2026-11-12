@@ -8,6 +8,14 @@ require_once BASE_PATH . '/app/modules/community/CommunityModel.php';
 
 class CommunityController
 {
+    private const REPORT_REASONS = [
+        'Spam / quảng cáo',
+        'Sai chuyên môn / thông tin không chính xác',
+        'Nội dung nhạy cảm hoặc không phù hợp',
+        'Vi phạm bản quyền',
+        'Lý do khác',
+    ];
+
     private CommunityModel $model;
 
     public function __construct()
@@ -102,6 +110,7 @@ class CommunityController
         $pageDescription = !empty($document['description']) 
             ? mb_substr(strip_tags($document['description']), 0, 160) . '...' 
             : 'Tài liệu học tập ' . $document['title'];
+        $reportReasons = self::REPORT_REASONS;
 
         require_once BASE_PATH . '/app/modules/community/views/show.php';
     }
@@ -271,28 +280,51 @@ class CommunityController
         Auth::requireActiveUser();
         verifyCsrf();
 
-        $reason     = trim((string) post('reason', ''));
-        $details    = trim((string) post('details', ''));
-        $documentId = (int) post('document_id', 0);
-        $commentId  = (int) post('comment_id', 0);
+        $targetType = (string) post('target_type', '');
+        $targetId   = (int) post('target_id', 0);
+        $reason     = (string) post('reason', '');
+        $details    = mb_substr(trim((string) post('details', '')), 0, 1000);
 
-        if (empty($reason)) {
-            $redirectUrl = $_SERVER['HTTP_REFERER'] ?? url('?module=community&action=index');
-            redirect($redirectUrl, 'Vui lòng chọn lý do báo cáo.', 'error');
+        if (!in_array($targetType, ['document', 'comment'], true) || $targetId <= 0) {
+            redirect('?module=community&action=index', 'Đối tượng báo cáo không hợp lệ.', 'error');
+        }
+
+        if ($targetType === 'document') {
+            $document = $this->model->getDocumentById($targetId);
+            if (!$document) {
+                redirect('?module=community&action=index', 'Không tìm thấy tài liệu cần báo cáo.', 'error');
+            }
+            $documentId = $targetId;
+            $commentId = null;
+        } else {
+            $comment = $this->model->getCommentById($targetId);
+            if (!$comment) {
+                redirect('?module=community&action=index', 'Không tìm thấy bình luận cần báo cáo.', 'error');
+            }
+            $documentId = (int) $comment['document_id'];
+            $commentId = $targetId;
+        }
+
+        if (!in_array($reason, self::REPORT_REASONS, true)) {
+            redirect('?module=community&action=show&id=' . $documentId, 'Vui lòng chọn lý do báo cáo hợp lệ.', 'error');
         }
 
         $reportData = [
             'reason'      => $reason,
             'details'     => $details,
-            'document_id' => $documentId > 0 ? $documentId : null,
-            'comment_id'  => $commentId > 0 ? $commentId : null,
+            'document_id' => $documentId,
+            'comment_id'  => $commentId,
             'reporter_id' => (int) Auth::id(),
         ];
 
         $this->model->createReport($reportData);
 
-        $redirectUrl = $_SERVER['HTTP_REFERER'] ?? url('?module=community&action=index');
-        redirect($redirectUrl, 'Cảm ơn bạn đã gửi báo cáo. Ban quản trị sẽ sớm xem xét.', 'success');
+        $anchor = $targetType === 'comment' ? '#comments' : '';
+        redirect(
+            '?module=community&action=show&id=' . $documentId . $anchor,
+            'Cảm ơn bạn đã gửi báo cáo. Ban quản trị sẽ sớm xem xét.',
+            'success'
+        );
     }
 
     /**

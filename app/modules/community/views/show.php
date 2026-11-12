@@ -133,9 +133,12 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
 
                     <!-- Nút Báo cáo vi phạm -->
                     <?php if ($isLoggedIn): ?>
-                        <button type="button" class="btn btn-light-subtle text-danger ms-auto" 
-                                data-bs-toggle="modal" data-bs-target="#reportDocModal">
-                            <i class="bi bi-flag me-1"></i> Báo cáo
+                        <button type="button" class="btn btn-light-subtle text-danger ms-auto btn-report-target"
+                                data-bs-toggle="modal" data-bs-target="#reportModal"
+                                data-report-type="document"
+                                data-report-id="<?= (int) $document['id'] ?>"
+                                data-report-label="tài liệu này">
+                            <i class="bi bi-flag me-1"></i> Báo cáo vi phạm
                         </button>
                     <?php endif; ?>
                 </div>
@@ -321,8 +324,11 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
 
                                                 <?php if ($isLoggedIn): ?>
                                                     <li>
-                                                        <button type="button" class="dropdown-item py-1 text-muted btn-report-comment"
-                                                                data-id="<?= (int) $comment['id'] ?>">
+                                                        <button type="button" class="dropdown-item py-1 text-muted btn-report-target"
+                                                                data-bs-toggle="modal" data-bs-target="#reportModal"
+                                                                data-report-type="comment"
+                                                                data-report-id="<?= (int) $comment['id'] ?>"
+                                                                data-report-label="bình luận này">
                                                             <i class="bi bi-flag me-2"></i>Báo cáo vi phạm
                                                         </button>
                                                     </li>
@@ -447,35 +453,34 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
 
 </div>
 
-<!-- MODAL BÁO CÁO VI PHẠM TÀI LIỆU -->
+<!-- MODAL BÁO CÁO VI PHẠM -->
 <?php if ($isLoggedIn): ?>
-<div class="modal fade" id="reportDocModal" tabindex="-1" aria-labelledby="reportDocModalLabel" aria-hidden="true">
+<div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <form action="<?= url('?module=community&action=report') ?>" method="POST" class="modal-content">
             <?php csrfField(); ?>
-            <input type="hidden" name="document_id" value="<?= (int) $document['id'] ?>">
+            <input type="hidden" name="target_type" id="report-type" value="">
+            <input type="hidden" name="target_id" id="report-id" value="">
 
             <div class="modal-header">
-                <h5 class="modal-title fs-6 fw-bold text-danger" id="reportDocModalLabel">
-                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Báo cáo vi phạm tài liệu
+                <h5 class="modal-title fs-6 fw-bold text-danger" id="reportModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Báo cáo <span id="report-label">nội dung này</span>
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label fw-medium">Lý do báo cáo: <span class="text-danger">*</span></label>
-                    <select name="reason" class="form-select" required>
+                    <label class="form-label fw-medium" for="report-reason">Lý do báo cáo: <span class="text-danger">*</span></label>
+                    <select name="reason" id="report-reason" class="form-select" required>
                         <option value="">-- Chọn lý do --</option>
-                        <option value="Vi phạm bản quyền sở hữu trí tuệ">Vi phạm bản quyền sở hữu trí tuệ</option>
-                        <option value="Tài liệu bị lỗi, hỏng hoặc không đúng nội dung">Tài liệu bị lỗi, hỏng hoặc không đúng nội dung</option>
-                        <option value="Chứa nội dung độc hại, lừa đảo hoặc mã độc">Chứa nội dung độc hại, lừa đảo hoặc mã độc</option>
-                        <option value="Nội dung phản cảm, vi phạm thuần phong mỹ tục">Nội dung phản cảm, vi phạm thuần phong mỹ tục</option>
-                        <option value="Lý do khác">Lý do khác</option>
+                        <?php foreach ($reportReasons as $reason): ?>
+                            <option value="<?= h($reason) ?>"><?= h($reason) ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-medium">Chi tiết phản ánh:</label>
-                    <textarea name="details" class="form-control" rows="3" 
+                    <label class="form-label fw-medium" for="report-details">Chi tiết phản ánh:</label>
+                    <textarea name="details" id="report-details" class="form-control" rows="3" maxlength="1000"
                               placeholder="Mô tả cụ thể sự việc để ban quản trị hỗ trợ giải quyết..."></textarea>
                 </div>
             </div>
@@ -531,39 +536,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    const reportCommentBtns = document.querySelectorAll('.btn-report-comment');
-    reportCommentBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const commentId = this.dataset.id;
-            const reason = prompt('Vui lòng nhập lý do báo cáo bình luận này:');
-            if (reason && reason.trim()) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '<?= url('?module=community&action=report') ?>';
+    const reportModal = document.getElementById('reportModal');
+    if (reportModal) {
+        reportModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            if (!button) return;
 
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = 'csrf_token';
-                csrfInput.value = '<?= csrfToken() ?>';
-                form.appendChild(csrfInput);
-
-                const cIdInput = document.createElement('input');
-                cIdInput.type = 'hidden';
-                cIdInput.name = 'comment_id';
-                cIdInput.value = commentId;
-                form.appendChild(cIdInput);
-
-                const rInput = document.createElement('input');
-                rInput.type = 'hidden';
-                rInput.name = 'reason';
-                rInput.value = reason;
-                form.appendChild(rInput);
-
-                document.body.appendChild(form);
-                form.submit();
-            }
+            document.getElementById('report-type').value = button.dataset.reportType;
+            document.getElementById('report-id').value = button.dataset.reportId;
+            document.getElementById('report-label').textContent = button.dataset.reportLabel;
+            document.getElementById('report-reason').value = '';
+            document.getElementById('report-details').value = '';
         });
-    });
+    }
 });
 </script>
 <?php endif; ?>
