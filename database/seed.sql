@@ -8,10 +8,10 @@ USE studyhub_db;
 
 -- 1. Tài khoản người dùng mẫu
 INSERT INTO users (id, full_name, email, password, role, status) VALUES
-(1, 'Quản Trị Viên', 'admin@studyhub.vn', '/.fduOJNdK5EB/AbfiNwF0fp7zjEzzUZ6DdC', 'admin', 'active'),
-(2, 'Nguyễn Văn An', 'user1@studyhub.vn', '/.fduOJNdK5EB/AbfiNwF0fp7zjEzzUZ6DdC', 'user', 'active'),
-(3, 'Trần Thị Bình', 'user2@studyhub.vn', '/.fduOJNdK5EB/AbfiNwF0fp7zjEzzUZ6DdC', 'user', 'active'),
-(4, 'Lê Hoàng Cường', 'user3@studyhub.vn', '/.fduOJNdK5EB/AbfiNwF0fp7zjEzzUZ6DdC', 'user', 'active')
+(1, 'Quản Trị Viên', 'admin@studyhub.vn', '$2y$10$eozmIFIVPDoknCzOU/.fduOJNdK5EB/AbfiNwF0fp7zjEzzUZ6DdC', 'admin', 'active'),
+(2, 'Nguyễn Văn An', 'user1@studyhub.vn', '$2y$10$eozmIFIVPDoknCzOU/.fduOJNdK5EB/AbfiNwF0fp7zjEzzUZ6DdC', 'user', 'active'),
+(3, 'Trần Thị Bình', 'user2@studyhub.vn', '$2y$10$eozmIFIVPDoknCzOU/.fduOJNdK5EB/AbfiNwF0fp7zjEzzUZ6DdC', 'user', 'active'),
+(4, 'Lê Hoàng Cường', 'user3@studyhub.vn', '$2y$10$eozmIFIVPDoknCzOU/.fduOJNdK5EB/AbfiNwF0fp7zjEzzUZ6DdC', 'user', 'active')
 ON DUPLICATE KEY UPDATE 
     password = VALUES(password), 
     role = VALUES(role), 
