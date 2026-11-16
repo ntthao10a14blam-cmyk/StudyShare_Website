@@ -1,159 +1,171 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    const modalButtons = document.querySelectorAll('[data-modal-open]');
-    const modalCloseButtons = document.querySelectorAll('[data-modal-close]');
-
-    modalButtons.forEach(function (button) {
+    // Mở hộp thoại
+    document.querySelectorAll('[data-modal-open]').forEach(function (button) {
         button.addEventListener('click', function () {
-            const modalId = button.getAttribute('data-modal-open');
+            const modalId = button.dataset.modalOpen;
             const modal = document.getElementById(modalId);
 
             if (modal) {
                 modal.classList.add('show');
-                document.body.style.overflow = 'hidden';
             }
         });
     });
 
-    modalCloseButtons.forEach(function (button) {
+    // Đóng hộp thoại
+    document.querySelectorAll('[data-modal-close]').forEach(function (button) {
         button.addEventListener('click', function () {
-            closeModal(button.closest('.admin-modal'));
+            const modal = button.closest('.admin-modal');
+
+            if (modal) {
+                modal.classList.remove('show');
+            }
         });
     });
 
+    // Đóng hộp thoại khi nhấn ra bên ngoài
     document.querySelectorAll('.admin-modal').forEach(function (modal) {
         modal.addEventListener('click', function (event) {
             if (event.target === modal) {
-                closeModal(modal);
+                modal.classList.remove('show');
             }
         });
     });
 
+    // Đóng hộp thoại bằng phím Escape
     document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape') {
             document.querySelectorAll('.admin-modal.show').forEach(function (modal) {
-                closeModal(modal);
+                modal.classList.remove('show');
             });
         }
     });
 
-    function closeModal(modal) {
-        if (!modal) return;
-
-        modal.classList.remove('show');
-        document.body.style.overflow = '';
-    }
-
-
+    // Hiển thị hộp thoại xác nhận trước khi thực hiện thao tác
     document.querySelectorAll('[data-confirm]').forEach(function (element) {
         element.addEventListener('click', function (event) {
+            const message = element.dataset.confirm;
 
-            const message =
-                element.getAttribute('data-confirm') ||
-                'Bạn có chắc chắn muốn thực hiện thao tác này?';
-
-            if (!confirm(message)) {
+            if (message && !confirm(message)) {
                 event.preventDefault();
             }
         });
     });
 
-
+    // Tìm kiếm dữ liệu trên bảng hiện tại
     document.querySelectorAll('[data-table-search]').forEach(function (input) {
-
-        const tableId = input.getAttribute('data-table-search');
-        const table = document.getElementById(tableId);
-
-        if (!table) return;
-
         input.addEventListener('input', function () {
+            const tableId = input.dataset.tableSearch;
+            const table = document.getElementById(tableId);
 
-            const keyword = input.value.toLowerCase().trim();
+            if (!table) return;
+
+            const keyword = input.value.trim().toLowerCase();
             const rows = table.querySelectorAll('tbody tr');
 
             rows.forEach(function (row) {
-
-                const text = row.textContent.toLowerCase();
-
-                if (text.includes(keyword)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
+                const content = row.textContent.toLowerCase();
+                row.style.display = content.includes(keyword) ? '' : 'none';
             });
         });
     });
 
+    // Lọc dữ liệu theo trạng thái
     document.querySelectorAll('[data-status-filter]').forEach(function (select) {
-
-        const tableId = select.getAttribute('data-status-filter');
-        const table = document.getElementById(tableId);
-
-        if (!table) return;
-
         select.addEventListener('change', function () {
+            const tableId = select.dataset.statusFilter;
+            const table = document.getElementById(tableId);
 
-            const value = select.value.toLowerCase();
+            if (!table) return;
+
+            const selectedStatus = select.value.toLowerCase();
             const rows = table.querySelectorAll('tbody tr');
 
             rows.forEach(function (row) {
-
-                if (value === '' || value === 'all') {
-                    row.style.display = '';
-                    return;
-                }
-
-                const status = row.querySelector('.status');
-
-                if (!status) {
-                    row.style.display = 'none';
-                    return;
-                }
-
-                const statusText = status.textContent
-                    .toLowerCase()
-                    .trim();
+                const rowStatus = (row.dataset.status || '').toLowerCase();
 
                 row.style.display =
-                    statusText.includes(value) ? '' : 'none';
+                    selectedStatus === 'all' || rowStatus === selectedStatus
+                        ? ''
+                        : 'none';
             });
         });
     });
 
-
-    const toast = document.querySelector('.admin-toast');
-
-    if (toast) {
+    // Tự động ẩn thông báo sau một khoảng thời gian
+    document.querySelectorAll('.admin-toast').forEach(function (toast) {
         setTimeout(function () {
             toast.classList.remove('show');
+
+            setTimeout(function () {
+                toast.remove();
+            }, 300);
         }, 3500);
-    }
+    });
+
+    // Ngăn biểu mẫu gửi nhiều lần
     document.querySelectorAll('form').forEach(function (form) {
-
         form.addEventListener('submit', function () {
-
-            const submitButton =
-                form.querySelector('button[type="submit"]');
-
-            if (!submitButton) return;
-
-            if (submitButton.dataset.submitted === 'true') {
+            if (form.dataset.submitted === 'true') {
                 return;
             }
 
-            submitButton.dataset.submitted = 'true';
+            form.dataset.submitted = 'true';
 
-            const originalText = submitButton.innerHTML;
+            const submitButtons = form.querySelectorAll(
+                'button[type="submit"], input[type="submit"]'
+            );
 
-            submitButton.innerHTML = 'Đang xử lý...';
-            submitButton.disabled = true;
+            submitButtons.forEach(function (button) {
+                button.disabled = true;
 
-            setTimeout(function () {
-                submitButton.innerHTML = originalText;
-                submitButton.disabled = false;
-                submitButton.dataset.submitted = 'false';
-            }, 5000);
+                if (button.tagName === 'BUTTON') {
+                    button.dataset.originalText = button.textContent;
+                    button.textContent = 'Đang xử lý...';
+                } else {
+                    button.dataset.originalValue = button.value;
+                    button.value = 'Đang xử lý...';
+                }
+            });
         });
+    });
+
+    // Hiển thị dung lượng tệp được chọn
+    document.querySelectorAll('[data-size-preview]').forEach(function (input) {
+        input.addEventListener('change', function () {
+            const previewId = input.dataset.sizePreview;
+            const preview = document.getElementById(previewId);
+
+            if (!preview || !input.files.length) return;
+
+            const file = input.files[0];
+            const size = file.size / (1024 * 1024);
+
+            preview.textContent = size.toFixed(2) + ' MB';
+        });
+    });
+
+    // Đếm số ký tự đã nhập
+    document.querySelectorAll('[data-max-length]').forEach(function (input) {
+        const counterId = input.dataset.counter;
+        const maxLength = parseInt(input.dataset.maxLength, 10);
+        const counter = document.getElementById(counterId);
+
+        if (!counter || !maxLength) return;
+
+        function updateCounter() {
+            const currentLength = input.value.length;
+
+            counter.textContent = currentLength + '/' + maxLength;
+
+            counter.classList.toggle(
+                'text-danger',
+                currentLength > maxLength
+            );
+        }
+
+        input.addEventListener('input', updateCounter);
+        updateCounter();
     });
 
 });

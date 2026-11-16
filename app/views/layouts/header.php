@@ -23,11 +23,15 @@
     <link rel="stylesheet" href="<?= url('assets/css/main.css') ?>">
 
     <!-- CSS riêng từng module (override từ controller nếu cần) -->
-    <?php if (!empty($extraCss)): ?>
-        <?php foreach ((array) $extraCss as $css): ?>
-            <link rel="stylesheet" href="<?= url('assets/css/' . h($css)) ?>">
-        <?php endforeach; ?>
-    <?php endif; ?>
+    <?php
+        $cssList = !empty($extraCss) ? (array) $extraCss : [];
+        if (Auth::isAdmin() && !in_array('admin.css', $cssList, true)) {
+            $cssList[] = 'admin.css';
+        }
+    ?>
+    <?php foreach ($cssList as $css): ?>
+        <link rel="stylesheet" href="<?= url('assets/css/' . h($css)) ?>">
+    <?php endforeach; ?>
 </head>
 <body class="d-flex flex-column min-vh-100">
 

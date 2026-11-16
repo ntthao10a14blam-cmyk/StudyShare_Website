@@ -106,6 +106,12 @@ a:hover {
     color: var(--color-primary-dark);
 }
 
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
 .hover-primary:hover {
     color: var(--color-primary) !important;
 }
@@ -541,6 +547,16 @@ h6 {
     gap: 0.85rem;
 }
 
+/* Thông báo khi chưa có tài liệu / bộ sưu tập */
+.empty-state {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--color-text-muted);
+    background: var(--color-surface);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--border-radius);
+}
+
 /* --- Search Bar Tối Giản --- */
 .community-search-box {
     position: relative;
@@ -612,28 +628,65 @@ h6 {
 
 /* Badge trạng thái */
 .badge-status-not_submitted {
-    background-color: var(--color-secondary);
-    color: #fff;
+    background-color: #64748b; /* Bản nháp - Xám */
+    color: #ffffff;
 }
 
 .badge-status-pending {
-    background-color: var(--color-warning);
-    color: #fff;
+    background-color: #d97706; /* Chờ duyệt - Vàng hổ phách */
+    color: #ffffff;
 }
 
 .badge-status-approved {
-    background-color: var(--color-success);
-    color: #fff;
+    background-color: #16a34a; /* Đã duyệt - Xanh lá */
+    color: #ffffff;
 }
 
 .badge-status-rejected {
-    background-color: var(--color-danger);
-    color: #fff;
+    background-color: #dc2626; /* Bị từ chối - Đỏ */
+    color: #ffffff;
 }
 
 .badge-status-hidden {
-    background-color: #475569;
-    color: #fff;
+    background-color: #334155;
+    color: #ffffff;
+}
+
+/* EasyMDE Markdown Editor Theme Integration */
+.EasyMDEContainer {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.EasyMDEContainer .editor-toolbar {
+    border-color: #cbd5e1;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    background-color: #f8fafc;
+    padding: 4px 6px;
+}
+.EasyMDEContainer .editor-toolbar button {
+    color: #475569 !important;
+    border-radius: 4px;
+}
+.EasyMDEContainer .editor-toolbar button:hover,
+.EasyMDEContainer .editor-toolbar button.active {
+    background-color: #e2e8f0;
+    color: var(--color-primary) !important;
+}
+.EasyMDEContainer .CodeMirror {
+    border-color: #cbd5e1;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1e293b;
+    min-height: 180px;
+}
+.EasyMDEContainer .editor-preview {
+    background-color: #ffffff;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.7;
+    padding: 16px;
 }
 
 .badge-private {
@@ -705,6 +758,17 @@ h6 {
     background-color: var(--color-primary-light);
     border-color: var(--color-primary-border);
     color: var(--color-primary-dark);
+}
+
+/* Phân trang danh sách */
+.pagination .page-link {
+    color: var(--color-primary);
+    border-color: var(--color-border);
+}
+.pagination .page-item.active .page-link {
+    color: #fff;
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
 /* --- Form Controls --- */

@@ -1,224 +1,357 @@
 <?php
-$pageTitle = $pageTitle ?? 'Quản lý môn học';
-require_once BASE_PATH . '/app/views/layouts/header.php';
+$subjects = $subjects ?? [];
+
+$e = static function ($value): string {
+    return htmlspecialchars((string) ($value ?? ''), ENT_QUOTES, 'UTF-8');
+};
+
+$csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
 ?>
 
 <div class="admin-page">
     <div class="admin-content">
 
+        <!-- HEADER -->
         <div class="page-header">
             <div>
-                <h1>Quản lý môn học</h1>
-                <p>Quản lý các môn học được sử dụng trên StudyShare.</p>
+                <h1>
+                    <i class="bi bi-book-half"></i>
+                    Quản lý môn học
+                </h1>
+                <p>Quản lý danh sách môn học trong hệ thống StudyShare</p>
             </div>
+
+            <button type="button"
+                    class="btn btn-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#addSubjectModal">
+                <i class="bi bi-plus-circle"></i>
+                Thêm môn học
+            </button>
         </div>
 
-        <!-- Thêm môn học -->
-        <section class="admin-section">
+        <!-- THÔNG BÁO -->
+        <?php if (!empty($_SESSION['success'])): ?>
+            <div class="alert alert-success alert-dismissible fade show">
+                <i class="bi bi-check-circle-fill"></i>
+                <?= $e($_SESSION['success']) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <?php unset($_SESSION['success']); ?>
+        <?php endif; ?>
 
-            <div class="section-header">
+        <?php if (!empty($_SESSION['error'])): ?>
+            <div class="alert alert-danger alert-dismissible fade show">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <?= $e($_SESSION['error']) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <?php unset($_SESSION['error']); ?>
+        <?php endif; ?>
+
+        <!-- DANH SÁCH MÔN HỌC -->
+        <div class="admin-panel">
+
+            <div class="admin-panel-header">
                 <div>
-                    <h2>Thêm môn học</h2>
-                    <p>Tạo môn học mới cho hệ thống.</p>
+                    <h5>
+                        <i class="bi bi-journal-bookmark-fill"></i>
+                        Danh sách môn học
+                    </h5>
+                    <p>Tổng cộng <?= count($subjects) ?> môn học</p>
                 </div>
             </div>
 
-            <div class="table-card">
-                <form
-                    method="POST"
-                    action="?module=admin&action=createSubject"
-                    class="admin-form"
-                >
-
-                    <input
-                        type="hidden"
-                        name="csrf_token"
-                        value="<?= h(csrfToken()) ?>"
-                    >
-
-                    <div class="form-group">
-                        <label for="subject_name">Tên môn học</label>
-                        <input
-                            type="text"
-                            id="subject_name"
-                            name="name"
-                            class="form-control"
-                            placeholder="Ví dụ: Lập trình Web"
-                            required
-                        >
-                    </div>
-
-                    <div class="form-group">
-                        <label for="subject_description">Mô tả</label>
-                        <textarea
-                            id="subject_description"
-                            name="description"
-                            class="form-control"
-                            rows="3"
-                            placeholder="Nhập mô tả môn học..."
-                        ></textarea>
-                    </div>
-
-                    <button type="submit" class="btn-primary">
-                        <i class="bi bi-plus-circle"></i>
-                        Thêm môn học
-                    </button>
-
-                </form>
-            </div>
-
-        </section>
-
-        <!-- Danh sách môn học -->
-        <section class="admin-section">
-
-            <div class="section-header">
-                <div>
-                    <h2>Danh sách môn học</h2>
-                    <p>Các môn học hiện đang có trong hệ thống.</p>
-                </div>
-            </div>
-
-            <div class="table-card">
-
-                <table class="admin-table">
-
+            <div class="table-responsive">
+                <table class="table admin-table align-middle">
                     <thead>
                         <tr>
-                            <th>#</th>
+                            <th>ID</th>
                             <th>Tên môn học</th>
                             <th>Mô tả</th>
-                            <th>Số tài liệu</th>
-                            <th>Thao tác</th>
+                            <th>Tài liệu</th>
+                            <th>Câu hỏi</th>
+                            <th>Ngày tạo</th>
+                            <th class="text-center">Thao tác</th>
                         </tr>
                     </thead>
 
                     <tbody>
-
                     <?php if (empty($subjects)): ?>
-
                         <tr>
-                            <td colspan="5">
-                                <div class="empty-state">
-                                    <i class="bi bi-book"></i>
-                                    <h3>Chưa có môn học</h3>
-                                    <p>Hãy thêm môn học đầu tiên.</p>
-                                </div>
+                            <td colspan="7" class="text-center py-5">
+                                <i class="bi bi-journal-x fs-1 text-muted d-block mb-2"></i>
+                                Chưa có môn học nào.
                             </td>
                         </tr>
-
                     <?php else: ?>
 
-                        <?php foreach ($subjects as $index => $subject): ?>
+                        <?php foreach ($subjects as $subject): ?>
+                            <?php
+                                $subjectId = (int) ($subject['id'] ?? 0);
+                                $documentCount = (int) ($subject['document_count'] ?? $subject['documents_count'] ?? 0);
+                                $questionCount = (int) ($subject['question_count'] ?? $subject['questions_count'] ?? 0);
+                                $canDelete = $documentCount === 0 && $questionCount === 0;
+                            ?>
 
                             <tr>
-
                                 <td>
-                                    <?= $index + 1 ?>
+                                    <span class="text-muted">#<?= $subjectId ?></span>
                                 </td>
 
                                 <td>
-                                    <strong>
-                                        <?= h($subject['name'] ?? 'Không có tên') ?>
-                                    </strong>
+                                    <div class="fw-semibold">
+                                        <i class="bi bi-book text-primary me-1"></i>
+                                        <?= $e($subject['name'] ?? '') ?>
+                                    </div>
                                 </td>
 
                                 <td>
-                                    <?= h($subject['description'] ?? '—') ?>
+                                    <span class="text-muted">
+                                        <?= $e($subject['description'] ?: 'Chưa có mô tả') ?>
+                                    </span>
                                 </td>
 
                                 <td>
-                                    <?= (int) ($subject['document_count'] ?? 0) ?>
+                                    <span class="badge bg-primary-subtle text-primary">
+                                        <?= number_format($documentCount) ?>
+                                    </span>
                                 </td>
 
                                 <td>
+                                    <span class="badge bg-info-subtle text-info">
+                                        <?= number_format($questionCount) ?>
+                                    </span>
+                                </td>
 
-                                    <!-- Sửa -->
-                                    <form
-                                        method="POST"
-                                        action="?module=admin&action=editSubject"
-                                        style="display:inline;"
-                                    >
+                                <td>
+                                    <?= !empty($subject['created_at'])
+                                        ? $e(date('d/m/Y', strtotime($subject['created_at'])))
+                                        : '—' ?>
+                                </td>
 
-                                        <input
-                                            type="hidden"
-                                            name="csrf_token"
-                                            value="<?= h(csrfToken()) ?>"
-                                        >
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2">
 
-                                        <input
-                                            type="hidden"
-                                            name="id"
-                                            value="<?= (int) $subject['id'] ?>"
-                                        >
-
-                                        <input
-                                            type="hidden"
-                                            name="name"
-                                            value="<?= h($subject['name'] ?? '') ?>"
-                                        >
-
-                                        <input
-                                            type="hidden"
-                                            name="description"
-                                            value="<?= h($subject['description'] ?? '') ?>"
-                                        >
-
+                                        <!-- SỬA -->
                                         <button
-                                            type="submit"
-                                            class="btn-small"
+                                            type="button"
+                                            class="btn btn-sm btn-outline-primary"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editSubjectModal"
+                                            data-id="<?= $subjectId ?>"
+                                            data-name="<?= $e($subject['name'] ?? '') ?>"
+                                            data-description="<?= $e($subject['description'] ?? '') ?>"
                                         >
+                                            <i class="bi bi-pencil-square"></i>
                                             Sửa
                                         </button>
 
-                                    </form>
+                                        <!-- XÓA -->
+                                        <?php if ($canDelete): ?>
+                                            <form
+                                                method="POST"
+                                                action="<?= url('?module=admin&action=deleteSubject') ?>"
+                                                class="d-inline"
+                                                onsubmit="return confirm('Bạn có chắc chắn muốn xóa môn học này không?');"
+                                            >
+                                                <input type="hidden" name="csrf_token"
+                                                       value="<?= $e($csrfToken) ?>">
 
-                                    <!-- Xóa -->
-                                    <form
-                                        method="POST"
-                                        action="?module=admin&action=deleteSubject"
-                                        style="display:inline;"
-                                    >
+                                                <input type="hidden" name="id"
+                                                       value="<?= $subjectId ?>">
 
-                                        <input
-                                            type="hidden"
-                                            name="csrf_token"
-                                            value="<?= h(csrfToken()) ?>"
-                                        >
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-trash"></i>
+                                                    Xóa
+                                                </button>
+                                            </form>
+                                        <?php else: ?>
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm btn-outline-secondary"
+                                                disabled
+                                                title="Môn học đang có dữ liệu liên kết"
+                                            >
+                                                <i class="bi bi-lock"></i>
+                                                Không thể xóa
+                                            </button>
+                                        <?php endif; ?>
 
-                                        <input
-                                            type="hidden"
-                                            name="id"
-                                            value="<?= (int) $subject['id'] ?>"
-                                        >
-
-                                        <button
-                                            type="submit"
-                                            class="btn-small danger"
-                                            data-confirm="Bạn có chắc muốn xóa môn học này?"
-                                        >
-                                            Xóa
-                                        </button>
-
-                                    </form>
-
+                                    </div>
                                 </td>
-
                             </tr>
 
                         <?php endforeach; ?>
 
                     <?php endif; ?>
-
                     </tbody>
-
                 </table>
-
             </div>
 
-        </section>
-
+        </div>
     </div>
 </div>
 
-<?php require_once BASE_PATH . '/app/views/layouts/footer.php'; ?>
+<!-- MODAL THÊM MÔN HỌC -->
+<div class="modal fade" id="addSubjectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <form method="POST"
+                  action="<?= url('?module=admin&action=createSubject') ?>">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-plus-circle text-primary"></i>
+                        Thêm môn học mới
+                    </h5>
+                    <button type="button" class="btn-close"
+                            data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <input type="hidden" name="csrf_token"
+                           value="<?= $e($csrfToken) ?>">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Tên môn học <span class="text-danger">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            name="name"
+                            class="form-control"
+                            maxlength="150"
+                            placeholder="Ví dụ: Lập trình Web"
+                            required
+                        >
+                        <small class="text-muted">
+                            Tối đa 150 ký tự.
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Mô tả
+                        </label>
+
+                        <textarea
+                            name="description"
+                            class="form-control"
+                            rows="4"
+                            placeholder="Nhập mô tả môn học..."
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light"
+                            data-bs-dismiss="modal">
+                        Hủy
+                    </button>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i>
+                        Lưu môn học
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CHỈNH SỬA MÔN HỌC -->
+<div class="modal fade" id="editSubjectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <form method="POST"
+                  action="<?= url('?module=admin&action=editSubject') ?>">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square text-primary"></i>
+                        Chỉnh sửa môn học
+                    </h5>
+                    <button type="button" class="btn-close"
+                            data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <input type="hidden" name="csrf_token"
+                           value="<?= $e($csrfToken) ?>">
+
+                    <input type="hidden" name="id" id="editSubjectId">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Tên môn học <span class="text-danger">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            name="name"
+                            id="editSubjectName"
+                            class="form-control"
+                            maxlength="150"
+                            required
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Mô tả
+                        </label>
+
+                        <textarea
+                            name="description"
+                            id="editSubjectDescription"
+                            class="form-control"
+                            rows="4"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light"
+                            data-bs-dismiss="modal">
+                        Hủy
+                    </button>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i>
+                        Cập nhật
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const editModal = document.getElementById('editSubjectModal');
+
+    if (!editModal) return;
+
+    editModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+
+        if (!button) return;
+
+        document.getElementById('editSubjectId').value =
+            button.getAttribute('data-id') || '';
+
+        document.getElementById('editSubjectName').value =
+            button.getAttribute('data-name') || '';
+
+        document.getElementById('editSubjectDescription').value =
+            button.getAttribute('data-description') || '';
+    });
+});
+</script>

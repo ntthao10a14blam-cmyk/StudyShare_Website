@@ -742,3 +742,289 @@
         flex-wrap: wrap;
     }
 }
+
+/* =========================================================
+   COMPATIBILITY - ADMIN VIEWS TV6
+   Bổ sung class cho các trang Admin mới
+   ========================================================= */
+
+/* ==================== STAT CARDS ==================== */
+
+.admin-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 120px;
+    padding: 22px;
+    background: var(--admin-card);
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius);
+    box-shadow: var(--admin-shadow);
+    transition: 0.2s ease;
+}
+
+.admin-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(15, 23, 42, 0.09);
+}
+
+.admin-stat-icon {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 13px;
+    font-size: 23px;
+}
+
+.admin-stat-card p {
+    margin: 0 0 6px;
+    color: var(--admin-muted);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.admin-stat-card h3 {
+    margin: 0;
+    color: var(--admin-text);
+    font-size: 26px;
+    font-weight: 750;
+}
+
+/* ==================== PANELS ==================== */
+
+.admin-panel {
+    margin-bottom: 25px;
+    overflow: hidden;
+    background: var(--admin-card);
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius);
+    box-shadow: var(--admin-shadow);
+}
+
+.admin-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 20px 22px;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-panel-header h5 {
+    margin: 0 0 6px;
+    color: var(--admin-text);
+    font-size: 16px;
+    font-weight: 750;
+}
+
+.admin-panel-header h5 i {
+    margin-right: 6px;
+    color: var(--admin-primary);
+}
+
+.admin-panel-header p {
+    margin: 0;
+    color: var(--admin-muted);
+    font-size: 13px;
+}
+
+/* ==================== TABLE ==================== */
+
+.admin-panel .admin-table {
+    min-width: 750px;
+    margin-bottom: 0;
+}
+
+.admin-panel .admin-table thead th {
+    padding: 15px 16px;
+    color: var(--admin-muted);
+    background: #f9fafb;
+    border-bottom: 1px solid var(--admin-border);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.admin-panel .admin-table tbody td {
+    padding: 15px 16px;
+    color: var(--admin-text);
+    border-bottom: 1px solid #f0f1f3;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+.admin-panel .admin-table tbody tr:hover {
+    background: #fafbff;
+}
+
+.admin-panel .admin-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+/* ==================== USER AVATAR ==================== */
+
+.admin-user-avatar {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--admin-primary);
+    background: var(--admin-primary-light);
+    font-size: 16px;
+    font-weight: 750;
+}
+
+/* ==================== PAGINATION ==================== */
+
+.admin-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 18px 22px;
+    border-top: 1px solid var(--admin-border);
+}
+
+.admin-pagination .pagination {
+    margin: 0;
+}
+
+.admin-pagination .page-link {
+    color: var(--admin-primary);
+    border-color: var(--admin-border);
+    font-size: 13px;
+}
+
+.admin-pagination .page-item.active .page-link {
+    color: #fff;
+    background: var(--admin-primary);
+    border-color: var(--admin-primary);
+}
+
+.admin-pagination .page-item.disabled .page-link {
+    color: #9ca3af;
+}
+
+/* ==================== FORMS ==================== */
+
+.admin-panel .form-control,
+.admin-panel .form-select,
+.admin-page .modal .form-control,
+.admin-page .modal .form-select {
+    border: 1px solid var(--admin-border);
+    border-radius: 9px;
+    padding: 10px 12px;
+    font-size: 14px;
+}
+
+.admin-panel .form-control:focus,
+.admin-panel .form-select:focus,
+.admin-page .modal .form-control:focus,
+.admin-page .modal .form-select:focus {
+    border-color: var(--admin-primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* ==================== MODALS ==================== */
+
+.admin-page .modal-content {
+    overflow: hidden;
+    border: 1px solid var(--admin-border);
+    border-radius: 15px;
+    box-shadow: 0 15px 45px rgba(15, 23, 42, 0.15);
+}
+
+.admin-page .modal-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-page .modal-title {
+    color: var(--admin-text);
+    font-size: 17px;
+    font-weight: 750;
+}
+
+.admin-page .modal-body {
+    padding: 22px;
+}
+
+.admin-page .modal-footer {
+    padding: 15px 22px;
+    border-top: 1px solid var(--admin-border);
+}
+
+/* ==================== BUTTONS ==================== */
+
+.admin-page .btn {
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.admin-page .btn-primary {
+    background: var(--admin-primary);
+    border-color: var(--admin-primary);
+}
+
+.admin-page .btn-primary:hover {
+    background: var(--admin-primary-dark);
+    border-color: var(--admin-primary-dark);
+}
+
+/* ==================== ALERTS ==================== */
+
+.admin-page .alert {
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+/* ==================== RESPONSIVE ==================== */
+
+@media (max-width: 768px) {
+    .admin-page {
+        padding: 18px 12px;
+    }
+
+    .page-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .page-header h1 {
+        font-size: 23px;
+    }
+
+    .admin-stat-card {
+        min-height: 100px;
+        padding: 16px;
+    }
+
+    .admin-stat-card h3 {
+        font-size: 23px;
+    }
+
+    .admin-panel-header {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 17px;
+    }
+
+    .admin-pagination {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .admin-page .modal-dialog {
+        margin: 12px;
+    }
+}
