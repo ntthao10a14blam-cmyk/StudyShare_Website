@@ -1,15 +1,15 @@
 <?php
 $stats = $stats ?? [];
 
-$totalUsers = (int) ($stats['users'] ?? $stats['totalUsers'] ?? 0);
+$totalUsers     = (int) ($stats['users'] ?? $stats['totalUsers'] ?? 0);
 $totalDocuments = (int) ($stats['documents'] ?? $stats['publicDocuments'] ?? 0);
-$totalPending = (int) ($stats['pendingDocuments'] ?? $stats['pending'] ?? 0);
+$totalPending   = (int) ($stats['pendingDocuments'] ?? $stats['pending'] ?? 0);
 $totalDownloads = (int) ($stats['downloads'] ?? 0);
 $totalQuestions = (int) ($stats['questions'] ?? 0);
-$totalReports = (int) ($stats['pendingReports'] ?? 0);
+$totalReports   = (int) ($stats['reports'] ?? $stats['pendingReports'] ?? 0);
 
 $latestPendingDocs = $latestPendingDocs ?? $pendingDocuments ?? [];
-$latestReports = $latestReports ?? $reports ?? [];
+$latestReports     = $latestReports ?? $reports ?? [];
 
 $e = static function ($value): string {
     return htmlspecialchars((string) ($value ?? ''), ENT_QUOTES, 'UTF-8');
@@ -228,14 +228,14 @@ $e = static function ($value): string {
                                 $status = $report['status'] ?? 'pending';
 
                                 $statusLabels = [
-                                    'pending' => 'Chờ xử lý',
-                                    'resolved' => 'Đã xử lý',
+                                    'pending'   => 'Chờ xử lý',
+                                    'resolved'  => 'Đã xử lý',
                                     'dismissed' => 'Đã bỏ qua'
                                 ];
 
                                 $statusClasses = [
-                                    'pending' => 'bg-warning text-dark',
-                                    'resolved' => 'bg-success',
+                                    'pending'   => 'bg-warning text-dark',
+                                    'resolved'  => 'bg-success',
                                     'dismissed' => 'bg-secondary'
                                 ];
                             ?>
