@@ -63,18 +63,18 @@ $buildPageUrl = static function (int $page) use ($keyword): string {
         <?php endif; ?>
 
         <!-- TÌM KIẾM -->
-        <div class="admin-panel mb-4">
+        <div class="admin-panel p-4 mb-4">
             <form method="GET" action="" class="row g-3 align-items-end">
                 <input type="hidden" name="module" value="admin">
                 <input type="hidden" name="action" value="users">
 
-                <div class="col-md-8">
-                    <label for="keyword" class="form-label fw-semibold">
+                <div class="col-lg-8 col-md-7">
+                    <label for="keyword" class="form-label fw-semibold mb-2">
                         Tìm kiếm người dùng
                     </label>
 
                     <div class="input-group">
-                        <span class="input-group-text">
+                        <span class="input-group-text bg-light border-end-0 text-muted">
                             <i class="bi bi-search"></i>
                         </span>
 
@@ -82,21 +82,21 @@ $buildPageUrl = static function (int $page) use ($keyword): string {
                             type="text"
                             id="keyword"
                             name="keyword"
-                            class="form-control"
+                            class="form-control border-start-0 ps-1"
                             placeholder="Nhập tên hoặc email..."
                             value="<?= $e($keyword) ?>"
                         >
                     </div>
                 </div>
 
-                <div class="col-md-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary flex-grow-1">
+                <div class="col-lg-4 col-md-5 d-flex gap-2 justify-content-md-end">
+                    <button type="submit" class="btn btn-primary px-4">
                         <i class="bi bi-search"></i>
                         Tìm kiếm
                     </button>
 
                     <a href="<?= url('?module=admin&action=users') ?>"
-                       class="btn btn-outline-secondary">
+                       class="btn btn-outline-secondary px-3">
                         <i class="bi bi-arrow-counterclockwise"></i>
                         Đặt lại
                     </a>
