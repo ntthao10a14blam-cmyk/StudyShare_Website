@@ -106,6 +106,28 @@ class CommunityController
         $comments     = $this->model->getComments($id);
         $relatedDocs  = $this->model->getRelatedDocuments((int) $document['subject_id'], $id, 5);
 
+        // Lấy danh sách bộ sưu tập & trạng thái yêu thích của User (nếu đã đăng nhập)
+        $userCollections = [];
+        $isFavorited     = false;
+        $tv4Token        = '';
+        if (Auth::check()) {
+            $uid = (int) Auth::id();
+            $db  = Database::getInstance();
+
+            $stmtCol = $db->prepare("SELECT id, name FROM collections WHERE user_id = :uid ORDER BY created_at DESC");
+            $stmtCol->execute([':uid' => $uid]);
+            $userCollections = $stmtCol->fetchAll();
+
+            $stmtFav = $db->prepare("SELECT 1 FROM favorites WHERE user_id = :uid AND document_id = :doc_id LIMIT 1");
+            $stmtFav->execute([':uid' => $uid, ':doc_id' => $id]);
+            $isFavorited = (bool) $stmtFav->fetchColumn();
+
+            if (empty($_SESSION['tv4_token'])) {
+                $_SESSION['tv4_token'] = bin2hex(random_bytes(16));
+            }
+            $tv4Token = $_SESSION['tv4_token'];
+        }
+
         $pageTitle       = $document['title'];
         $pageDescription = !empty($document['description']) 
             ? mb_substr(strip_tags($document['description']), 0, 160) . '...' 

@@ -19,6 +19,7 @@ class HomeController
             'questions' => 0,
             'users'     => 0,
         ];
+        $topDownloadedDocs = [];
         $recentDocs = [];
         $recentQuestions = [];
         $popularSubjects = [];
@@ -29,9 +30,22 @@ class HomeController
             $db = Database::getInstance();
 
             // Thống kê
-            $stats['documents'] = (int) $db->query("SELECT COUNT(*) FROM documents WHERE visibility = 'public' AND moderation_status = 'approved'")->fetchColumn();
-            $stats['questions'] = (int) $db->query("SELECT COUNT(*) FROM questions WHERE status = 'visible'")->fetchColumn();
+            $stats['documents'] = (int) $db->query("SELECT COUNT(*) FROM documents WHERE visibility = 'public' AND moderation_status = 'approved' AND deleted_at IS NULL")->fetchColumn();
+            $stats['questions'] = (int) $db->query("SELECT COUNT(*) FROM questions WHERE status = 'visible' AND deleted_at IS NULL")->fetchColumn();
             $stats['users']     = (int) $db->query("SELECT COUNT(*) FROM users WHERE status = 'active'")->fetchColumn();
+
+            // Top 3 tài liệu có lượt tải nhiều nhất
+            $stmtTop = $db->query("
+                SELECT d.id, d.title, d.file_size, d.download_count, d.created_at,
+                       s.name AS subject_name, u.full_name AS author_name
+                FROM documents d
+                LEFT JOIN subjects s ON d.subject_id = s.id
+                LEFT JOIN users u ON d.user_id = u.id
+                WHERE d.visibility = 'public' AND d.moderation_status = 'approved' AND d.deleted_at IS NULL
+                ORDER BY d.download_count DESC, d.created_at DESC
+                LIMIT 3
+            ");
+            $topDownloadedDocs = $stmtTop->fetchAll();
 
             // Tài liệu mới nhất
             $stmt = $db->query("
@@ -40,9 +54,9 @@ class HomeController
                 FROM documents d
                 LEFT JOIN subjects s ON d.subject_id = s.id
                 LEFT JOIN users u ON d.user_id = u.id
-                WHERE d.visibility = 'public' AND d.moderation_status = 'approved'
+                WHERE d.visibility = 'public' AND d.moderation_status = 'approved' AND d.deleted_at IS NULL
                 ORDER BY d.created_at DESC
-                LIMIT 6
+                LIMIT 10
             ");
             $recentDocs = $stmt->fetchAll();
 

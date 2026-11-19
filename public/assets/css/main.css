@@ -657,15 +657,39 @@ h6 {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 .EasyMDEContainer .editor-toolbar {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 2px;
+    overflow-x: auto;
     border-color: #cbd5e1;
     border-top-left-radius: 6px;
     border-top-right-radius: 6px;
     background-color: #f8fafc;
-    padding: 4px 6px;
+    padding: 6px 8px;
 }
-.EasyMDEContainer .editor-toolbar button {
+.EasyMDEContainer .editor-toolbar button,
+.EasyMDEContainer .editor-toolbar button.table {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 30px !important;
+    min-width: 30px;
+    height: 30px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex-shrink: 0;
     color: #475569 !important;
     border-radius: 4px;
+}
+.EasyMDEContainer .editor-toolbar i.separator {
+    display: inline-block;
+    width: 1px;
+    height: 18px;
+    margin: 0 6px !important;
+    border-left: 1px solid #cbd5e1;
+    border-right: 0;
+    flex-shrink: 0;
 }
 .EasyMDEContainer .editor-toolbar button:hover,
 .EasyMDEContainer .editor-toolbar button.active {
@@ -928,4 +952,152 @@ h6 {
     .feed-meta {
         gap: 0.5rem;
     }
+}
+
+/* ============================================================
+   TRANG CHỦ (HOME V2 LAYOUT — MÀU PHẲNG NỔI BẬT, KHÔNG GRADIENT)
+   ============================================================ */
+.home-v2-hero {
+    background-color: #075e57;
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 4px solid #f5d77a;
+}
+
+.home-v2-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #0b766e;
+    display: inline-block;
+    margin-bottom: 0.45rem;
+}
+
+.home-v2-eyebrow-light {
+    color: #f5d77a;
+}
+
+.home-v2-accent-italic {
+    color: #0b766e;
+    font-style: italic;
+}
+
+.home-v2-hero .home-v2-accent-italic,
+.home-v2-dark-section .home-v2-accent-italic {
+    color: #f5d77a;
+}
+
+.home-v2-bento-card {
+    background-color: #0b766e;
+    border: 1px solid rgba(245, 215, 122, 0.45);
+    border-radius: 1rem;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.home-v2-bento-card:hover {
+    transform: translateY(-2px);
+    border-color: #f5d77a;
+}
+
+.home-v2-trust-bar {
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.home-v2-section-light {
+    background-color: #f8faf7;
+}
+
+.home-v2-section-white {
+    background-color: #ffffff;
+}
+
+.home-v2-dark-section {
+    background-color: #075e57;
+    color: #ffffff;
+    border-top: 3px solid #f5d77a;
+    border-bottom: 3px solid #f5d77a;
+}
+
+.home-v2-card {
+    background-color: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.home-v2-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: #0b766e;
+}
+
+.home-v2-visual-box {
+    background-color: #e6f4f1;
+    border: 1px solid var(--color-primary-border);
+    border-radius: 0.85rem;
+    min-height: 220px;
+}
+
+.home-v2-dark-pill {
+    background-color: #0b766e;
+    border: 1px solid rgba(245, 215, 122, 0.35);
+    border-radius: 0.65rem;
+    padding: 0.55rem 0.85rem;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+}
+
+.home-v2-dark-pill:hover {
+    border-color: #f5d77a;
+    transform: translateX(3px);
+}
+
+.home-v2-circle-showcase {
+    width: 220px;
+    height: 220px;
+    max-width: 100%;
+    border-radius: 50%;
+    background-color: #0b766e;
+    border: 3px solid #f5d77a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    position: relative;
+}
+
+.home-v2-testimonial-featured {
+    background-color: #0b766e;
+    color: #ffffff;
+    border: 2px solid #f5d77a;
+    border-radius: 1rem;
+}
+
+.home-v2-mockup-frame {
+    background-color: #075e57;
+    border-radius: 1rem;
+    border: 2px solid #0b766e;
+    box-shadow: 0 12px 28px -8px rgba(7, 94, 87, 0.35);
+}
+
+.home-v2-doc-thumb {
+    background-color: #e6f4f1;
+    border-bottom: 2px solid #f5d77a;
+    padding: 1.1rem 1.25rem;
+}
+
+.home-v2-btn-accent {
+    background-color: #f5d77a;
+    color: #203b38;
+    border: 1px solid #f5d77a;
+}
+
+.home-v2-btn-accent:hover {
+    background-color: #e9c45f;
+    color: #203b38;
+    border-color: #e9c45f;
 }

@@ -1,21 +1,6 @@
     <!-- Kết thúc vùng nội dung trang chính -->
 </main>
 
-<!-- 1. PRE-FOOTER CTA (Băng kêu gọi tra cứu nhanh giống khotailieusinhvien.com) -->
-<section class="footer-cta">
-    <div class="container">
-        <div class="footer-cta-box d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-            <div>
-                <span class="cta-eyebrow">TÌM TÀI LIỆU NHANH HƠN</span>
-                <h2 class="h3 fw-bold text-white my-1">Bắt đầu từ trường, môn học hoặc loại tài liệu</h2>
-                <p class="mb-0 text-white-50 small">Bộ lọc gọn giúp bạn đi thẳng tới nội dung cần học và ôn tập.</p>
-            </div>
-            <a href="<?= url('?module=community&action=index') ?>" class="btn-footer-cta text-decoration-none flex-shrink-0">
-                Mở thư viện tài liệu <i class="bi bi-arrow-right ms-1"></i>
-            </a>
-        </div>
-    </div>
-</section>
 
 <!-- 2. PUBLIC FOOTER (Chân trang 4 cột chuyên nghiệp chuẩn khotailieusinhvien.com) -->
 <footer class="public-footer">
@@ -24,7 +9,7 @@
         <div class="tlga-footer-ribbon d-flex flex-column flex-md-row justify-content-between align-items-md-center py-3">
             <div>
                 <small class="d-block text-warning fw-bold text-uppercase" style="font-size: 11px; letter-spacing: 0.12em;">TÀI LIỆU DÀNH CHO SINH VIÊN</small>
-                <strong class="text-white fs-6">Đúng trường, đúng môn, đúng nhu cầu.</strong>
+                <strong class="text-white fs-6">Đúng trường - Đúng môn - Đúng nhu cầu</strong>
             </div>
             <nav class="footer-formats d-flex gap-2 gap-md-3 mt-2 mt-md-0" aria-label="Định dạng tài liệu">
                 <span><i class="bi bi-file-earmark-word text-info"></i> Word</span>

@@ -104,14 +104,11 @@ $avatar = function (?string $path, string $name): string {
     <?php foreach ($answers as $a): ?>
         <?php
             $aid       = (int) $a['id'];
-            $isAccept  = (bool) $a['is_accepted'];
+            $likeCount = (int) ($a['like_count'] ?? 0);
+            $isLiked   = !empty($a['is_liked']);
             $isMine    = $currentUid !== null && (int) $a['user_id'] === (int) $currentUid;
         ?>
-        <article id="answer-<?= $aid ?>" class="card card-body <?= $isAccept ? 'q-answer-accepted' : '' ?>">
-            <?php if ($isAccept): ?>
-                <div class="mb-2"><span class="badge bg-success">✔ Đã được giải đáp</span></div>
-            <?php endif; ?>
-
+        <article id="answer-<?= $aid ?>" class="card card-body">
             <div class="q-body md-render mb-3"><?= h($a['content']) ?></div>
 
             <div class="d-flex flex-wrap align-items-center gap-2">
@@ -120,17 +117,20 @@ $avatar = function (?string $path, string $name): string {
                 <span class="small text-muted">· <?= h(timeAgo($a['created_at'])) ?><?= $a['updated_at'] !== $a['created_at'] ? ' (đã sửa)' : '' ?></span>
 
                 <div class="ms-auto d-flex flex-wrap gap-2">
-                    <?php if ($isOwner): ?>
-                        <form method="post" action="<?= url('?module=questions&action=' . ($isAccept ? 'unacceptAnswer' : 'acceptAnswer')) ?>">
+                    <?php if (Auth::isActive()): ?>
+                        <form method="post" action="<?= url('?module=questions&action=toggleLike') ?>">
                             <?php csrfField(); ?>
                             <input type="hidden" name="question_id" value="<?= $qid ?>">
                             <input type="hidden" name="answer_id" value="<?= $aid ?>">
-                            <?php if ($isAccept): ?>
-                                <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-x-circle"></i> Bỏ đánh dấu</button>
-                            <?php else: ?>
-                                <button class="btn btn-sm btn-outline-success"><i class="bi bi-check-circle"></i> Đánh dấu câu trả lời đúng</button>
-                            <?php endif; ?>
+                            <button class="btn btn-sm <?= $isLiked ? 'btn-danger' : 'btn-outline-danger' ?>" title="<?= $isLiked ? 'Bỏ thích' : 'Thích câu trả lời này' ?>">
+                                <i class="bi <?= $isLiked ? 'bi-heart-fill' : 'bi-heart' ?>"></i>
+                                Thích (<?= $likeCount ?>)
+                            </button>
                         </form>
+                    <?php else: ?>
+                        <a href="<?= url('?module=auth&action=login') ?>" class="btn btn-sm btn-outline-danger" title="Đăng nhập để thích câu trả lời">
+                            <i class="bi bi-heart"></i> Thích (<?= $likeCount ?>)
+                        </a>
                     <?php endif; ?>
 
                     <?php if ($isMine): ?>

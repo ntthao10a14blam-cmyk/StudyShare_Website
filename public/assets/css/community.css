@@ -337,8 +337,8 @@
 .tailieu-preview-image {
     display: block;
     width: 100%;
-    aspect-ratio: 4 / 3;
-    object-fit: contain;
+    height: 110px;
+    object-fit: cover;
     background: var(--color-bg);
     border-radius: calc(var(--border-radius-sm) - 0.125rem);
 }

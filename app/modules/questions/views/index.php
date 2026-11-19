@@ -17,25 +17,90 @@ $baseQuery = array_filter([
 ]);
 $hasFilter = $filters['q'] !== '' || $filters['subject_id'] || $filters['tag_id'] || $filters['status'] !== '';
 ?>
-<div class="container py-4">
+<!-- 1. HERO BANNER ĐẦU TRANG (GIỐNG TÀI LIỆU CỦA TÔI) -->
+<section class="text-white py-5" style="background-color: #075e57; border-bottom: 3px solid #f5d77a;">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+            <div>
+                <h1 class="h2 fw-bold text-white mb-1">Hỏi Đáp Học Tập</h1>
+                <p class="text-white text-opacity-75 small mb-0">
+                    Đặt câu hỏi bài tập, trao đổi kiến thức chuyên ngành và cùng cộng đồng sinh viên StudyShare tìm lời giải chuẩn xác
+                </p>
+            </div>
+            <?php if (Auth::isActive()): ?>
+                <a href="<?= url('?module=questions&action=create') ?>"
+                   class="btn home-v2-btn-accent rounded-pill px-4 py-2 fw-semibold d-inline-flex align-items-center gap-2 flex-shrink-0">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    <span>Đặt câu hỏi mới</span>
+                </a>
+            <?php elseif (!Auth::check()): ?>
+                <a href="<?= url('?module=auth&action=login') ?>"
+                   class="btn home-v2-btn-accent rounded-pill px-4 py-2 fw-semibold d-inline-flex align-items-center gap-2 flex-shrink-0">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    <span>Đăng nhập để đặt câu hỏi</span>
+                </a>
+            <?php endif; ?>
+        </div>
 
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-        <h1 class="page-title mb-0">Hỏi đáp học tập</h1>
-        <?php if (Auth::isActive()): ?>
-            <a href="<?= url('?module=questions&action=create') ?>" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-lg me-1"></i> Đặt câu hỏi
-            </a>
-        <?php elseif (!Auth::check()): ?>
-            <a href="<?= url('?module=auth&action=login') ?>" class="btn btn-outline-primary">
-                Đăng nhập để đặt câu hỏi
-            </a>
-        <?php endif; ?>
+        <!-- THANH TÌM KIẾM VÀ BỘ LỌC NẰM TRONG HERO -->
+        <div class="p-2 px-md-3 py-md-2 rounded-pill" style="background-color: #0b766e; border: 1px solid rgba(245, 215, 122, 0.4);">
+            <form method="get" action="<?= url('/') ?>" class="row g-2 align-items-center">
+                <input type="hidden" name="module" value="questions">
+                <input type="hidden" name="action" value="index">
+                <input type="hidden" name="status" value="<?= h($filters['status']) ?>">
+
+                <div class="col-12 col-lg-5">
+                    <div class="community-search-box bg-white rounded-pill px-2">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="search" id="f-q" name="q"
+                               class="form-control form-control-sm border-0 shadow-none bg-transparent rounded-pill"
+                               placeholder="Tìm theo tiêu đề, nội dung câu hỏi..." value="<?= h($filters['q']) ?>">
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <select id="f-subject" name="subject" class="form-select form-select-sm border-0 rounded-pill px-3">
+                        <option value="">Tất cả môn học</option>
+                        <?php foreach ($subjects as $s): ?>
+                            <option value="<?= (int) $s['id'] ?>" <?= (int) $filters['subject_id'] === (int) $s['id'] ? 'selected' : '' ?>>
+                                <?= h($s['name']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <select id="f-tag" name="tag" class="form-select form-select-sm border-0 rounded-pill px-3">
+                        <option value="">Tất cả từ khóa</option>
+                        <?php foreach ($tags as $t): ?>
+                            <option value="<?= (int) $t['id'] ?>" <?= (int) $filters['tag_id'] === (int) $t['id'] ? 'selected' : '' ?>>
+                                <?= h($t['name']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-12 col-lg-2 d-flex gap-1">
+                    <button class="btn home-v2-btn-accent btn-sm px-3 fw-semibold rounded-pill flex-grow-1" type="submit">
+                        <i class="bi bi-funnel me-1"></i> Lọc
+                    </button>
+                    <?php if ($hasFilter): ?>
+                        <a class="btn btn-light btn-sm rounded-pill flex-shrink-0" href="<?= url('?module=questions&action=index') ?>" title="Xóa bộ lọc">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </a>
+                    <?php endif; ?>
+                </div>
+            </form>
+        </div>
     </div>
+</section>
+
+<div class="container py-4">
 
     <!-- TAB LỌC THEO TRẠNG THÁI -->
     <ul class="nav nav-tabs q-tabs mb-3">
         <?php
-        $tabs = ['' => 'Tất cả câu hỏi', 'unanswered' => 'Chưa được giải đáp', 'answered' => 'Đã có câu trả lời đúng'];
+        $tabs = ['' => 'Tất cả câu hỏi'];
+        if (Auth::check()) {
+            $tabs['mine'] = 'Câu hỏi của tôi';
+        }
         foreach ($tabs as $val => $label):
             $qs = $baseQuery;
             if ($val === '') unset($qs['status']); else $qs['status'] = $val;
@@ -46,50 +111,6 @@ $hasFilter = $filters['q'] !== '' || $filters['subject_id'] || $filters['tag_id'
             </li>
         <?php endforeach; ?>
     </ul>
-
-    <!-- BỘ LỌC -->
-    <form method="get" action="<?= url('/') ?>" class="card card-body mb-4 q-filter">
-        <input type="hidden" name="module" value="questions">
-        <input type="hidden" name="action" value="index">
-        <input type="hidden" name="status" value="<?= h($filters['status']) ?>">
-        <div class="row g-2 align-items-end">
-            <div class="col-lg-4">
-                <label class="form-label small mb-1" for="f-q">Từ khóa</label>
-                <input type="search" id="f-q" name="q" class="form-control"
-                       placeholder="Tìm theo tiêu đề, nội dung..." value="<?= h($filters['q']) ?>">
-            </div>
-            <div class="col-6 col-lg-3">
-                <label class="form-label small mb-1" for="f-subject">Môn học</label>
-                <select id="f-subject" name="subject" class="form-select">
-                    <option value="">Tất cả</option>
-                    <?php foreach ($subjects as $s): ?>
-                        <option value="<?= (int) $s['id'] ?>" <?= (int) $filters['subject_id'] === (int) $s['id'] ? 'selected' : '' ?>>
-                            <?= h($s['name']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="col-6 col-lg-3">
-                <label class="form-label small mb-1" for="f-tag">Từ khóa gắn</label>
-                <select id="f-tag" name="tag" class="form-select">
-                    <option value="">Tất cả</option>
-                    <?php foreach ($tags as $t): ?>
-                        <option value="<?= (int) $t['id'] ?>" <?= (int) $filters['tag_id'] === (int) $t['id'] ? 'selected' : '' ?>>
-                            <?= h($t['name']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="col-12 col-lg-2 d-flex gap-2">
-                <button class="btn btn-primary flex-grow-1" type="submit"><i class="bi bi-search"></i> Lọc</button>
-                <?php if ($hasFilter): ?>
-                    <a class="btn btn-outline-secondary" href="<?= url('?module=questions&action=index') ?>" title="Xóa bộ lọc">
-                        <i class="bi bi-x-lg"></i>
-                    </a>
-                <?php endif; ?>
-            </div>
-        </div>
-    </form>
 
     <p class="text-muted small mb-3"><?= (int) $total ?> câu hỏi</p>
 

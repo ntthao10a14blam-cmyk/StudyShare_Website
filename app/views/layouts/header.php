@@ -30,7 +30,8 @@
         }
     ?>
     <?php foreach ($cssList as $css): ?>
-        <link rel="stylesheet" href="<?= url('assets/css/' . h($css)) ?>">
+        <?php $cssVer = @filemtime(BASE_PATH . '/public/assets/css/' . $css) ?: '1'; ?>
+        <link rel="stylesheet" href="<?= url('assets/css/' . h($css)) ?>?v=<?= $cssVer ?>">
     <?php endforeach; ?>
 </head>
 <body class="d-flex flex-column min-vh-100">

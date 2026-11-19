@@ -79,18 +79,18 @@ class DocumentController
         Auth::requireActiveUser();
         $userId = Auth::id();
 
-        // 1. Lọc và tìm kiếm
+        // 1. Lọc và tìm kiếm (hiển thị cả 4 danh sách trên 1 trang)
         $filters = [
             'q'          => get('q', ''),
             'subject_id' => get('subject_id', ''),
-            'status'     => get('status', 'all'),
+            'status'     => 'all',
             'visibility' => get('visibility', 'all'),
             'sort'       => get('sort', 'newest'),
         ];
 
-        // 2. Phân trang
+        // 2. Lấy toàn bộ dữ liệu theo bộ lọc để chia 4 danh sách
         $totalDocs  = $this->model->countByUser($userId, $filters);
-        $pagination = paginate($totalDocs, ITEMS_PER_PAGE);
+        $pagination = paginate($totalDocs, 200);
 
         // 3. Lấy dữ liệu
         $documents = $this->model->findByUser(

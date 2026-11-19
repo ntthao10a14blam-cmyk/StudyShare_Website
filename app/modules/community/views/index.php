@@ -34,29 +34,23 @@ $extraCss = ['community.css'];
 require_once BASE_PATH . '/app/views/layouts/header.php';
 ?>
 
-<div class="container py-4">
-
-    <!-- HERO SEARCH BANNER (Phong cách tailieu.vn) -->
-    <div class="community-hero shadow-sm">
-        <div class="row align-items-center">
+<!-- HERO SEARCH BANNER FULL-WIDTH (Đồng bộ bảng màu #075e57, #0b766e, #f5d77a) -->
+<section class="py-4 text-white" style="background-color: #075e57; border-bottom: 4px solid #f5d77a;">
+    <div class="container">
+        <div class="row align-items-center g-4">
             <div class="col-lg-8">
-                <h1 class="community-hero-title">
-                    <i class="bi bi-book-half text-primary me-2"></i>Kho Tài Liệu Học Tập Cộng Đồng
-                </h1>
-                <p class="community-hero-subtitle">
-                    Tìm kiếm và tải về miễn phí giáo trình, đề thi trắc nghiệm, bài tập lớn và tài liệu ôn thi chất lượng cao do cộng đồng sinh viên đóng góp.
-                </p>
+                <h1 class="h3 fw-bold text-white mb-3">Tìm Kiếm Tài Liệu</h1>
 
                 <!-- Thanh tìm kiếm tài liệu -->
-                <form action="<?= url() ?>" method="GET" class="community-search-box">
+                <form action="<?= url() ?>" method="GET" class="bg-white rounded-pill p-1 shadow-sm d-flex align-items-center mb-3" style="max-width: 680px;">
                     <input type="hidden" name="module" value="community">
                     <input type="hidden" name="action" value="index">
                     <?php if ($subjectId > 0): ?>
                         <input type="hidden" name="subject_id" value="<?= (int) $subjectId ?>">
                     <?php endif; ?>
 
-                    <i class="bi bi-search text-muted ms-2 fs-5"></i>
-                    <input type="text" name="keyword" class="form-control" 
+                    <i class="bi bi-search text-muted ms-3 fs-5"></i>
+                    <input type="text" name="keyword" class="form-control border-0 bg-transparent shadow-none text-dark px-3" 
                            placeholder="Nhập tên giáo trình, đề thi, môn học hoặc từ khóa cần tìm..."
                            value="<?= h($keyword) ?>">
 
@@ -67,18 +61,19 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                         </a>
                     <?php endif; ?>
 
-                    <button type="submit" class="btn btn-primary px-4 fw-medium">
+                    <button type="submit" class="btn home-v2-btn-accent rounded-pill px-4 py-2 fw-semibold flex-shrink-0 text-nowrap">
                         <i class="bi bi-search me-1"></i> Tìm kiếm
                     </button>
                 </form>
 
-                <!-- Gợi ý từ khóa hot ngay dưới ô tìm kiếm (chuẩn tailieu.vn) -->
-                <div class="mt-2 d-flex flex-wrap align-items-center gap-1 small text-muted">
-                    <span class="me-1">Từ khóa hot:</span>
+                <!-- Gợi ý từ khóa hot ngay dưới ô tìm kiếm -->
+                <div class="d-flex flex-wrap align-items-center gap-2 small">
+                    <span class="text-white text-opacity-75">Từ khóa hot:</span>
                     <?php foreach (array_slice($tags, 0, 5) as $hotTag): ?>
                         <a href="<?= url('?module=community&action=index&tag_id=' . $hotTag['id']) ?>" 
-                           class="badge bg-white text-dark border text-decoration-none py-1 px-2">
-                            <?= h($hotTag['name']) ?>
+                           class="badge text-white text-decoration-none py-1 px-2 rounded-pill"
+                           style="background-color: #0b766e; border: 1px solid rgba(245, 215, 122, 0.45);">
+                            #<?= h($hotTag['name']) ?>
                         </a>
                     <?php endforeach; ?>
                 </div>
@@ -86,21 +81,26 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
 
             <!-- Box kêu gọi đóng góp tài liệu bên phải -->
             <div class="col-lg-4 d-none d-lg-block text-end">
-                <div class="p-3 bg-white rounded-3 border d-inline-block text-start shadow-sm" style="max-width: 290px;">
-                    <div class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
-                        <i class="bi bi-cloud-arrow-up-fill text-primary fs-5"></i>
+                <div class="p-4 rounded-4 d-inline-block text-start shadow-sm"
+                     style="max-width: 320px; background-color: #0b766e; border: 1px solid rgba(245, 215, 122, 0.5);">
+                    <div class="fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                        <i class="bi bi-cloud-arrow-up-fill text-warning fs-5"></i>
                         <span>Đóng góp tài liệu học tập</span>
                     </div>
-                    <p class="text-muted small mb-2" style="font-size: 0.8125rem;">
+                    <p class="text-white text-opacity-75 small mb-3" style="font-size: 0.825rem;">
                         Chia sẻ bài giảng, đề thi của bạn để giúp đỡ hàng nghìn bạn bè cùng khóa ôn tập hiệu quả.
                     </p>
-                    <a href="<?= url(Auth::check() ? '?module=documents&action=create' : '?module=auth&action=login') ?>" class="btn btn-outline-primary btn-sm w-100 fw-medium">
+                    <a href="<?= url(Auth::check() ? '?module=documents&action=create' : '?module=auth&action=login') ?>"
+                       class="btn home-v2-btn-accent btn-sm w-100 rounded-pill fw-semibold py-2">
                         <i class="bi bi-upload me-1"></i> Tải tài liệu lên ngay
                     </a>
                 </div>
             </div>
         </div>
     </div>
+</section>
+
+<div class="container py-4">
 
     <!-- BỐ CỤC 2 CỘT CHUẨN TAILIEU.VN -->
     <div class="row g-4">
@@ -150,41 +150,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                             <?php endif; ?>
                         </a>
                     <?php endforeach; ?>
-                </div>
-            </div>
-
-            <!-- Card: Thống kê nhanh StudyHub -->
-            <div class="community-sidebar-card shadow-sm p-3">
-                <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2" style="font-size: 0.9375rem;">
-                    <i class="bi bi-bar-chart-line-fill text-primary"></i>
-                    <span>Thống kê cộng đồng</span>
-                </h6>
-                <div class="d-flex align-items-center gap-3 py-2 border-bottom">
-                    <div class="p-2 bg-primary bg-opacity-10 text-primary rounded-3 fs-5">
-                        <i class="bi bi-files"></i>
-                    </div>
-                    <div>
-                        <div class="fw-bold text-dark fs-6"><?= number_format($stats['total_docs']) ?></div>
-                        <div class="text-muted" style="font-size: 0.75rem;">Tài liệu đã chia sẻ</div>
-                    </div>
-                </div>
-                <div class="d-flex align-items-center gap-3 py-2 border-bottom">
-                    <div class="p-2 bg-success bg-opacity-10 text-success rounded-3 fs-5">
-                        <i class="bi bi-cloud-arrow-down"></i>
-                    </div>
-                    <div>
-                        <div class="fw-bold text-dark fs-6"><?= number_format($stats['total_downloads']) ?></div>
-                        <div class="text-muted" style="font-size: 0.75rem;">Lượt tải về thành công</div>
-                    </div>
-                </div>
-                <div class="d-flex align-items-center gap-3 pt-2">
-                    <div class="p-2 bg-info bg-opacity-10 text-info rounded-3 fs-5">
-                        <i class="bi bi-people"></i>
-                    </div>
-                    <div>
-                        <div class="fw-bold text-dark fs-6"><?= number_format($stats['total_users']) ?></div>
-                        <div class="text-muted" style="font-size: 0.75rem;">Sinh viên tham gia</div>
-                    </div>
                 </div>
             </div>
 

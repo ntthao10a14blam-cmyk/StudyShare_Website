@@ -63,11 +63,13 @@ class QuestionController
 
     public function index(): void
     {
+        $allowedStatuses = Auth::check() ? ['answered', 'unanswered', 'mine'] : ['answered', 'unanswered'];
         $filters = [
             'q'          => mb_substr((string) get('q'), 0, 100),
             'subject_id' => (int) get('subject'),
             'tag_id'     => (int) get('tag'),
-            'status'     => in_array(get('status'), ['answered', 'unanswered'], true) ? get('status') : '',
+            'status'     => in_array(get('status'), $allowedStatuses, true) ? get('status') : '',
+            'user_id'    => Auth::check() ? (int) Auth::id() : 0,
         ];
 
         $total     = $this->model->countQuestions($filters);
@@ -91,7 +93,7 @@ class QuestionController
 
         $tags         = $this->model->getQuestionTags((int) $question['id']);
         $images       = $this->model->getQuestionImages((int) $question['id']);
-        $answers      = $this->model->getAnswers((int) $question['id']);
+        $answers      = $this->model->getAnswers((int) $question['id'], Auth::id());
         $isOwner      = Auth::check() && Auth::owns((int) $question['user_id']);
         $isAdmin      = Auth::isAdmin();
         $canAnswer    = Auth::isActive() && $question['status'] === 'visible';
@@ -363,6 +365,27 @@ class QuestionController
 
         $this->model->unacceptAnswer($qid);
         $this->backToQuestion($qid, 'Đã bỏ đánh dấu chấp nhận.', 'success');
+    }
+
+    public function toggleLike(): void
+    {
+        Auth::requireActiveUser();
+        verifyCsrf();
+
+        $qid      = (int) post('question_id');
+        $aid      = (int) post('answer_id');
+        $question = $this->model->findQuestion($qid);
+        $answer   = $this->model->findAnswer($aid);
+
+        if (!$question || !$this->canView($question)) {
+            redirect('?module=questions&action=index', 'Câu hỏi không tồn tại hoặc không thể truy cập.', 'error');
+        }
+        if (!$answer || (int) $answer['question_id'] !== $qid || $answer['status'] !== 'visible') {
+            $this->backToQuestion($qid, 'Câu trả lời không tồn tại.', 'error');
+        }
+
+        $this->model->toggleAnswerLike($aid, (int) Auth::id());
+        redirect("?module=questions&action=show&id={$qid}#answer-{$aid}");
     }
 
     // ============================================================

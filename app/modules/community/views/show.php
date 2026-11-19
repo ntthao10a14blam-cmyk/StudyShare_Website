@@ -132,6 +132,23 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
                             <i class="bi bi-box-arrow-up-right me-1"></i> Đọc toàn màn hình
                         </a>
 
+                        <!-- Nút Yêu thích (Trái tim) -->
+                        <form action="<?= url('?module=collections&action=toggleFavorite') ?>" method="POST" class="d-inline">
+                            <input type="hidden" name="tv4_token" value="<?= h($tv4Token ?? '') ?>">
+                            <input type="hidden" name="document_id" value="<?= (int) $document['id'] ?>">
+                            <input type="hidden" name="return_to" value="community">
+                            <button type="submit" class="btn <?= !empty($isFavorited) ? 'btn-danger' : 'btn-outline-danger' ?>">
+                                <i class="bi <?= !empty($isFavorited) ? 'bi-heart-fill' : 'bi-heart' ?> me-1"></i>
+                                <?= !empty($isFavorited) ? 'Đã thích' : 'Yêu thích' ?>
+                            </button>
+                        </form>
+
+                        <!-- Nút Lưu vào Bộ sưu tập -->
+                        <button type="button" class="btn btn-outline-primary"
+                                data-bs-toggle="modal" data-bs-target="#saveCollectionModal">
+                            <i class="bi bi-bookmark-plus me-1"></i> Lưu vào bộ sưu tập
+                        </button>
+
                         <!-- Nút Báo cáo vi phạm -->
                         <button type="button" class="btn btn-light-subtle text-danger ms-auto btn-report-target"
                                 data-bs-toggle="modal" data-bs-target="#reportModal"
@@ -217,13 +234,13 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
 
             <!-- HÌNH ẢNH TRÍCH LỤC / MINH HOẠ TÀI LIỆU (NẾU CÓ) -->
             <?php if (!empty($images)): ?>
-                <div class="tailieu-content-box shadow-sm">
-                    <h5 class="tailieu-content-title">
+                <div class="tailieu-content-box shadow-sm p-3">
+                    <h5 class="tailieu-content-title fs-6 mb-3">
                         <i class="bi bi-images text-primary me-2"></i>Hình ảnh trích lục / trang xem trước
                     </h5>
-                    <div class="row g-3">
+                    <div class="row g-2">
                         <?php foreach ($images as $img): ?>
-                            <div class="col-md-6">
+                            <div class="col-6 col-md-4 col-lg-3">
                                 <div class="tailieu-preview-card">
                                     <a href="<?= h(storageUrl($img['image_path'])) ?>" target="_blank" rel="noopener"
                                        aria-label="Mở ảnh minh họa kích thước đầy đủ">
@@ -586,6 +603,53 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+<?php endif; ?>
+
+<!-- MODAL LƯU VÀO BỘ SƯU TẬP -->
+<?php if ($isLoggedIn): ?>
+<div class="modal fade" id="saveCollectionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fs-6 fw-bold text-dark">
+                    <i class="bi bi-bookmark-plus-fill text-primary me-1"></i> Lưu tài liệu vào Bộ sưu tập
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <?php if (empty($userCollections)): ?>
+                <div class="modal-body text-center py-4">
+                    <p class="text-muted small mb-3">Bạn chưa có bộ sưu tập nào. Hãy tạo bộ sưu tập mới để lưu tài liệu này!</p>
+                    <a href="<?= url('?module=collections&action=create') ?>" class="btn btn-primary btn-sm px-4">
+                        <i class="bi bi-plus-circle me-1"></i> Tạo bộ sưu tập ngay
+                    </a>
+                </div>
+            <?php else: ?>
+                <form action="<?= url('?module=collections&action=addDocument') ?>" method="POST">
+                    <input type="hidden" name="tv4_token" value="<?= h($tv4Token ?? '') ?>">
+                    <input type="hidden" name="document_id" value="<?= (int) $document['id'] ?>">
+                    <input type="hidden" name="return_to" value="community">
+                    <div class="modal-body">
+                        <label class="form-label fw-medium" for="select-collection-id">Chọn bộ sưu tập:</label>
+                        <select name="id" id="select-collection-id" class="form-select" required>
+                            <?php foreach ($userCollections as $col): ?>
+                                <option value="<?= (int) $col['id'] ?>"><?= h($col['name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="<?= url('?module=collections&action=create') ?>" class="btn btn-link btn-sm text-decoration-none me-auto">
+                            + Tạo bộ sưu tập mới
+                        </a>
+                        <button type="button" class="btn btn-light-subtle btn-sm" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-primary btn-sm px-3 fw-medium">
+                            <i class="bi bi-bookmark-check me-1"></i> Lưu lại
+                        </button>
+                    </div>
+                </form>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
 <?php endif; ?>
 
 <?php require_once BASE_PATH . '/app/views/layouts/footer.php'; ?>

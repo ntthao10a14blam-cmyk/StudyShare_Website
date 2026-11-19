@@ -89,6 +89,9 @@ class QuestionModel
             $where[] = "q.accepted_answer_id IS NOT NULL";
         } elseif (($filters['status'] ?? '') === 'unanswered') {
             $where[] = "q.accepted_answer_id IS NULL";
+        } elseif (($filters['status'] ?? '') === 'mine' && !empty($filters['user_id'])) {
+            $where[] = "q.user_id = :mine_uid";
+            $params[':mine_uid'] = (int) $filters['user_id'];
         }
 
         return ['WHERE ' . implode(' AND ', $where), $params];
@@ -303,23 +306,69 @@ class QuestionModel
     // ============================================================
 
     /**
-     * Các câu trả lời hiển thị được của 1 câu hỏi.
-     * Câu trả lời được chấp nhận đứng đầu, còn lại cũ → mới.
+     * Đảm bảo bảng lưu lượt thích câu trả lời tồn tại.
      */
-    public function getAnswers(int $questionId): array
+    private function ensureLikesTable(): void
     {
+        $this->db->prepare(
+            "CREATE TABLE IF NOT EXISTS answer_likes (
+                answer_id  BIGINT   NOT NULL,
+                user_id    BIGINT   NOT NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (answer_id, user_id),
+                INDEX idx_answer_likes_user (user_id),
+                CONSTRAINT fk_answer_likes_answer FOREIGN KEY (answer_id) REFERENCES answers(id) ON DELETE CASCADE ON UPDATE CASCADE,
+                CONSTRAINT fk_answer_likes_user   FOREIGN KEY (user_id)   REFERENCES users(id)   ON DELETE CASCADE ON UPDATE CASCADE
+            ) ENGINE=InnoDB"
+        )->execute();
+    }
+
+    /**
+     * Các câu trả lời hiển thị được của 1 câu hỏi.
+     * Sắp xếp theo số lượt thích từ lớn đến nhỏ, cùng lượt thích thì cũ → mới.
+     */
+    public function getAnswers(int $questionId, ?int $currentUserId = null): array
+    {
+        $this->ensureLikesTable();
         $stmt = $this->db->prepare(
             "SELECT a.id, a.content, a.created_at, a.updated_at, a.user_id,
                     u.full_name AS author_name, u.avatar_path AS author_avatar,
-                    (q.accepted_answer_id = a.id) AS is_accepted
+                    (SELECT COUNT(*) FROM answer_likes al WHERE al.answer_id = a.id) AS like_count,
+                    (SELECT COUNT(*) FROM answer_likes al2 WHERE al2.answer_id = a.id AND al2.user_id = :uid) AS is_liked
                FROM answers a
-               JOIN users u     ON u.id = a.user_id
-               JOIN questions q ON q.id = a.question_id
+               JOIN users u ON u.id = a.user_id
               WHERE a.question_id = :id AND a.deleted_at IS NULL AND a.status = 'visible'
-              ORDER BY is_accepted DESC, a.created_at ASC, a.id ASC"
+              ORDER BY like_count DESC, a.created_at ASC, a.id ASC"
         );
-        $stmt->execute([':id' => $questionId]);
+        $stmt->execute([
+            ':id'  => $questionId,
+            ':uid' => $currentUserId ?? 0,
+        ]);
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Bật/tắt lượt thích cho một câu trả lời. Trả về true nếu vừa thích, false nếu vừa bỏ thích.
+     */
+    public function toggleAnswerLike(int $answerId, int $userId): bool
+    {
+        $this->ensureLikesTable();
+        $check = $this->db->prepare(
+            "SELECT 1 FROM answer_likes WHERE answer_id = :a AND user_id = :u LIMIT 1"
+        );
+        $check->execute([':a' => $answerId, ':u' => $userId]);
+
+        if ($check->fetchColumn()) {
+            $this->db->prepare(
+                "DELETE FROM answer_likes WHERE answer_id = :a AND user_id = :u"
+            )->execute([':a' => $answerId, ':u' => $userId]);
+            return false;
+        }
+
+        $this->db->prepare(
+            "INSERT INTO answer_likes (answer_id, user_id) VALUES (:a, :u)"
+        )->execute([':a' => $answerId, ':u' => $userId]);
+        return true;
     }
 
     /** Câu trả lời chưa xóa (kể cả bị ẩn) — dùng để kiểm tra quyền sở hữu. */
