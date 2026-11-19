@@ -94,7 +94,7 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                     <p class="text-muted small mb-2" style="font-size: 0.8125rem;">
                         Chia sẻ bài giảng, đề thi của bạn để giúp đỡ hàng nghìn bạn bè cùng khóa ôn tập hiệu quả.
                     </p>
-                    <a href="<?= url('?module=documents&action=create') ?>" class="btn btn-outline-primary btn-sm w-100 fw-medium">
+                    <a href="<?= url(Auth::check() ? '?module=documents&action=create' : '?module=auth&action=login') ?>" class="btn btn-outline-primary btn-sm w-100 fw-medium">
                         <i class="bi bi-upload me-1"></i> Tải tài liệu lên ngay
                     </a>
                 </div>

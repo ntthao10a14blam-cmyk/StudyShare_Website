@@ -229,10 +229,11 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                     Đóng góp bài giảng, đề thi hoặc đồ án đã học để xây dựng kho học liệu hữu ích cho các bạn sinh viên khóa sau.
                 </p>
                 <div class="d-grid gap-2">
-                    <a href="<?= url('?module=documents&action=create') ?>" class="btn btn-primary rounded-pill btn-sm py-2">
+                    <?php $isLoggedInHome = Auth::check(); ?>
+                    <a href="<?= url($isLoggedInHome ? '?module=documents&action=create' : '?module=auth&action=login') ?>" class="btn btn-primary rounded-pill btn-sm py-2">
                         <i class="bi bi-upload me-1"></i> Tải lên tài liệu mới
                     </a>
-                    <a href="<?= url('?module=questions&action=create') ?>" class="btn btn-outline-secondary rounded-pill btn-sm py-2">
+                    <a href="<?= url($isLoggedInHome ? '?module=questions&action=create' : '?module=auth&action=login') ?>" class="btn btn-outline-secondary rounded-pill btn-sm py-2">
                         <i class="bi bi-pencil-square me-1"></i> Đặt câu hỏi thắc mắc
                     </a>
                 </div>
