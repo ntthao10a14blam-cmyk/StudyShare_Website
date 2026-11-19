@@ -50,16 +50,18 @@ ON DUPLICATE KEY UPDATE
 
 -- 4. Dữ liệu tài liệu (documents)
 INSERT INTO documents (id, title, description, file_path, original_file_name, file_size, visibility, moderation_status, submitted_at, published_at, download_count, user_id, subject_id) VALUES
-(1, 'Giáo trình Lập trình Web với PHP & MySQL', 'Tài liệu chi tiết về lập trình web backend với PHP và cơ sở dữ liệu MySQL, xây dựng ứng dụng MVC từ cơ bản đến nâng cao.', 'documents/sample_php_mysql.pdf', 'Giao_trinh_PHP_MySQL.pdf', 2458000, 'public', 'approved', NOW(), NOW(), 125, 2, 9),
-(2, 'Tổng hợp Đề thi và Đáp án Cơ sở dữ liệu', 'Bộ sưu tập đề thi cuối kỳ môn CSDL các năm có lời giải chi tiết, bài tập chuẩn hóa 1NF, 2NF, 3NF, BCNF.', 'documents/sample_csdl.pdf', 'De_thi_CSDL_dap_an.pdf', 1580000, 'public', 'approved', NOW(), NOW(), 89, 2, 2),
-(3, 'Slide bài giảng Mạng máy tính - Kiến trúc TCP/IP', 'Tóm tắt lý thuyết 7 tầng OSI, mô hình TCP/IP, định tuyến IP, subnetting và các bài tập chia mạng con.', 'documents/sample_mang_mt.pdf', 'Slide_Mang_May_Tinh.pdf', 3200000, 'public', 'approved', NOW(), NOW(), 45, 3, 3),
-(4, 'Tóm tắt công thức Giải tích 1 & Giải tích 2', 'Bảng tra cứu nhanh đạo hàm, vi phân, tích phân bất định, chuỗi số và phương trình vi phân.', 'documents/sample_giai_tich.pdf', 'Cong_thuc_Giai_tich.pdf', 980000, 'public', 'approved', NOW(), NOW(), 210, 4, 5),
-(5, 'Đồ án Kỹ thuật phần mềm - Quản lý thư viện', 'Báo cáo chi tiết đồ án môn KTPM: Biểu đồ Use Case, Activity, Sequence và thiết kế CSDL.', 'documents/sample_ktpm.pdf', 'Do_an_KTPM.pdf', 4120000, 'public', 'approved', NOW(), NOW(), 67, 2, 4),
-(6, 'Tài liệu ôn tập Trí tuệ nhân tạo (AI)', 'Tổng quan về thuật toán tìm kiếm A*, Minimax, học máy cơ bản và mạng nơ-ron tích chập (CNN).', 'documents/sample_ai.pdf', 'On_tap_AI.pdf', 2850000, 'public', 'approved', NOW(), NOW(), 34, 3, 10),
+(1, 'Giáo trình Lập trình Web với PHP & MySQL', 'Tài liệu chi tiết về lập trình web backend với PHP và cơ sở dữ liệu MySQL, xây dựng ứng dụng MVC từ cơ bản đến nâng cao.', 'documents/Dean_WebProgramming_HTML5-CSS-JavaScript.pdf', 'Giao_trinh_PHP_MySQL.pdf', 19589050, 'public', 'approved', NOW(), NOW(), 125, 2, 9),
+(2, 'Tổng hợp Đề thi và Đáp án Cơ sở dữ liệu', 'Bộ sưu tập đề thi cuối kỳ môn CSDL các năm có lời giải chi tiết, bài tập chuẩn hóa 1NF, 2NF, 3NF, BCNF.', 'documents/DeKTraSo2_CSDL_ChieuThuNam-10062021.pdf', 'De_thi_CSDL_dap_an.pdf', 310244, 'public', 'approved', NOW(), NOW(), 89, 2, 2),
+(3, 'Slide bài giảng Mạng máy tính - Kiến trúc TCP/IP', 'Tóm tắt lý thuyết 7 tầng OSI, mô hình TCP/IP, định tuyến IP, subnetting và các bài tập chia mạng con.', 'documents/Bài giảng_Bộ giao thức TCP_IP_23_7_2013 (1).pdf', 'Slide_Mang_May_Tinh.pdf', 3529656, 'public', 'approved', NOW(), NOW(), 45, 3, 3),
+(4, 'Tóm tắt công thức Giải tích 1 & Giải tích 2', 'Bảng tra cứu nhanh đạo hàm, vi phân, tích phân bất định, chuỗi số và phương trình vi phân.', 'documents/Giai_tich.pdf', 'Cong_thuc_Giai_tich.pdf', 41375116, 'public', 'approved', NOW(), NOW(), 210, 4, 5),
+(5, 'Giới thiệu Hệ quản trị Cơ sở dữ liệu', 'Tài liệu tổng quan về hệ quản trị CSDL, mô hình quan hệ và thiết kế lược đồ dữ liệu.', 'documents/Introduction_to_Database_Systems.pdf', 'Introduction_to_Database_Systems.pdf', 408546, 'public', 'approved', NOW(), NOW(), 67, 2, 2),
+(6, 'Tài liệu ôn tập Trí tuệ nhân tạo (AI)', 'Tổng quan về thuật toán tìm kiếm A*, Minimax, học máy cơ bản và mạng nơ-ron tích chập (CNN).', 'documents/Mang_may_tinh.pdf', 'On_tap_AI.pdf', 203190, 'public', 'approved', NOW(), NOW(), 34, 3, 10),
 (7, 'Báo cáo thí nghiệm Vật lý đại cương', 'Bài thu hoạch thực hành đo gia tốc trọng trường, khảo sát mạch RLC và hiện tượng quang điện.', 'documents/sample_vat_ly.pdf', 'Thi_nghiem_Vat_ly.pdf', 1200000, 'private', 'not_submitted', NULL, NULL, 0, 2, 7),
 (8, 'Bài tập Lập trình Căn bản có lời giải', 'Hơn 100 bài tập C/C++ từ cấu trúc điều khiển, mảng, con trỏ đến đệ quy và cấu trúc dữ liệu.', 'documents/sample_lap_trinh_cb.pdf', 'Bai_tap_C_Cplusplus.pdf', 1780000, 'public', 'pending', NOW(), NULL, 12, 4, 1)
 ON DUPLICATE KEY UPDATE 
     title = VALUES(title), 
+    file_path = VALUES(file_path),
+    file_size = VALUES(file_size),
     moderation_status = VALUES(moderation_status), 
     visibility = VALUES(visibility);
 
@@ -122,3 +124,17 @@ INSERT INTO answers (id, content, status, question_id, user_id) VALUES
 (3, 'Bạn nên dùng PDO nhé! PDO hỗ trợ 12 hệ quản trị CSDL khác nhau (dễ chuyển từ MySQL sang PostgreSQL, SQLite...), hỗ trợ Named Parameters và cơ chế Prepared Statements rất an toàn chống SQL Injection.', 'visible', 3, 3)
 ON DUPLICATE KEY UPDATE 
     content = VALUES(content);
+
+-- 12. Bình luận & Thảo luận tài liệu mẫu (document_comments)
+INSERT INTO document_comments (id, content, status, document_id, user_id) VALUES
+(1, 'Giáo trình trình bày rất dễ hiểu, phần ví dụ HTML5/CSS3 và JavaScript ở các chương đầu giúp mình ôn tập nhanh trước khi làm đồ án web.', 'visible', 1, 3),
+(2, 'Cảm ơn bạn đã chia sẻ tài liệu! Cho mình hỏi phần kết nối MySQL có dùng chuẩn PDO hay MySQLi vậy ạ?', 'visible', 1, 4),
+(3, 'Đề thi CSDL này sát với cấu trúc đề thi cuối kỳ của trường mình lắm. Có thêm phần đáp án chuẩn hóa BCNF rất chi tiết.', 'visible', 2, 3),
+(4, 'Slide giải thích rõ sự khác nhau giữa TCP và UDP, đặc biệt là bảng chia subnetting ở trang 12 rất hữu ích.', 'visible', 3, 2),
+(5, 'Mình tải về để ôn thi giữa kỳ môn Mạng máy tính, cảm ơn tác giả rất nhiều!', 'visible', 3, 4),
+(6, 'Bảng tổng hợp công thức đạo hàm và tích phân cực kỳ đầy đủ, in ra làm tài liệu ôn tập rất tiện.', 'visible', 4, 2),
+(7, 'Tài liệu nền tảng về hệ quản trị CSDL rất chuẩn, phù hợp cho các bạn mới bắt đầu học thiết kế ERD.', 'visible', 5, 4),
+(8, 'Nội dung cô đọng, dễ tra cứu khi làm bài tập lớn.', 'visible', 6, 2)
+ON DUPLICATE KEY UPDATE 
+    content = VALUES(content),
+    status = VALUES(status);

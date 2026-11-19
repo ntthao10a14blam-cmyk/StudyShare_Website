@@ -116,10 +116,12 @@ class CommunityController
     }
 
     /**
-     * Tải xuống tài liệu công khai đã được duyệt.
+     * Tải xuống tài liệu công khai đã được duyệt (bắt buộc đăng nhập).
      */
     public function download(): void
     {
+        Auth::requireLogin();
+
         $id = (int) get('id', 0);
         $document = $id > 0 ? $this->model->getDocumentById($id) : false;
 

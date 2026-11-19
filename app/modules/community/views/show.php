@@ -119,20 +119,20 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
 
                 <!-- Thanh nút hành động (Action Toolbar) -->
                 <div class="tailieu-action-bar">
-                    <!-- Nút Tải xuống tài liệu -->
-                    <a href="<?= $downloadUrl ?>" 
-                       class="btn btn-primary fw-semibold px-4 py-2">
-                        <i class="bi bi-download me-2"></i>Tải xuống tài liệu 
-                        <span class="opacity-75 ms-1 fw-normal">(<?= formatFileSize((int) $document['file_size']) ?>)</span>
-                    </a>
-
-                    <!-- Nút Mở xem online toàn màn hình -->
-                    <a href="<?= $serveUrl ?>" target="_blank" class="btn btn-outline-secondary">
-                        <i class="bi bi-box-arrow-up-right me-1"></i> Đọc toàn màn hình
-                    </a>
-
-                    <!-- Nút Báo cáo vi phạm -->
                     <?php if ($isLoggedIn): ?>
+                        <!-- Nút Tải xuống tài liệu -->
+                        <a href="<?= $downloadUrl ?>" 
+                           class="btn btn-primary fw-semibold px-4 py-2">
+                            <i class="bi bi-download me-2"></i>Tải xuống tài liệu 
+                            <span class="opacity-75 ms-1 fw-normal">(<?= formatFileSize((int) $document['file_size']) ?>)</span>
+                        </a>
+
+                        <!-- Nút Mở xem online toàn màn hình -->
+                        <a href="<?= $serveUrl ?>" target="_blank" class="btn btn-outline-secondary">
+                            <i class="bi bi-box-arrow-up-right me-1"></i> Đọc toàn màn hình
+                        </a>
+
+                        <!-- Nút Báo cáo vi phạm -->
                         <button type="button" class="btn btn-light-subtle text-danger ms-auto btn-report-target"
                                 data-bs-toggle="modal" data-bs-target="#reportModal"
                                 data-report-type="document"
@@ -140,6 +140,16 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
                                 data-report-label="tài liệu này">
                             <i class="bi bi-flag me-1"></i> Báo cáo vi phạm
                         </button>
+                    <?php else: ?>
+                        <!-- Guest: Bắt buộc đăng nhập mới được tải về và xem full -->
+                        <a href="<?= url('?module=auth&action=login') ?>" 
+                           class="btn btn-primary fw-semibold px-4 py-2">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập để tải tài liệu
+                            <span class="opacity-75 ms-1 fw-normal">(<?= formatFileSize((int) $document['file_size']) ?>)</span>
+                        </a>
+                        <a href="<?= url('?module=auth&action=register') ?>" class="btn btn-outline-primary">
+                            <i class="bi bi-person-plus me-1"></i> Đăng ký tài khoản
+                        </a>
                     <?php endif; ?>
                 </div>
             </div>
@@ -154,28 +164,53 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
                         </span>
                     </div>
                     <div>
-                        <a href="<?= $serveUrl ?>" target="_blank" 
-                           rel="noopener" class="btn btn-sm btn-outline-primary py-0 px-2">
-                            <i class="bi bi-arrows-fullscreen me-1"></i> Phóng to
-                        </a>
+                        <?php if ($isLoggedIn): ?>
+                            <a href="<?= $serveUrl ?>" target="_blank" 
+                               rel="noopener" class="btn btn-sm btn-outline-primary py-0 px-2">
+                                <i class="bi bi-arrows-fullscreen me-1"></i> Phóng to
+                            </a>
+                        <?php else: ?>
+                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                                <i class="bi bi-eye me-1"></i> Xem trước 3 trang đầu
+                            </span>
+                        <?php endif; ?>
                     </div>
                 </div>
 
-                <!-- Trình xem PDF hoặc Hộp nhắc đăng nhập -->
+                <!-- Trình xem PDF: Đã đăng nhập xem full, chưa đăng nhập chỉ xem trước 3 trang đầu -->
                 <?php if ($isLoggedIn): ?>
                     <iframe src="<?= $serveUrl ?>" 
                             class="tailieu-reader-frame" title="Xem trước PDF: <?= h($document['title']) ?>">
                     </iframe>
                 <?php else: ?>
-                    <div class="tailieu-reader-login text-center">
-                        <i class="bi bi-file-earmark-lock display-4 text-warning mb-3 d-block"></i>
-                        <h5 class="fw-bold text-dark mb-2">Tài liệu phục vụ học tập sinh viên StudyHub</h5>
-                        <p class="small text-muted mb-3 tailieu-reader-login-copy">
-                            Theo quy chuẩn bảo mật học liệu của hệ thống, vui lòng đăng nhập tài khoản để đọc toàn bộ tài liệu trực tuyến và tải file về máy.
-                        </p>
-                        <a href="<?= url('?module=auth&action=login') ?>" class="btn btn-primary btn-sm px-4 fw-medium">
-                            <i class="bi bi-box-arrow-in-right me-1"></i> Đăng nhập để xem trực tuyến
-                        </a>
+                    <div class="p-3 bg-light" style="max-height: 750px; overflow-y: auto;" oncontextmenu="return false;">
+                        <?php for ($p = 1; $p <= 3; $p++): ?>
+                            <?php $previewImgUrl = url('serve.php?file=' . urlencode($document['file_path']) . '&preview_page=' . $p); ?>
+                            <div class="mb-3 text-center bg-white rounded shadow-sm p-2 border">
+                                <div class="text-muted small mb-1 text-start px-2">Trang <?= $p ?> / 3 (Xem trước)</div>
+                                <img src="<?= $previewImgUrl ?>"
+                                     alt="Xem trước trang <?= $p ?> tài liệu <?= h($document['title']) ?>"
+                                     class="img-fluid rounded border-top"
+                                     style="user-select: none; pointer-events: none;"
+                                     onerror="this.closest('.mb-3').style.display='none';">
+                            </div>
+                        <?php endfor; ?>
+
+                        <div class="tailieu-reader-login text-center bg-white rounded border p-4 mt-2">
+                            <i class="bi bi-file-earmark-lock display-5 text-warning mb-2 d-block"></i>
+                            <h5 class="fw-bold text-dark mb-2">Bạn đang xem trước 3 trang đầu tiên</h5>
+                            <p class="small text-muted mb-3 tailieu-reader-login-copy">
+                                Vui lòng đăng nhập tài khoản StudyShare để xem toàn bộ nội dung tài liệu trực tuyến và tải file PDF về máy.
+                            </p>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="<?= url('?module=auth&action=login') ?>" class="btn btn-primary btn-sm px-4 fw-medium">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i> Đăng nhập để xem đầy đủ
+                                </a>
+                                <a href="<?= url('?module=auth&action=register') ?>" class="btn btn-outline-secondary btn-sm px-3">
+                                    Đăng ký
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 <?php endif; ?>
             </div>
@@ -295,34 +330,34 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
                                             </span>
                                         </div>
 
-                                        <!-- Hành động: Sửa / Xóa / Báo cáo -->
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
-                                                <i class="bi bi-three-dots"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-1" style="font-size: 0.85rem;">
-                                                <?php if ($isLoggedIn && (Auth::owns((int) $comment['user_id']) || $isAdmin)): ?>
-                                                    <li>
-                                                        <button type="button" class="dropdown-item py-1 text-primary btn-edit-comment" 
-                                                                data-id="<?= (int) $comment['id'] ?>"
-                                                                data-content="<?= h($comment['content']) ?>">
-                                                            <i class="bi bi-pencil-square me-2"></i>Chỉnh sửa
-                                                        </button>
-                                                    </li>
-                                                    <li>
-                                                        <form action="<?= url('?module=community&action=deleteComment') ?>" method="POST" 
-                                                              onsubmit="return confirm('Bạn có chắc chắn muốn xóa bình luận này?');">
-                                                            <?php csrfField(); ?>
-                                                            <input type="hidden" name="document_id" value="<?= (int) $document['id'] ?>">
-                                                            <input type="hidden" name="comment_id" value="<?= (int) $comment['id'] ?>">
-                                                            <button type="submit" class="dropdown-item py-1 text-danger">
-                                                                <i class="bi bi-trash3 me-2"></i>Xóa
+                                        <!-- Hành động: Sửa / Xóa / Báo cáo (chỉ hiển thị khi đã đăng nhập) -->
+                                        <?php if ($isLoggedIn): ?>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
+                                                    <i class="bi bi-three-dots"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-1" style="font-size: 0.85rem;">
+                                                    <?php if (Auth::owns((int) $comment['user_id']) || $isAdmin): ?>
+                                                        <li>
+                                                            <button type="button" class="dropdown-item py-1 text-primary btn-edit-comment" 
+                                                                    data-id="<?= (int) $comment['id'] ?>"
+                                                                    data-content="<?= h($comment['content']) ?>">
+                                                                <i class="bi bi-pencil-square me-2"></i>Chỉnh sửa
                                                             </button>
-                                                        </form>
-                                                    </li>
-                                                <?php endif; ?>
+                                                        </li>
+                                                        <li>
+                                                            <form action="<?= url('?module=community&action=deleteComment') ?>" method="POST" 
+                                                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa bình luận này?');">
+                                                                <?php csrfField(); ?>
+                                                                <input type="hidden" name="document_id" value="<?= (int) $document['id'] ?>">
+                                                                <input type="hidden" name="comment_id" value="<?= (int) $comment['id'] ?>">
+                                                                <button type="submit" class="dropdown-item py-1 text-danger">
+                                                                    <i class="bi bi-trash3 me-2"></i>Xóa
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                    <?php endif; ?>
 
-                                                <?php if ($isLoggedIn): ?>
                                                     <li>
                                                         <button type="button" class="dropdown-item py-1 text-muted btn-report-target"
                                                                 data-bs-toggle="modal" data-bs-target="#reportModal"
@@ -332,9 +367,9 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
                                                             <i class="bi bi-flag me-2"></i>Báo cáo vi phạm
                                                         </button>
                                                     </li>
-                                                <?php endif; ?>
-                                            </ul>
-                                        </div>
+                                                </ul>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
 
                                     <div class="comment-content">
