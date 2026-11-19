@@ -80,6 +80,93 @@ class AdminModel
         ")->fetchColumn();
     }
 
+    public function getApprovalRate(): int
+    {
+        $row = $this->db->query("
+            SELECT
+                COUNT(*) AS total,
+                SUM(CASE WHEN moderation_status = 'approved' THEN 1 ELSE 0 END) AS approved
+            FROM documents
+            WHERE deleted_at IS NULL
+        ")->fetch(PDO::FETCH_ASSOC);
+
+        $total = (int) ($row['total'] ?? 0);
+        if ($total <= 0) {
+            return 0;
+        }
+        return (int) round(((int) ($row['approved'] ?? 0) / $total) * 100);
+    }
+
+    public function getActivityChartData(): array
+    {
+        $weekLabels = [];
+        $weekDocs = [];
+        $weekQuestions = [];
+
+        $docByDay = $this->db->query("
+            SELECT DATE(created_at) AS d, COUNT(*) AS c
+            FROM documents
+            WHERE deleted_at IS NULL
+              AND created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+            GROUP BY DATE(created_at)
+        ")->fetchAll(PDO::FETCH_KEY_PAIR);
+
+        $qByDay = $this->db->query("
+            SELECT DATE(created_at) AS d, COUNT(*) AS c
+            FROM questions
+            WHERE deleted_at IS NULL
+              AND created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+            GROUP BY DATE(created_at)
+        ")->fetchAll(PDO::FETCH_KEY_PAIR);
+
+        for ($i = 6; $i >= 0; $i--) {
+            $date = date('Y-m-d', strtotime("-{$i} days"));
+            $weekLabels[] = date('d/m', strtotime($date));
+            $weekDocs[] = (int) ($docByDay[$date] ?? 0);
+            $weekQuestions[] = (int) ($qByDay[$date] ?? 0);
+        }
+
+        $monthLabels = [];
+        $monthDocs = [];
+        $monthQuestions = [];
+
+        $docByMonth = $this->db->query("
+            SELECT DATE_FORMAT(created_at, '%Y-%m') AS m, COUNT(*) AS c
+            FROM documents
+            WHERE deleted_at IS NULL
+              AND created_at >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 5 MONTH)
+            GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+        ")->fetchAll(PDO::FETCH_KEY_PAIR);
+
+        $qByMonth = $this->db->query("
+            SELECT DATE_FORMAT(created_at, '%Y-%m') AS m, COUNT(*) AS c
+            FROM questions
+            WHERE deleted_at IS NULL
+              AND created_at >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 5 MONTH)
+            GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+        ")->fetchAll(PDO::FETCH_KEY_PAIR);
+
+        for ($i = 5; $i >= 0; $i--) {
+            $ym = date('Y-m', strtotime("-{$i} months"));
+            $monthLabels[] = 'T' . date('n', strtotime($ym . '-01'));
+            $monthDocs[] = (int) ($docByMonth[$ym] ?? 0);
+            $monthQuestions[] = (int) ($qByMonth[$ym] ?? 0);
+        }
+
+        return [
+            'week' => [
+                'labels' => $weekLabels,
+                'docs' => $weekDocs,
+                'questions' => $weekQuestions,
+            ],
+            'month' => [
+                'labels' => $monthLabels,
+                'docs' => $monthDocs,
+                'questions' => $monthQuestions,
+            ],
+        ];
+    }
+
     public function getLatestPendingDocuments(int $limit = 5): array
     {
         $limit = max(1, min(20, $limit));
