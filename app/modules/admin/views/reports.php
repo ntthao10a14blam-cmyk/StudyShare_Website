@@ -62,14 +62,14 @@ $typeLabels = [
         <?php endif; ?>
 
         <!-- LỌC TRẠNG THÁI -->
-        <div class="admin-panel mb-4">
+        <div class="admin-panel p-4 mb-4">
             <form method="GET" action="" class="row g-3 align-items-end">
 
                 <input type="hidden" name="module" value="admin">
                 <input type="hidden" name="action" value="reports">
 
-                <div class="col-md-8">
-                    <label for="status" class="form-label fw-semibold">
+                <div class="col-lg-8 col-md-7">
+                    <label for="status" class="form-label fw-semibold mb-2">
                         Lọc báo cáo theo trạng thái
                     </label>
 
@@ -92,14 +92,15 @@ $typeLabels = [
                     </select>
                 </div>
 
-                <div class="col-md-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary flex-grow-1">
+                <div class="col-lg-4 col-md-5 d-flex gap-2 justify-content-md-end">
+                    <button type="submit" class="btn btn-primary px-4">
                         <i class="bi bi-funnel"></i>
                         Lọc
                     </button>
 
                     <a href="<?= url('?module=admin&action=reports') ?>"
-                       class="btn btn-outline-secondary">
+                       class="btn btn-outline-secondary px-3">
+                        <i class="bi bi-arrow-counterclockwise"></i>
                         Đặt lại
                     </a>
                 </div>
