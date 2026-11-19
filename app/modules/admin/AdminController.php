@@ -92,13 +92,19 @@ class AdminController
 
         extract($data, EXTR_SKIP);
 
-        $csrfToken    = $csrfToken ?? csrfToken();
-        $pendingCount = $pendingCount ?? $this->model->countPendingDocuments();
-        $extraCss     = ['admin.css'];
-        $extraJs      = ['admin.js'];
+        $csrfToken           = $csrfToken ?? csrfToken();
+        $pendingCount        = $pendingCount ?? $this->model->countPendingDocuments();
+        $pendingReportsCount = $pendingReportsCount ?? $this->model->countPendingReports();
+        $extraCss            = ['admin.css'];
+        $extraJs             = ['admin.js'];
 
         require BASE_PATH . '/app/views/layouts/header.php';
+        echo '<div class="admin-dash-shell">';
+        require BASE_PATH . '/app/modules/admin/views/_sidebar.php';
+        echo '<div class="admin-dash-body">';
         require BASE_PATH . '/app/modules/admin/views/' . $view;
+        echo '</div>';
+        echo '</div>';
         require BASE_PATH . '/app/views/layouts/footer.php';
     }
 
@@ -121,6 +127,10 @@ class AdminController
 
         $latestPendingDocs = $latestPendingDocuments;
         $latestReports = $this->model->getLatestReports(5);
+        $approvalRate = $this->model->getApprovalRate();
+        $activityChart = $this->model->getActivityChartData();
+        $currentUser = Auth::currentUser();
+        $adminName = $currentUser['full_name'] ?? 'Quản trị viên';
 
         $this->renderAdminView('dashboard.php', get_defined_vars());
     }
