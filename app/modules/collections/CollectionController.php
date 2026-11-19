@@ -122,6 +122,9 @@ class CollectionController
                     $this->fail('Tài liệu không tồn tại hoặc bạn không có quyền truy cập.');
                 }
                 $this->model->addDocument((int) $collection['id'], $documentId);
+                if (($_POST['return_to'] ?? '') === 'community') {
+                    redirect('?module=community&action=show&id=' . $documentId, 'Đã lưu tài liệu vào bộ sưu tập "' . $collection['name'] . '"!', 'success');
+                }
                 $this->go('show', (int) $collection['id']);
                 break;
             case 'removeDocument':
@@ -145,6 +148,9 @@ class CollectionController
                     $this->fail('Không thể yêu thích tài liệu này.');
                 }
                 $this->model->toggleFavorite($this->userId, $documentId);
+                if (($_POST['return_to'] ?? '') === 'community') {
+                    redirect('?module=community&action=show&id=' . $documentId, 'Đã cập nhật trạng thái yêu thích!', 'success');
+                }
                 $this->go('favorites');
                 break;
             default:
