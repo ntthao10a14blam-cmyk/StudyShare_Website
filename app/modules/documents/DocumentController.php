@@ -32,6 +32,45 @@ class DocumentController
         $this->model = new DocumentModel();
     }
 
+
+    // ============================================================
+    // HÀM HỖ TRỢ NỘI BỘ
+    // ============================================================
+
+    /**
+     * Tự động kiểm tra và tạo thư mục nếu chưa có.
+     */
+    private function ensureDir(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+    }
+
+    /**
+     * Kiểm tra file PDF upload (lỗi upload, đuôi .pdf, MIME thực tế application/pdf).
+     * Không ghi file ra đĩa. Trả về null nếu hợp lệ, hoặc chuỗi thông báo lỗi.
+     */
+    private function validatePdfUpload(array $pdfFile): ?string
+    {
+        if (($pdfFile['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            return 'Lỗi trong quá trình tải file. Mã lỗi: ' . (int) ($pdfFile['error'] ?? -1);
+        }
+
+        $fileExt = strtolower(pathinfo($pdfFile['name'], PATHINFO_EXTENSION));
+        if ($fileExt !== 'pdf') {
+            return 'Chỉ chấp nhận file có định dạng .pdf. Đã chặn file không hợp lệ hoặc giả mạo đuôi.';
+        }
+
+        $finfo    = new finfo(FILEINFO_MIME_TYPE);
+        $mimeType = $finfo->file($pdfFile['tmp_name']);
+        if ($mimeType !== 'application/pdf') {
+            return 'Nội dung file không đúng định dạng PDF hợp lệ (phát hiện file giả mạo MIME type).';
+        }
+
+        return null;
+    }
+
     /**
      * Danh sách tài liệu cá nhân của user
      */
@@ -40,18 +79,18 @@ class DocumentController
         Auth::requireActiveUser();
         $userId = Auth::id();
 
-        // 1. Lọc và tìm kiếm
+        // 1. Lọc và tìm kiếm (hiển thị cả 4 danh sách trên 1 trang)
         $filters = [
             'q'          => get('q', ''),
             'subject_id' => get('subject_id', ''),
-            'status'     => get('status', 'all'),
+            'status'     => 'all',
             'visibility' => get('visibility', 'all'),
             'sort'       => get('sort', 'newest'),
         ];
 
-        // 2. Phân trang
+        // 2. Lấy toàn bộ dữ liệu theo bộ lọc để chia 4 danh sách
         $totalDocs  = $this->model->countByUser($userId, $filters);
-        $pagination = paginate($totalDocs, ITEMS_PER_PAGE);
+        $pagination = paginate($totalDocs, 200);
 
         // 3. Lấy dữ liệu
         $documents = $this->model->findByUser(
@@ -95,6 +134,15 @@ class DocumentController
     public function store(): void
     {
         Auth::requireActiveUser();
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST'
+            && empty($_POST)
+            && empty($_FILES)
+            && (int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 0
+        ) {
+            redirect('?module=documents&action=create', 'Dung lượng file tải lên vượt quá giới hạn cho phép của máy chủ.', 'error');
+        }
+
         verifyCsrf();
 
         $userId = Auth::id();
@@ -123,17 +171,18 @@ class DocumentController
             $visibility = 'private';
         }
 
-        // 3. Validate và Upload file PDF (Bắt buộc)
-        if (empty($_FILES['document_file']['name'])) {
+        // 3. Validate file PDF (Bắt buộc) — CHỈ kiểm tra, chưa lưu file lên storage
+        $pdfFile = $_FILES['document_file'] ?? null;
+        if (empty($pdfFile['name'])) {
             $errors['document_file'] = 'Vui lòng chọn file PDF để tải lên.';
         } else {
-            $pdfResult = Upload::pdf($_FILES['document_file'], STORAGE_DOCUMENTS);
-            if (!$pdfResult['success']) {
-                $errors['document_file'] = $pdfResult['error'];
+            $pdfError = $this->validatePdfUpload($pdfFile);
+            if ($pdfError !== null) {
+                $errors['document_file'] = $pdfError;
             }
         }
 
-        // 4. Nếu có lỗi, quay lại form tạo
+        // 4. Nếu có lỗi, quay lại form tạo (chưa có file nào bị ghi ra đĩa)
         if (!empty($errors)) {
             $_SESSION['form_errors'] = $errors;
             $_SESSION['form_data']   = [
@@ -144,6 +193,22 @@ class DocumentController
                 'tags'        => $tagsInput,
             ];
             redirect('?module=documents&action=create', 'Vui lòng kiểm tra lại thông tin biểu mẫu.', 'error');
+            return;
+        }
+
+        // 4b. Mọi dữ liệu đã hợp lệ → mới thực sự lưu file PDF
+        $this->ensureDir(STORAGE_DOCUMENTS);
+        $pdfResult = Upload::pdf($pdfFile, STORAGE_DOCUMENTS);
+        if (!$pdfResult['success']) {
+            $_SESSION['form_errors'] = ['document_file' => $pdfResult['error']];
+            $_SESSION['form_data']   = [
+                'title'       => $title,
+                'subject_id'  => $subjectId,
+                'description' => $description,
+                'visibility'  => $visibility,
+                'tags'        => $tagsInput,
+            ];
+            redirect('?module=documents&action=create', 'Không thể lưu file PDF.', 'error');
             return;
         }
 
@@ -172,6 +237,7 @@ class DocumentController
 
         // 7. Xử lý upload ảnh minh hoạ (nếu có, tối đa MAX_IMAGES_PER_DOC ảnh)
         if (!empty($_FILES['images']['name'])) {
+            $this->ensureDir(STORAGE_DOC_IMAGES);
             $imageFiles = Upload::normalizeMultiple($_FILES['images']);
             $sortOrder  = 0;
             foreach ($imageFiles as $imgFile) {
@@ -304,6 +370,13 @@ class DocumentController
 
         if (!empty($errors)) {
             $_SESSION['form_errors'] = $errors;
+            $_SESSION['form_data']   = [
+                'title'       => $title,
+                'subject_id'  => $subjectId,
+                'description' => $description,
+                'visibility'  => $visibility,
+                'tags'        => $tagsInput,
+            ];
             redirect('?module=documents&action=edit&id=' . $id, 'Dữ liệu không hợp lệ.', 'error');
             return;
         }
@@ -315,43 +388,71 @@ class DocumentController
             'visibility'  => $visibility,
         ];
 
-        // Kiểm tra xem mô tả có bị thay đổi không
-        $descriptionChanged = trim((string) $doc['description']) !== trim((string) $description);
-        $fileChanged        = false;
+        $fileChanged = false;
+        $newPdfFile  = null;
 
-        // Xử lý thay thế file PDF mới nếu có upload
+        // Validate file PDF mới (nếu có) TRƯỚC khi thay đổi bất cứ thứ gì
         if (!empty($_FILES['document_file']['name'])) {
-            $pdfResult = Upload::pdf($_FILES['document_file'], STORAGE_DOCUMENTS);
-            if ($pdfResult['success']) {
-                // Xoá file cũ khỏi storage
-                Upload::delete($doc['file_path']);
-
-                $updateData['file_path']          = $pdfResult['path'];
-                $updateData['original_file_name'] = $pdfResult['original'];
-                $updateData['file_size']          = $pdfResult['size'];
-                $fileChanged                      = true;
-            } else {
-                redirect('?module=documents&action=edit&id=' . $id, $pdfResult['error'], 'error');
+            $newPdfFile = $_FILES['document_file'];
+            $pdfError   = $this->validatePdfUpload($newPdfFile);
+            if ($pdfError !== null) {
+                $_SESSION['form_errors'] = ['document_file' => $pdfError];
+                $_SESSION['form_data']   = [
+                    'title'       => $title,
+                    'subject_id'  => $subjectId,
+                    'description' => $description,
+                    'visibility'  => $visibility,
+                    'tags'        => $tagsInput,
+                ];
+                redirect('?module=documents&action=edit&id=' . $id, $pdfError, 'error');
                 return;
             }
         }
 
-        // QUY TẮC BẮT BUỘC (Lead Schema TV1 quy định):
-        // Khi sửa file_path hoặc description của tài liệu APPROVED → đặt lại pending để Admin duyệt lại
+        // Mọi validate đã qua → lưu file PDF mới
+        if ($newPdfFile !== null) {
+            $this->ensureDir(STORAGE_DOCUMENTS);
+            $pdfResult = Upload::pdf($newPdfFile, STORAGE_DOCUMENTS);
+            if (!$pdfResult['success']) {
+                redirect('?module=documents&action=edit&id=' . $id, $pdfResult['error'], 'error');
+                return;
+            }
+            // Xoá file cũ khỏi storage
+            Upload::delete($doc['file_path']);
+
+            $updateData['file_path']          = $pdfResult['path'];
+            $updateData['original_file_name'] = $pdfResult['original'];
+            $updateData['file_size']          = $pdfResult['size'];
+            $fileChanged                      = true;
+        }
+
+        // So sánh mô tả (chuẩn hóa dòng mới)
+        $oldDesc = trim(str_replace(["\r\n", "\r"], "\n", (string) $doc['description']));
+        $newDesc = trim(str_replace(["\r\n", "\r"], "\n", (string) $description));
+        $descriptionChanged = ($oldDesc !== $newDesc);
+
+        // QUY TẮC BẮT BUỘC (Bảo toàn tính kiểm duyệt) + tôn trọng lựa chọn hiển thị của người dùng:
+        //  1. Người dùng chọn PRIVATE  → luôn về riêng tư, 'not_submitted' (không ép lại public/pending).
+        //  2. Tài liệu đã approved + đổi file PDF/mô tả (và vẫn public) → bắt buộc về 'pending'.
+        //  3. Tài liệu 'not_submitted' đang private mà chuyển sang PUBLIC → coi như gửi duyệt ('pending').
         $statusNotice = '';
-        if ($doc['moderation_status'] === 'approved' && ($fileChanged || $descriptionChanged)) {
-            if ($visibility === 'public') {
-                $updateData['moderation_status'] = 'pending';
-                $updateData['submitted_at']      = date('Y-m-d H:i:s');
-                $statusNotice = ' Tài liệu đã được đưa về trạng thái chờ duyệt lại do có sự thay đổi nội dung/file.';
-            } else {
+        if ($visibility === 'private') {
+            if ($doc['moderation_status'] !== 'not_submitted') {
                 $updateData['moderation_status'] = 'not_submitted';
                 $updateData['submitted_at']      = null;
             }
-        } elseif ($visibility === 'private' && $doc['moderation_status'] !== 'not_submitted') {
-            // Chuyển sang riêng tư thì thu hồi khỏi danh sách duyệt
-            $updateData['moderation_status'] = 'not_submitted';
-            $updateData['submitted_at']      = null;
+        } elseif ($doc['moderation_status'] === 'approved' && ($fileChanged || $descriptionChanged)) {
+            $updateData['moderation_status'] = 'pending';
+            $updateData['submitted_at']      = date('Y-m-d H:i:s');
+            $changedReason = ($fileChanged && $descriptionChanged)
+                ? 'file PDF mới và nội dung mô tả'
+                : ($fileChanged ? 'file PDF mới' : 'nội dung mô tả');
+            $statusNotice = ' Tài liệu đã được tự động đưa về trạng thái "Chờ duyệt" (Pending) do bạn đã thay đổi '
+                . $changedReason . '. Tài liệu cần Ban quản trị duyệt lại trước khi tiếp tục hiển thị công khai.';
+        } elseif ($doc['moderation_status'] === 'not_submitted' && $visibility === 'public') {
+            $updateData['moderation_status'] = 'pending';
+            $updateData['submitted_at']      = date('Y-m-d H:i:s');
+            $statusNotice = ' Tài liệu đã được gửi yêu cầu duyệt vì bạn chuyển sang chế độ công khai. Tài liệu sẽ hiển thị công khai sau khi Ban quản trị phê duyệt.';
         }
 
         // Cập nhật database
@@ -367,6 +468,7 @@ class DocumentController
 
         // Thêm ảnh minh hoạ mới nếu có
         if (!empty($_FILES['images']['name'])) {
+            $this->ensureDir(STORAGE_DOC_IMAGES);
             $currentCount = $this->model->countImages($id);
             $newImages    = Upload::normalizeMultiple($_FILES['images']);
             $sortOrder    = $currentCount;
@@ -383,7 +485,8 @@ class DocumentController
         // Đồng bộ lại từ khoá
         $this->model->syncTags($id, $tagsInput);
 
-        redirect('?module=documents&action=show&id=' . $id, 'Đã cập nhật thông tin tài liệu thành công!' . $statusNotice, 'success');
+        $flashType = !empty($statusNotice) ? 'warning' : 'success';
+        redirect('?module=documents&action=show&id=' . $id, 'Đã cập nhật thông tin tài liệu thành công!' . $statusNotice, $flashType);
     }
 
     /**
@@ -432,7 +535,10 @@ class DocumentController
         }
 
         $this->model->submitForReview($id);
-        redirect('?module=documents&action=show&id=' . $id, 'Đã gửi tài liệu yêu cầu ban quản trị phê duyệt!', 'success');
+
+        $redirectTo = post('redirect_to');
+        $target = !empty($redirectTo) ? $redirectTo : ('?module=documents&action=show&id=' . $id);
+        redirect($target, 'Đã gửi tài liệu yêu cầu ban quản trị phê duyệt!', 'success');
     }
 
     /**
@@ -454,7 +560,10 @@ class DocumentController
         Auth::requireOwnerOrAdmin((int) $doc['user_id']);
 
         $this->model->revokeShare($id);
-        redirect('?module=documents&action=show&id=' . $id, 'Đã thu hồi tài liệu về chế độ riêng tư.', 'info');
+
+        $redirectTo = post('redirect_to');
+        $target = !empty($redirectTo) ? $redirectTo : ('?module=documents&action=show&id=' . $id);
+        redirect($target, 'Đã thu hồi tài liệu về chế độ riêng tư.', 'info');
     }
 
     /**

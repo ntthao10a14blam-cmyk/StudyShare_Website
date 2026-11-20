@@ -6,9 +6,24 @@
 $pageTitle = $pageTitle ?? ('Sửa: ' . $doc['title']);
 require_once BASE_PATH . '/app/views/layouts/header.php';
 
-$errors = $_SESSION['form_errors'] ?? [];
-unset($_SESSION['form_errors']);
+$errors   = $_SESSION['form_errors'] ?? [];
+$formData = $_SESSION['form_data']   ?? [];
+unset($_SESSION['form_errors'], $_SESSION['form_data']);
+
+// Giá trị hiển thị trong form: ưu tiên dữ liệu người dùng vừa nhập (khi validate lỗi), nếu không dùng dữ liệu DB
+$f = [
+    'title'       => $formData['title']       ?? $doc['title'],
+    'subject_id'  => $formData['subject_id']  ?? $doc['subject_id'],
+    'description' => $formData['description'] ?? ($doc['description'] ?? ''),
+    'visibility'  => $formData['visibility']  ?? $doc['visibility'],
+    'tags'        => $formData['tags']        ?? ($tagString ?? ''),
+];
+if (is_array($f['tags'])) { $f['tags'] = implode(', ', $f['tags']); }
 ?>
+
+<!-- EasyMDE Markdown Editor (CDN) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
 
 <div class="container py-4">
 
@@ -60,7 +75,7 @@ unset($_SESSION['form_errors']);
                         </label>
                         <input type="text" id="titleInput" name="title"
                                class="form-control <?= isset($errors['title']) ? 'is-invalid' : '' ?>"
-                               value="<?= h($doc['title']) ?>" required maxlength="255">
+                               value="<?= h($f['title']) ?>" required maxlength="255">
                         <?php if (isset($errors['title'])): ?>
                             <div class="invalid-feedback"><?= h($errors['title']) ?></div>
                         <?php endif; ?>
@@ -74,7 +89,7 @@ unset($_SESSION['form_errors']);
                                 class="form-select <?= isset($errors['subject_id']) ? 'is-invalid' : '' ?>" required>
                             <option value="">-- Chọn môn học --</option>
                             <?php foreach ($subjects as $s): ?>
-                                <option value="<?= $s['id'] ?>" <?= $doc['subject_id'] == $s['id'] ? 'selected' : '' ?>>
+                                <option value="<?= $s['id'] ?>" <?= $f['subject_id'] == $s['id'] ? 'selected' : '' ?>>
                                     <?= h($s['name']) ?>
                                 </option>
                             <?php endforeach; ?>
@@ -103,33 +118,59 @@ unset($_SESSION['form_errors']);
                         Tải lên file PDF mới để thay thế (để trống nếu không muốn đổi file):
                     </label>
                     <input type="file" id="documentFileInput" name="document_file"
-                           accept="application/pdf,.pdf" class="form-control form-control-sm">
+                           accept="application/pdf,.pdf"
+                           class="form-control form-control-sm <?= isset($errors['document_file']) ? 'is-invalid' : '' ?>">
+                    <?php if (isset($errors['document_file'])): ?>
+                        <div class="invalid-feedback d-block"><?= h($errors['document_file']) ?></div>
+                    <?php endif; ?>
                 </div>
 
                 <!-- 3. QUẢN LÝ ẢNH MINH HOẠ ĐÃ CÓ -->
                 <?php if (!empty($images)): ?>
-                    <div class="mb-4 p-3 rounded border bg-light-subtle">
+                    <div class="mb-4 p-3 rounded border bg-light-subtle" id="existingImagesSection">
                         <label class="form-label fw-semibold mb-2">
-                            Ảnh minh hoạ hiện có (Tích chọn để xoá ảnh)
+                            Ảnh minh hoạ hiện có <small class="text-muted fw-normal">(Nhấn × ở góc phải để xoá ảnh)</small>
                         </label>
                         <div class="row g-2">
                             <?php foreach ($images as $img): ?>
-                                <div class="col-4 col-md-3 col-lg-2">
-                                    <div class="border rounded p-1 bg-white text-center position-relative shadow-xs">
+                                <div class="col-4 col-md-3 col-lg-2 existing-img-item">
+                                    <div class="border rounded p-1 bg-white position-relative shadow-xs existing-img-card" data-img-card="<?= (int) $img['id'] ?>">
+                                        <input class="d-none existing-img-checkbox" type="checkbox" name="delete_images[]"
+                                               value="<?= (int) $img['id'] ?>" id="delImg<?= (int) $img['id'] ?>">
+                                        <button type="button"
+                                                class="btn btn-danger btn-sm rounded-circle position-absolute top-0 end-0 m-1 d-flex align-items-center justify-content-center p-0 shadow-sm existing-img-remove-btn"
+                                                style="width: 22px; height: 22px; z-index: 2; line-height: 1;"
+                                                data-target-checkbox="delImg<?= (int) $img['id'] ?>"
+                                                title="Xoá ảnh này"
+                                                aria-label="Xoá ảnh này">
+                                            <i class="bi bi-x" style="font-size: 15px;"></i>
+                                        </button>
                                         <img src="<?= storageUrl($img['image_path']) ?>" alt="Minh hoạ"
-                                             class="w-100 rounded object-fit-cover" style="height: 80px;">
-                                        <div class="form-check mt-1 d-flex justify-content-center align-items-center gap-1">
-                                            <input class="form-check-input" type="checkbox" name="delete_images[]"
-                                                   value="<?= $img['id'] ?>" id="delImg<?= $img['id'] ?>">
-                                            <label class="form-check-label text-danger small" for="delImg<?= $img['id'] ?>" style="font-size: 11px;">
-                                                Xóa ảnh
-                                            </label>
-                                        </div>
+                                             class="w-100 rounded object-fit-cover" style="height: 88px;">
                                     </div>
                                 </div>
                             <?php endforeach; ?>
                         </div>
                     </div>
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const section = document.getElementById('existingImagesSection');
+                        document.querySelectorAll('.existing-img-remove-btn').forEach(function (btn) {
+                            btn.addEventListener('click', function () {
+                                const cb = document.getElementById(btn.getAttribute('data-target-checkbox'));
+                                const item = btn.closest('.existing-img-item');
+                                if (!cb || !item) return;
+
+                                cb.checked = true;
+                                item.classList.add('d-none');
+
+                                if (section && section.querySelectorAll('.existing-img-item:not(.d-none)').length === 0) {
+                                    section.classList.add('d-none');
+                                }
+                            });
+                        });
+                    });
+                    </script>
                 <?php endif; ?>
 
                 <!-- 4. THÊM ẢNH MINH HOẠ MỚI -->
@@ -148,7 +189,7 @@ unset($_SESSION['form_errors']);
                     </label>
                     <textarea id="descriptionInput" name="description" rows="5"
                               class="form-control"
-                              placeholder="Mô tả nội dung chi tiết..."><?= h($doc['description'] ?? '') ?></textarea>
+                              placeholder="Mô tả nội dung chi tiết..."><?= h($f['description']) ?></textarea>
                 </div>
 
                 <!-- 6. TỪ KHOÁ (TAGS) -->
@@ -158,7 +199,7 @@ unset($_SESSION['form_errors']);
                     </label>
                     <input type="text" id="tagsInput" name="tags"
                            class="form-control"
-                           value="<?= h($tagString ?? '') ?>"
+                           value="<?= h($f['tags']) ?>"
                            placeholder="bài tập, ôn thi, lý thuyết...">
                 </div>
 
@@ -168,7 +209,7 @@ unset($_SESSION['form_errors']);
                     
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="radio" name="visibility" id="visPrivate" value="private"
-                               <?= $doc['visibility'] === 'private' ? 'checked' : '' ?>>
+                               <?= $f['visibility'] === 'private' ? 'checked' : '' ?>>
                         <label class="form-check-label" for="visPrivate">
                             <span class="fw-semibold text-dark"><i class="bi bi-lock me-1"></i> Riêng tư (Chỉ mình tôi)</span>
                         </label>
@@ -176,7 +217,7 @@ unset($_SESSION['form_errors']);
 
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="visibility" id="visPublic" value="public"
-                               <?= $doc['visibility'] === 'public' ? 'checked' : '' ?>>
+                               <?= $f['visibility'] === 'public' ? 'checked' : '' ?>>
                         <label class="form-check-label" for="visPublic">
                             <span class="fw-semibold text-primary"><i class="bi bi-globe me-1"></i> Chia sẻ cộng đồng</span>
                         </label>
@@ -199,5 +240,40 @@ unset($_SESSION['form_errors']);
     </div>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Khởi tạo Markdown Editor (EasyMDE) cho mô tả tài liệu
+    const descTextarea = document.getElementById('descriptionInput');
+    let easyMDE = null;
+    if (descTextarea && typeof EasyMDE !== 'undefined') {
+        easyMDE = new EasyMDE({
+            element: descTextarea,
+            placeholder: 'Mô tả nội dung chi tiết...',
+            spellChecker: false,
+            autosave: { enabled: false },
+            status: false,
+            minHeight: '200px',
+            toolbar: [
+                'bold', 'italic', 'heading', '|',
+                'quote', 'unordered-list', 'ordered-list', '|',
+                'link', 'table', '|',
+                'preview', 'side-by-side', 'fullscreen', '|',
+                'guide'
+            ]
+        });
+
+        // Đảm bảo đồng bộ dữ liệu vào textarea trước khi submit form
+        const form = descTextarea.closest('form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                if (easyMDE) {
+                    descTextarea.value = easyMDE.value();
+                }
+            });
+        }
+    }
+});
+</script>
 
 <?php require_once BASE_PATH . '/app/views/layouts/footer.php'; ?>

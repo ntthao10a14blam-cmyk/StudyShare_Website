@@ -262,3 +262,13 @@ CREATE TABLE IF NOT EXISTS reports (
         (question_id IS NOT NULL) + (answer_id IS NOT NULL) = 1
     )
 ) ENGINE=InnoDB;
+
+CREATE TABLE answer_likes (
+    answer_id  BIGINT   NOT NULL,
+    user_id    BIGINT   NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (answer_id, user_id),
+    INDEX idx_answer_likes_user (user_id),
+    CONSTRAINT fk_answer_likes_answer FOREIGN KEY (answer_id) REFERENCES answers(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_answer_likes_user   FOREIGN KEY (user_id)   REFERENCES users(id)   ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;

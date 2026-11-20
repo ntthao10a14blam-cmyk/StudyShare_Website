@@ -35,6 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!box) return;
         input.addEventListener('change', () => {
             box.innerHTML = '';
+            // Chọn quá giới hạn: main.js sẽ báo lỗi và xóa lựa chọn,
+            // nên ở đây không dựng ảnh xem trước (tránh hiện ảnh "ma" chưa hề được chọn)
+            const max = parseInt(input.dataset.maxFiles, 10);
+            if (max && input.files.length > max) return;
             Array.from(input.files).forEach(file => {
                 if (!file.type.startsWith('image/')) return;
                 const img = document.createElement('img');
@@ -58,6 +62,39 @@ document.addEventListener('DOMContentLoaded', () => {
             modal.querySelector('#report-label').textContent = btn.dataset.reportLabel;
             modal.querySelector('#report-reason').value = '';
             modal.querySelector('#report-details').value = '';
+        });
+    }
+
+    /* 5. Editor Markdown (EasyMDE) cho <textarea class="md-editor"> */
+    const editors = [];
+    if (window.EasyMDE) {
+        document.querySelectorAll('textarea.md-editor').forEach(area => {
+            const mde = new EasyMDE({
+                element: area,
+                spellChecker: false,
+                status: false,
+                forceSync: true,          // luôn đồng bộ nội dung về textarea gốc để gửi form
+                minHeight: '160px',
+                placeholder: area.getAttribute('placeholder') || '',
+                toolbar: ['bold', 'italic', 'heading', '|', 'quote', 'unordered-list',
+                          'ordered-list', '|', 'link', 'code', '|', 'preview']
+            });
+            // giữ cho bộ đếm ký tự (mục 1 phía trên) vẫn chạy
+            mde.codemirror.on('change', () => area.dispatchEvent(new Event('input')));
+            editors.push(mde);
+        });
+        // Form sửa câu trả lời nằm trong khối thu gọn: phải refresh khi mở ra
+        document.addEventListener('shown.bs.collapse', () => {
+            editors.forEach(m => m.codemirror.refresh());
+        });
+    }
+
+    /* 6. Hiển thị Markdown an toàn (chống XSS bằng DOMPurify) */
+    if (window.marked && window.DOMPurify) {
+        document.querySelectorAll('.md-render').forEach(el => {
+            if (el.dataset.rendered) return;          // tránh render 2 lần làm mất định dạng
+            el.innerHTML = DOMPurify.sanitize(marked.parse(el.textContent, { breaks: true }));
+            el.dataset.rendered = '1';
         });
     }
 });

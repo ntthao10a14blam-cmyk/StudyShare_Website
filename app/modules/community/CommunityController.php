@@ -8,6 +8,14 @@ require_once BASE_PATH . '/app/modules/community/CommunityModel.php';
 
 class CommunityController
 {
+    private const REPORT_REASONS = [
+        'Spam / quảng cáo',
+        'Sai chuyên môn / thông tin không chính xác',
+        'Nội dung nhạy cảm hoặc không phù hợp',
+        'Vi phạm bản quyền',
+        'Lý do khác',
+    ];
+
     private CommunityModel $model;
 
     public function __construct()
@@ -98,12 +106,116 @@ class CommunityController
         $comments     = $this->model->getComments($id);
         $relatedDocs  = $this->model->getRelatedDocuments((int) $document['subject_id'], $id, 5);
 
+        // Lấy danh sách bộ sưu tập & trạng thái yêu thích của User (nếu đã đăng nhập)
+        $userCollections = [];
+        $isFavorited     = false;
+        $tv4Token        = '';
+        if (Auth::check()) {
+            $uid = (int) Auth::id();
+            $db  = Database::getInstance();
+
+            $stmtCol = $db->prepare("SELECT id, name FROM collections WHERE user_id = :uid ORDER BY created_at DESC");
+            $stmtCol->execute([':uid' => $uid]);
+            $userCollections = $stmtCol->fetchAll();
+
+            $stmtFav = $db->prepare("SELECT 1 FROM favorites WHERE user_id = :uid AND document_id = :doc_id LIMIT 1");
+            $stmtFav->execute([':uid' => $uid, ':doc_id' => $id]);
+            $isFavorited = (bool) $stmtFav->fetchColumn();
+
+            if (empty($_SESSION['tv4_token'])) {
+                $_SESSION['tv4_token'] = bin2hex(random_bytes(16));
+            }
+            $tv4Token = $_SESSION['tv4_token'];
+        }
+
         $pageTitle       = $document['title'];
         $pageDescription = !empty($document['description']) 
             ? mb_substr(strip_tags($document['description']), 0, 160) . '...' 
             : 'Tài liệu học tập ' . $document['title'];
+        $reportReasons = self::REPORT_REASONS;
 
         require_once BASE_PATH . '/app/modules/community/views/show.php';
+    }
+
+    /**
+     * Tải xuống tài liệu công khai đã được duyệt (bắt buộc đăng nhập).
+     */
+    public function download(): void
+    {
+        Auth::requireLogin();
+
+        $id = (int) get('id', 0);
+        $document = $id > 0 ? $this->model->getDocumentById($id) : false;
+
+        if (
+            !$document
+            || $document['visibility'] !== 'public'
+            || $document['moderation_status'] !== 'approved'
+        ) {
+            http_response_code(404);
+            exit('Không tìm thấy tài liệu.');
+        }
+
+        $relativePath = str_replace('\\', '/', (string) $document['file_path']);
+        if (str_starts_with($relativePath, 'documents/')) {
+            $relativePath = substr($relativePath, strlen('documents/'));
+        }
+
+        if (
+            $relativePath === ''
+            || str_contains($relativePath, '..')
+            || str_contains($relativePath, "\0")
+            || basename($relativePath) !== $relativePath
+            || strtolower(pathinfo($relativePath, PATHINFO_EXTENSION)) !== 'pdf'
+        ) {
+            http_response_code(404);
+            exit('Không tìm thấy tài liệu.');
+        }
+
+        $documentsDirectory = realpath(STORAGE_DOCUMENTS);
+        $filePath = $documentsDirectory === false
+            ? false
+            : realpath($documentsDirectory . DIRECTORY_SEPARATOR . $relativePath);
+
+        if (
+            $documentsDirectory === false
+            || $filePath === false
+            || !is_file($filePath)
+            || !str_starts_with($filePath, $documentsDirectory . DIRECTORY_SEPARATOR)
+        ) {
+            http_response_code(404);
+            exit('Không tìm thấy tài liệu.');
+        }
+
+        $file = fopen($filePath, 'rb');
+        if ($file === false) {
+            http_response_code(404);
+            exit('Không thể đọc tài liệu.');
+        }
+
+        $this->model->incrementDownloadCount($id);
+
+        $downloadName = basename(str_replace('\\', '/', (string) $document['original_file_name']));
+        $downloadName = str_replace(["\r", "\n"], '', $downloadName);
+        if ($downloadName === '') {
+            $downloadName = 'document-' . $id . '.pdf';
+        }
+        $fallbackName = preg_replace('/[^A-Za-z0-9._-]/', '_', $downloadName);
+        if ($fallbackName === '') {
+            $fallbackName = 'document-' . $id . '.pdf';
+        }
+
+        header('Content-Type: application/pdf');
+        header(
+            'Content-Disposition: attachment; filename="' . $fallbackName
+            . '"; filename*=UTF-8\'\'' . rawurlencode($downloadName)
+        );
+        header('X-Content-Type-Options: nosniff');
+        header('Cache-Control: private, no-store');
+
+        fpassthru($file);
+        fclose($file);
+        exit;
     }
 
     /**
@@ -192,28 +304,65 @@ class CommunityController
         Auth::requireActiveUser();
         verifyCsrf();
 
-        $reason     = trim((string) post('reason', ''));
-        $details    = trim((string) post('details', ''));
-        $documentId = (int) post('document_id', 0);
-        $commentId  = (int) post('comment_id', 0);
+        $targetType = (string) post('target_type', '');
+        $targetId   = (int) post('target_id', 0);
+        $reason     = (string) post('reason', '');
+        $details    = mb_substr(trim((string) post('details', '')), 0, 1000);
 
-        if (empty($reason)) {
-            $redirectUrl = $_SERVER['HTTP_REFERER'] ?? url('?module=community&action=index');
-            redirect($redirectUrl, 'Vui lòng chọn lý do báo cáo.', 'error');
+        if (!in_array($targetType, ['document', 'comment'], true) || $targetId <= 0) {
+            redirect('?module=community&action=index', 'Đối tượng báo cáo không hợp lệ.', 'error');
+        }
+
+        if ($targetType === 'document') {
+            $document = $this->model->getDocumentById($targetId);
+            if (!$document) {
+                redirect('?module=community&action=index', 'Không tìm thấy tài liệu cần báo cáo.', 'error');
+            }
+            $redirectDocId = $targetId;
+            $ownerId = (int) ($document['user_id'] ?? 0);
+            $reportDocId = $targetId;
+            $reportCommentId = null;
+        } else {
+            $comment = $this->model->getCommentById($targetId);
+            if (!$comment) {
+                redirect('?module=community&action=index', 'Không tìm thấy bình luận cần báo cáo.', 'error');
+            }
+            $redirectDocId = (int) $comment['document_id'];
+            $ownerId = (int) ($comment['user_id'] ?? 0);
+            $reportDocId = null;
+            $reportCommentId = $targetId;
+        }
+
+        $anchor = $targetType === 'comment' ? '#comments' : '';
+        $backUrl = '?module=community&action=show&id=' . $redirectDocId . $anchor;
+
+        if ($ownerId === (int) Auth::id()) {
+            redirect($backUrl, 'Bạn không thể tự báo cáo nội dung của chính mình.', 'error');
+        }
+
+        if (!in_array($reason, self::REPORT_REASONS, true)) {
+            redirect($backUrl, 'Vui lòng chọn lý do báo cáo hợp lệ.', 'error');
+        }
+
+        if ($this->model->hasPendingReport((int) Auth::id(), $targetType, $targetId)) {
+            redirect($backUrl, 'Bạn đã gửi báo cáo cho nội dung này và đang chờ xử lý.', 'info');
         }
 
         $reportData = [
             'reason'      => $reason,
             'details'     => $details,
-            'document_id' => $documentId > 0 ? $documentId : null,
-            'comment_id'  => $commentId > 0 ? $commentId : null,
+            'document_id' => $reportDocId,
+            'comment_id'  => $reportCommentId,
             'reporter_id' => (int) Auth::id(),
         ];
 
         $this->model->createReport($reportData);
 
-        $redirectUrl = $_SERVER['HTTP_REFERER'] ?? url('?module=community&action=index');
-        redirect($redirectUrl, 'Cảm ơn bạn đã gửi báo cáo. Ban quản trị sẽ sớm xem xét.', 'success');
+        redirect(
+            $backUrl,
+            'Cảm ơn bạn đã gửi báo cáo. Ban quản trị sẽ sớm xem xét.',
+            'success'
+        );
     }
 
     /**

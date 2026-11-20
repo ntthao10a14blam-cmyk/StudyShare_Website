@@ -11,6 +11,10 @@ $formData = $_SESSION['form_data']   ?? [];
 unset($_SESSION['form_errors'], $_SESSION['form_data']);
 ?>
 
+<!-- EasyMDE Markdown Editor (CDN) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+
 <div class="container py-4">
 
     <!-- BREADCRUMB -->
@@ -82,7 +86,7 @@ unset($_SESSION['form_errors'], $_SESSION['form_data']);
                     <div class="p-4 border border-2 border-dashed rounded text-center bg-light" id="pdfDropzone" style="border-color: #cbd5e1 !important;">
                         <i class="bi bi-file-earmark-pdf text-danger fs-1 mb-2 d-block"></i>
                         <div class="fw-semibold text-dark mb-1" id="pdfFileName">Kéo thả file PDF vào đây hoặc nhấn để chọn file</div>
-                        <div class="text-muted small mb-3">Định dạng hỗ trợ: PDF (Dung lượng tối đa: 20 MB)</div>
+                        <div class="text-muted small mb-3">Định dạng hỗ trợ: PDF (Dung lượng tối đa: 100 MB)</div>
                         <label for="documentFileInput" class="btn btn-outline-primary btn-sm px-3">
                             <i class="bi bi-folder2-open me-1"></i> Chọn file PDF từ máy tính
                         </label>
@@ -196,6 +200,37 @@ unset($_SESSION['form_errors'], $_SESSION['form_data']);
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // 0. Khởi tạo Markdown Editor (EasyMDE) cho mô tả tài liệu
+    const descTextarea = document.getElementById('descriptionInput');
+    let easyMDE = null;
+    if (descTextarea && typeof EasyMDE !== 'undefined') {
+        easyMDE = new EasyMDE({
+            element: descTextarea,
+            placeholder: 'Mô tả tóm tắt tài liệu: gồm các chương nào, đề thi kỳ nào, tác giả biên soạn, lưu ý khi ôn tập...',
+            spellChecker: false,
+            autosave: { enabled: false },
+            status: false,
+            minHeight: '180px',
+            toolbar: [
+                'bold', 'italic', 'heading', '|',
+                'quote', 'unordered-list', 'ordered-list', '|',
+                'link', 'table', '|',
+                'preview', 'side-by-side', 'fullscreen', '|',
+                'guide'
+            ]
+        });
+
+        // Đảm bảo đồng bộ dữ liệu vào textarea trước khi submit form
+        const form = descTextarea.closest('form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                if (easyMDE) {
+                    descTextarea.value = easyMDE.value();
+                }
+            });
+        }
+    }
+
     // 1. Hiển thị tên file PDF khi chọn
     const pdfInput = document.getElementById('documentFileInput');
     const pdfFileName = document.getElementById('pdfFileName');

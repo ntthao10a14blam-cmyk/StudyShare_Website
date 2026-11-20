@@ -63,18 +63,83 @@ elseif (str_starts_with($relativePath, 'documents/')) {
             exit('Bạn không có quyền truy cập file này.');
         }
     }
-    // Tài liệu công khai: phải đăng nhập
+    // Tài liệu công khai:
+    // - Phải đăng nhập mới được tải về hoặc xem toàn bộ PDF
+    // - Chưa đăng nhập chỉ được xem trước tối đa 3 trang đầu dưới dạng ảnh (?preview_page=1..3)
     else {
-        Auth::requireLogin();
+        $previewPage = isset($_GET['preview_page']) ? (int) $_GET['preview_page'] : 0;
+        $isDownload  = isset($_GET['download']) && $_GET['download'] === '1';
+
+        if (!Auth::check()) {
+            if ($isDownload || $previewPage < 1 || $previewPage > 3) {
+                Auth::requireLogin();
+            }
+
+            // Tạo cache ảnh 3 trang đầu tiên trong storage/temp/
+            $tempDir = STORAGE_PATH . '/temp';
+            if (!is_dir($tempDir)) {
+                mkdir($tempDir, 0755, true);
+            }
+
+            $prefix = $tempDir . '/preview_doc_' . (int) $doc['id'];
+            $cachedFiles = glob($prefix . '-*.png') ?: [];
+
+            if (empty($cachedFiles)) {
+                $cmd = 'pdftoppm -png -r 120 -f 1 -l 3 ' . escapeshellarg($fullPath) . ' ' . escapeshellarg($prefix) . ' 2>&1';
+                @exec($cmd);
+                $cachedFiles = glob($prefix . '-*.png') ?: [];
+            }
+
+            if (!empty($cachedFiles)) {
+                natsort($cachedFiles);
+                $cachedFiles = array_values($cachedFiles);
+                $idx = $previewPage - 1;
+                if (!isset($cachedFiles[$idx]) || !is_file($cachedFiles[$idx])) {
+                    http_response_code(404);
+                    exit('Trang xem trước không tồn tại.');
+                }
+                header('Content-Type: image/png');
+                header('Content-Length: ' . filesize($cachedFiles[$idx]));
+                header('Content-Disposition: inline; filename="preview_p' . $previewPage . '.png"');
+                header('Cache-Control: public, max-age=3600');
+                readfile($cachedFiles[$idx]);
+                exit;
+            }
+
+            http_response_code(404);
+            exit('Không thể tạo trang xem trước.');
+        }
     }
 }
 // Ảnh câu hỏi: phải đăng nhập
 elseif (str_starts_with($relativePath, 'images/question_images/')) {
     Auth::requireLogin();
 }
-// Ảnh tài liệu: phải đăng nhập
+// Ảnh tài liệu: tài liệu công khai đã duyệt thì Guest cũng xem được
 elseif (str_starts_with($relativePath, 'images/document_images/')) {
-    Auth::requireLogin();
+    $db   = Database::getInstance();
+    $stmt = $db->prepare(
+        "SELECT d.user_id, d.visibility, d.moderation_status, d.deleted_at
+         FROM document_images di
+         JOIN documents d ON d.id = di.document_id
+         WHERE di.image_path = :path
+         LIMIT 1"
+    );
+    $stmt->execute([':path' => $relativePath]);
+    $imgDoc = $stmt->fetch();
+
+    if (!$imgDoc || $imgDoc['deleted_at'] !== null) {
+        http_response_code(404);
+        exit('File không tìm thấy.');
+    }
+
+    $isPublicApproved = $imgDoc['visibility'] === 'public' && $imgDoc['moderation_status'] === 'approved';
+    if (!$isPublicApproved) {
+        $isOwner = Auth::check() && Auth::id() === (int) $imgDoc['user_id'];
+        if (!$isOwner && !Auth::isAdmin()) {
+            Auth::requireLogin();
+        }
+    }
 }
 else {
     http_response_code(403);

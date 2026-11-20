@@ -1,4 +1,5 @@
 <?php
+
 /**
  * COMMUNITYMODEL.PHP — Truy vấn database phân hệ Cộng đồng & Chia sẻ tài liệu
  * Phụ trách: TV3
@@ -140,6 +141,17 @@ class CommunityModel
         );
         $stmt->execute([':id' => $id]);
         return $stmt->fetch();
+    }
+
+    /**
+     * Tăng lượt tải của tài liệu.
+     */
+    public function incrementDownloadCount(int $documentId): void
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE documents SET download_count = download_count + 1 WHERE id = :id"
+        );
+        $stmt->execute([':id' => $documentId]);
     }
 
     /**
@@ -362,6 +374,19 @@ class CommunityModel
              WHERE id = :id"
         );
         return $stmt->execute([':id' => $documentId]);
+    }
+
+    /**
+     * Kiểm tra người dùng đã gửi báo cáo đang chờ xử lý cho đối tượng này chưa
+     */
+    public function hasPendingReport(int $reporterId, string $targetType, int $targetId): bool
+    {
+        $col = $targetType === 'comment' ? 'comment_id' : 'document_id';
+        $stmt = $this->db->prepare(
+            "SELECT 1 FROM reports WHERE reporter_id = :r AND {$col} = :t AND status = 'pending' LIMIT 1"
+        );
+        $stmt->execute([':r' => $reporterId, ':t' => $targetId]);
+        return (bool) $stmt->fetchColumn();
     }
 
     /**

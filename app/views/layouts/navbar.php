@@ -7,6 +7,23 @@ $isLoggedIn  = Auth::check();
 $isAdmin     = Auth::isAdmin();
 $isActive    = Auth::isActive();
 
+// Nếu là Quản trị viên, hiển thị thanh điều hướng riêng của Admin (TV6)
+if ($isAdmin && file_exists(__DIR__ . '/admin_navbar.php')) {
+    $adminName = $currentUser['full_name'] ?? 'Quản trị viên';
+    if (!isset($pendingCount)) {
+        $pendingCount = 0;
+        try {
+            $pendingCount = (int) Database::getInstance()->query(
+                "SELECT COUNT(*) FROM documents WHERE moderation_status = 'pending' AND deleted_at IS NULL"
+            )->fetchColumn();
+        } catch (Throwable $e) {
+            $pendingCount = 0;
+        }
+    }
+    require __DIR__ . '/admin_navbar.php';
+    return;
+}
+
 // Xác định trang hiện tại để đánh dấu active
 $currentModule = preg_replace('/[^a-z0-9_-]/i', '', get('module', 'home'));
 $currentAction = preg_replace('/[^a-z0-9_-]/i', '', get('action', 'index'));

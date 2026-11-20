@@ -51,7 +51,10 @@ class DocumentModel
             SELECT d.*,
                    s.name AS subject_name,
                    (SELECT COUNT(*) FROM document_images di WHERE di.document_id = d.id) AS image_count,
-                   (SELECT image_path FROM document_images di WHERE di.document_id = d.id ORDER BY di.sort_order ASC, di.id ASC LIMIT 1) AS thumbnail_path
+                   (SELECT image_path FROM document_images di WHERE di.document_id = d.id ORDER BY di.sort_order ASC, di.id ASC LIMIT 1) AS thumbnail_path,
+                   (SELECT dr.reason FROM document_reviews dr WHERE dr.document_id = d.id AND dr.action = 'rejected' ORDER BY dr.created_at DESC, dr.id DESC LIMIT 1) AS rejection_reason,
+                   (SELECT u.full_name FROM document_reviews dr JOIN users u ON dr.admin_id = u.id WHERE dr.document_id = d.id AND dr.action = 'rejected' ORDER BY dr.created_at DESC, dr.id DESC LIMIT 1) AS reviewer_name,
+                   (SELECT dr.created_at FROM document_reviews dr WHERE dr.document_id = d.id AND dr.action = 'rejected' ORDER BY dr.created_at DESC, dr.id DESC LIMIT 1) AS rejected_at
             FROM documents d
             LEFT JOIN subjects s ON d.subject_id = s.id
             WHERE d.user_id = :user_id
@@ -149,6 +152,8 @@ class DocumentModel
                 COUNT(*) AS total_docs,
                 SUM(CASE WHEN moderation_status = 'approved' THEN 1 ELSE 0 END) AS approved_docs,
                 SUM(CASE WHEN moderation_status = 'pending' THEN 1 ELSE 0 END) AS pending_docs,
+                SUM(CASE WHEN moderation_status = 'rejected' THEN 1 ELSE 0 END) AS rejected_docs,
+                SUM(CASE WHEN moderation_status = 'not_submitted' THEN 1 ELSE 0 END) AS draft_docs,
                 SUM(CASE WHEN visibility = 'private' THEN 1 ELSE 0 END) AS private_docs,
                 COALESCE(SUM(download_count), 0) AS total_downloads
             FROM documents
@@ -164,6 +169,8 @@ class DocumentModel
             'total'     => (int) ($row['total_docs'] ?? 0),
             'approved'  => (int) ($row['approved_docs'] ?? 0),
             'pending'   => (int) ($row['pending_docs'] ?? 0),
+            'rejected'  => (int) ($row['rejected_docs'] ?? 0),
+            'draft'     => (int) ($row['draft_docs'] ?? 0),
             'private'   => (int) ($row['private_docs'] ?? 0),
             'downloads' => (int) ($row['total_downloads'] ?? 0),
         ];
