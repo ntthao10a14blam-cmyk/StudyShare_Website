@@ -377,6 +377,19 @@ class CommunityModel
     }
 
     /**
+     * Kiểm tra người dùng đã gửi báo cáo đang chờ xử lý cho đối tượng này chưa
+     */
+    public function hasPendingReport(int $reporterId, string $targetType, int $targetId): bool
+    {
+        $col = $targetType === 'comment' ? 'comment_id' : 'document_id';
+        $stmt = $this->db->prepare(
+            "SELECT 1 FROM reports WHERE reporter_id = :r AND {$col} = :t AND status = 'pending' LIMIT 1"
+        );
+        $stmt->execute([':r' => $reporterId, ':t' => $targetId]);
+        return (bool) $stmt->fetchColumn();
+    }
+
+    /**
      * Tạo báo cáo vi phạm
      */
     public function createReport(array $data): int

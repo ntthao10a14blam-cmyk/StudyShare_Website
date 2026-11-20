@@ -318,34 +318,48 @@ class CommunityController
             if (!$document) {
                 redirect('?module=community&action=index', 'Không tìm thấy tài liệu cần báo cáo.', 'error');
             }
-            $documentId = $targetId;
-            $commentId = null;
+            $redirectDocId = $targetId;
+            $ownerId = (int) ($document['user_id'] ?? 0);
+            $reportDocId = $targetId;
+            $reportCommentId = null;
         } else {
             $comment = $this->model->getCommentById($targetId);
             if (!$comment) {
                 redirect('?module=community&action=index', 'Không tìm thấy bình luận cần báo cáo.', 'error');
             }
-            $documentId = (int) $comment['document_id'];
-            $commentId = $targetId;
+            $redirectDocId = (int) $comment['document_id'];
+            $ownerId = (int) ($comment['user_id'] ?? 0);
+            $reportDocId = null;
+            $reportCommentId = $targetId;
+        }
+
+        $anchor = $targetType === 'comment' ? '#comments' : '';
+        $backUrl = '?module=community&action=show&id=' . $redirectDocId . $anchor;
+
+        if ($ownerId === (int) Auth::id()) {
+            redirect($backUrl, 'Bạn không thể tự báo cáo nội dung của chính mình.', 'error');
         }
 
         if (!in_array($reason, self::REPORT_REASONS, true)) {
-            redirect('?module=community&action=show&id=' . $documentId, 'Vui lòng chọn lý do báo cáo hợp lệ.', 'error');
+            redirect($backUrl, 'Vui lòng chọn lý do báo cáo hợp lệ.', 'error');
+        }
+
+        if ($this->model->hasPendingReport((int) Auth::id(), $targetType, $targetId)) {
+            redirect($backUrl, 'Bạn đã gửi báo cáo cho nội dung này và đang chờ xử lý.', 'info');
         }
 
         $reportData = [
             'reason'      => $reason,
             'details'     => $details,
-            'document_id' => $documentId,
-            'comment_id'  => $commentId,
+            'document_id' => $reportDocId,
+            'comment_id'  => $reportCommentId,
             'reporter_id' => (int) Auth::id(),
         ];
 
         $this->model->createReport($reportData);
 
-        $anchor = $targetType === 'comment' ? '#comments' : '';
         redirect(
-            '?module=community&action=show&id=' . $documentId . $anchor,
+            $backUrl,
             'Cảm ơn bạn đã gửi báo cáo. Ban quản trị sẽ sớm xem xét.',
             'success'
         );

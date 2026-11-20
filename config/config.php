@@ -41,7 +41,7 @@ define('STORAGE_TEMP',       STORAGE_PATH . '/temp');
 // ============================================================
 // GIỚI HẠN FILE UPLOAD
 // ============================================================
-define('MAX_PDF_SIZE',   20 * 1024 * 1024);   // 20 MB
+define('MAX_PDF_SIZE',   100 * 1024 * 1024);  // 100 MB
 define('MAX_IMAGE_SIZE', 5  * 1024 * 1024);   // 5 MB
 define('MAX_AVATAR_SIZE', 2 * 1024 * 1024);   // 2 MB
 define('MAX_IMAGES_PER_DOC', 10);              // số ảnh tối đa 1 tài liệu

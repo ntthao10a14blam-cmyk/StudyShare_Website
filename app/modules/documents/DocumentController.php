@@ -134,6 +134,15 @@ class DocumentController
     public function store(): void
     {
         Auth::requireActiveUser();
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST'
+            && empty($_POST)
+            && empty($_FILES)
+            && (int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 0
+        ) {
+            redirect('?module=documents&action=create', 'Dung lượng file tải lên vượt quá giới hạn cho phép của máy chủ.', 'error');
+        }
+
         verifyCsrf();
 
         $userId = Auth::id();

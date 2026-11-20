@@ -437,6 +437,52 @@ class AdminController
         $this->renderAdminView('pending_docs.php', get_defined_vars());
     }
 
+    // Xem trước file tài liệu trong trang duyệt
+    public function previewDoc(): void
+    {
+        Auth::requireAdmin();
+
+        $documentId = (int) ($_GET['id'] ?? 0);
+        if ($documentId <= 0) {
+            http_response_code(400);
+            exit('Tài liệu không hợp lệ.');
+        }
+
+        $doc = $this->model->getDocumentById($documentId);
+        if (!$doc || empty($doc['file_path'])) {
+            http_response_code(404);
+            exit('Không tìm thấy tài liệu.');
+        }
+
+        $storageRoot = realpath(STORAGE_PATH);
+        $fullPath = realpath(STORAGE_PATH . '/' . ltrim((string) $doc['file_path'], '/'));
+
+        if (!$storageRoot || !$fullPath || strpos($fullPath, $storageRoot) !== 0 || !is_file($fullPath)) {
+            http_response_code(404);
+            exit('File tài liệu không tồn tại trên hệ thống.');
+        }
+
+        $mime = 'application/pdf';
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            if ($finfo) {
+                $detected = finfo_file($finfo, $fullPath);
+                finfo_close($finfo);
+                if (is_string($detected) && $detected !== '') {
+                    $mime = $detected;
+                }
+            }
+        }
+
+        $fileName = basename((string) ($doc['original_file_name'] ?: $fullPath));
+        header('Content-Type: ' . $mime);
+        header('Content-Disposition: inline; filename="' . str_replace('"', '', $fileName) . '"');
+        header('Content-Length: ' . filesize($fullPath));
+        header('X-Content-Type-Options: nosniff');
+        readfile($fullPath);
+        exit;
+    }
+
     public function reviewDoc(): void
     {
         Auth::requireAdmin();

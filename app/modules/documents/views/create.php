@@ -86,7 +86,7 @@ unset($_SESSION['form_errors'], $_SESSION['form_data']);
                     <div class="p-4 border border-2 border-dashed rounded text-center bg-light" id="pdfDropzone" style="border-color: #cbd5e1 !important;">
                         <i class="bi bi-file-earmark-pdf text-danger fs-1 mb-2 d-block"></i>
                         <div class="fw-semibold text-dark mb-1" id="pdfFileName">Kéo thả file PDF vào đây hoặc nhấn để chọn file</div>
-                        <div class="text-muted small mb-3">Định dạng hỗ trợ: PDF (Dung lượng tối đa: 20 MB)</div>
+                        <div class="text-muted small mb-3">Định dạng hỗ trợ: PDF (Dung lượng tối đa: 100 MB)</div>
                         <label for="documentFileInput" class="btn btn-outline-primary btn-sm px-3">
                             <i class="bi bi-folder2-open me-1"></i> Chọn file PDF từ máy tính
                         </label>

@@ -218,6 +218,8 @@ class AdminModel
             END AS reported_content,
 
             CASE
+                WHEN r.document_id IS NOT NULL
+                    THEN d.title
                 WHEN r.question_id IS NOT NULL
                     THEN q.title
                 WHEN r.answer_id IS NOT NULL
@@ -227,7 +229,13 @@ class AdminModel
                 ELSE NULL
             END AS parent_question_title,
 
-            d.title AS document_title
+            d.id AS target_document_id,
+            d.title AS document_title,
+            d.original_file_name AS doc_file_name,
+            d.file_size AS doc_file_size,
+            d.description AS doc_description,
+            doc_owner.full_name AS doc_owner_name,
+            doc_sub.name AS doc_subject_name
 
         FROM reports r
 
@@ -239,6 +247,12 @@ class AdminModel
 
         LEFT JOIN documents d
             ON d.id = r.document_id
+
+        LEFT JOIN users doc_owner
+            ON doc_owner.id = d.user_id
+
+        LEFT JOIN subjects doc_sub
+            ON doc_sub.id = d.subject_id
 
         LEFT JOIN questions q
             ON q.id = r.question_id
@@ -978,6 +992,35 @@ class AdminModel
 
             if ($stmt->rowCount() === 0) {
                 throw new RuntimeException('Không thể cập nhật trạng thái báo cáo.');
+            }
+
+            // Tự động đóng các báo cáo đang chờ khác cùng nội dung đã ẩn
+            $targetCol = null;
+            $targetVal = null;
+            foreach (['document_id', 'question_id', 'answer_id', 'comment_id'] as $col) {
+                if (!empty($report[$col])) {
+                    $targetCol = $col;
+                    $targetVal = (int) $report[$col];
+                    break;
+                }
+            }
+            if ($targetCol !== null && $targetVal > 0) {
+                $syncStmt = $this->db->prepare("
+                    UPDATE reports
+                    SET status = 'resolved',
+                        handled_by = ?,
+                        resolution_note = ?,
+                        handled_at = NOW()
+                    WHERE {$targetCol} = ?
+                      AND id <> ?
+                      AND status = 'pending'
+                ");
+                $syncStmt->execute([
+                    $adminId,
+                    'Nội dung đã được ẩn theo báo cáo #' . $reportId,
+                    $targetVal,
+                    $reportId
+                ]);
             }
 
             $this->db->commit();

@@ -503,7 +503,7 @@
     display: flex;
 }
 
-.modal-content {
+.admin-modal .modal-content {
     width: 100%;
     max-width: 520px;
     max-height: calc(100vh - 40px);
@@ -515,14 +515,14 @@
     animation: modalIn 0.2s ease;
 }
 
-.modal-header {
+.admin-modal .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
 }
 
-.modal-header h2 {
+.admin-modal .modal-header h2 {
     margin: 0;
     color: var(--admin-text);
     font-size: 20px;

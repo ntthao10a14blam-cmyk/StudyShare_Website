@@ -208,7 +208,7 @@ $csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
 
 <!-- MODAL CHI TIẾT TÀI LIỆU -->
 <div class="modal fade" id="documentModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
 
             <div class="modal-header">
@@ -222,46 +222,99 @@ $csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
             </div>
 
             <div class="modal-body">
-                <div class="mb-3">
-                    <label class="text-muted small">Tên tài liệu</label>
-                    <h5 id="detailTitle"></h5>
-                </div>
+                <div class="row g-4">
+                    <!-- Cột trái: Thông tin tài liệu -->
+                    <div class="col-lg-5">
+                        <div class="mb-3">
+                            <label class="text-muted small d-block mb-1">Tên tài liệu</label>
+                            <h5 id="detailTitle" class="mb-0 fw-bold"></h5>
+                        </div>
 
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label class="text-muted small">Người đăng</label>
-                        <div id="detailOwner" class="fw-semibold"></div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <div class="p-2 bg-light rounded border h-100">
+                                    <label class="text-muted small d-block">Người đăng</label>
+                                    <div id="detailOwner" class="fw-semibold text-break"></div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <div class="p-2 bg-light rounded border h-100">
+                                    <label class="text-muted small d-block">Môn học</label>
+                                    <div id="detailSubject" class="fw-semibold text-break"></div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-7">
+                                <div class="p-2 bg-light rounded border h-100">
+                                    <label class="text-muted small d-block">Tên file</label>
+                                    <div id="detailFilename" class="fw-medium text-break small"></div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-5">
+                                <div class="p-2 bg-light rounded border h-100">
+                                    <label class="text-muted small d-block">Dung lượng</label>
+                                    <div id="detailSize" class="fw-semibold"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <label class="text-muted small d-block mb-1">Mô tả tài liệu</label>
+                        <div id="detailDescription" class="p-3 bg-light rounded border small" style="max-height: 240px; overflow-y: auto; line-height: 1.6;">
+                            Chưa có mô tả.
+                        </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <label class="text-muted small">Môn học</label>
-                        <div id="detailSubject" class="fw-semibold"></div>
+                    <!-- Cột phải: Xem trước file tài liệu -->
+                    <div class="col-lg-7 d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="text-muted small fw-semibold mb-0">
+                                <i class="bi bi-file-earmark-pdf text-danger me-1"></i>
+                                Xem trước nội dung tài liệu
+                            </label>
+                            <a id="detailOpenNewTab" href="#" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-box-arrow-up-right"></i>
+                                Mở tab mới
+                            </a>
+                        </div>
+
+                        <div class="border rounded bg-light overflow-hidden flex-grow-1" style="min-height: 460px;">
+                            <iframe id="detailPreviewFrame"
+                                    src="about:blank"
+                                    title="Xem trước tài liệu"
+                                    style="width: 100%; height: 460px; border: 0; display: block;"></iframe>
+                        </div>
                     </div>
-
-                    <div class="col-md-6">
-                        <label class="text-muted small">Tên file</label>
-                        <div id="detailFilename"></div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="text-muted small">Dung lượng</label>
-                        <div id="detailSize"></div>
-                    </div>
-                </div>
-
-                <hr>
-
-                <label class="text-muted small">Mô tả tài liệu</label>
-                <div id="detailDescription" class="p-3 bg-light rounded">
-                    Chưa có mô tả.
                 </div>
             </div>
 
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary"
-                        data-bs-dismiss="modal">
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     Đóng
                 </button>
+
+                <div class="d-flex gap-2">
+                    <button type="button"
+                            id="detailRejectBtn"
+                            class="btn btn-outline-danger">
+                        <i class="bi bi-x-lg"></i>
+                        Từ chối
+                    </button>
+
+                    <form method="POST"
+                          action="<?= url('?module=admin&action=reviewDoc') ?>"
+                          class="d-inline"
+                          onsubmit="return confirm('Bạn có chắc chắn muốn duyệt và công khai tài liệu này không?');">
+                        <input type="hidden" name="csrf_token" value="<?= $e($csrfToken) ?>">
+                        <input type="hidden" name="document_id" id="detailApproveId" value="">
+                        <input type="hidden" name="action" value="approved">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg"></i>
+                            Duyệt tài liệu
+                        </button>
+                    </form>
+                </div>
             </div>
 
         </div>
@@ -344,6 +397,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Hiển thị chi tiết tài liệu
     const documentModal = document.getElementById('documentModal');
+    const previewBaseUrl = <?= json_encode(url('?module=admin&action=previewDoc&id='), JSON_UNESCAPED_SLASHES) ?>;
+    let activeDocId = '';
+    let activeDocTitle = '';
 
     if (documentModal) {
         documentModal.addEventListener('show.bs.modal', function (event) {
@@ -355,8 +411,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 return button.getAttribute('data-' + name) || '';
             };
 
-            document.getElementById('detailTitle').textContent =
-                getData('title');
+            activeDocId = getData('id');
+            activeDocTitle = getData('title');
+
+            document.getElementById('detailTitle').textContent = activeDocTitle;
 
             document.getElementById('detailOwner').textContent =
                 getData('owner');
@@ -374,7 +432,41 @@ document.addEventListener('DOMContentLoaded', function () {
 
             document.getElementById('detailSize').textContent =
                 size > 0 ? (size / 1024 / 1024).toFixed(2) + ' MB' : 'Không rõ';
+
+            const approveInput = document.getElementById('detailApproveId');
+            if (approveInput) {
+                approveInput.value = activeDocId;
+            }
+
+            const previewUrl = activeDocId ? (previewBaseUrl + encodeURIComponent(activeDocId)) : 'about:blank';
+            const frame = document.getElementById('detailPreviewFrame');
+            const newTabLink = document.getElementById('detailOpenNewTab');
+            if (frame) frame.src = previewUrl;
+            if (newTabLink) newTabLink.href = previewUrl;
         });
+
+        documentModal.addEventListener('hidden.bs.modal', function () {
+            const frame = document.getElementById('detailPreviewFrame');
+            if (frame) frame.src = 'about:blank';
+        });
+
+        const detailRejectBtn = document.getElementById('detailRejectBtn');
+        if (detailRejectBtn) {
+            detailRejectBtn.addEventListener('click', function () {
+                const detailInstance = bootstrap.Modal.getInstance(documentModal);
+                if (detailInstance) {
+                    detailInstance.hide();
+                }
+
+                document.getElementById('rejectDocumentId').value = activeDocId;
+                document.getElementById('rejectDocumentTitle').textContent = activeDocTitle;
+
+                const rejectModalEl = document.getElementById('rejectModal');
+                if (rejectModalEl) {
+                    bootstrap.Modal.getOrCreateInstance(rejectModalEl).show();
+                }
+            });
+        }
     }
 
     // Hiển thị modal từ chối

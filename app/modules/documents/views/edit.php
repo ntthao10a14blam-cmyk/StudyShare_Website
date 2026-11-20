@@ -127,28 +127,50 @@ if (is_array($f['tags'])) { $f['tags'] = implode(', ', $f['tags']); }
 
                 <!-- 3. QUẢN LÝ ẢNH MINH HOẠ ĐÃ CÓ -->
                 <?php if (!empty($images)): ?>
-                    <div class="mb-4 p-3 rounded border bg-light-subtle">
+                    <div class="mb-4 p-3 rounded border bg-light-subtle" id="existingImagesSection">
                         <label class="form-label fw-semibold mb-2">
-                            Ảnh minh hoạ hiện có (Tích chọn để xoá ảnh)
+                            Ảnh minh hoạ hiện có <small class="text-muted fw-normal">(Nhấn × ở góc phải để xoá ảnh)</small>
                         </label>
                         <div class="row g-2">
                             <?php foreach ($images as $img): ?>
-                                <div class="col-4 col-md-3 col-lg-2">
-                                    <div class="border rounded p-1 bg-white text-center position-relative shadow-xs">
+                                <div class="col-4 col-md-3 col-lg-2 existing-img-item">
+                                    <div class="border rounded p-1 bg-white position-relative shadow-xs existing-img-card" data-img-card="<?= (int) $img['id'] ?>">
+                                        <input class="d-none existing-img-checkbox" type="checkbox" name="delete_images[]"
+                                               value="<?= (int) $img['id'] ?>" id="delImg<?= (int) $img['id'] ?>">
+                                        <button type="button"
+                                                class="btn btn-danger btn-sm rounded-circle position-absolute top-0 end-0 m-1 d-flex align-items-center justify-content-center p-0 shadow-sm existing-img-remove-btn"
+                                                style="width: 22px; height: 22px; z-index: 2; line-height: 1;"
+                                                data-target-checkbox="delImg<?= (int) $img['id'] ?>"
+                                                title="Xoá ảnh này"
+                                                aria-label="Xoá ảnh này">
+                                            <i class="bi bi-x" style="font-size: 15px;"></i>
+                                        </button>
                                         <img src="<?= storageUrl($img['image_path']) ?>" alt="Minh hoạ"
-                                             class="w-100 rounded object-fit-cover" style="height: 80px;">
-                                        <div class="form-check mt-1 d-flex justify-content-center align-items-center gap-1">
-                                            <input class="form-check-input" type="checkbox" name="delete_images[]"
-                                                   value="<?= $img['id'] ?>" id="delImg<?= $img['id'] ?>">
-                                            <label class="form-check-label text-danger small" for="delImg<?= $img['id'] ?>" style="font-size: 11px;">
-                                                Xóa ảnh
-                                            </label>
-                                        </div>
+                                             class="w-100 rounded object-fit-cover" style="height: 88px;">
                                     </div>
                                 </div>
                             <?php endforeach; ?>
                         </div>
                     </div>
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const section = document.getElementById('existingImagesSection');
+                        document.querySelectorAll('.existing-img-remove-btn').forEach(function (btn) {
+                            btn.addEventListener('click', function () {
+                                const cb = document.getElementById(btn.getAttribute('data-target-checkbox'));
+                                const item = btn.closest('.existing-img-item');
+                                if (!cb || !item) return;
+
+                                cb.checked = true;
+                                item.classList.add('d-none');
+
+                                if (section && section.querySelectorAll('.existing-img-item:not(.d-none)').length === 0) {
+                                    section.classList.add('d-none');
+                                }
+                            });
+                        });
+                    });
+                    </script>
                 <?php endif; ?>
 
                 <!-- 4. THÊM ẢNH MINH HOẠ MỚI -->
