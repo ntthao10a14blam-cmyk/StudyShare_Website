@@ -69,15 +69,6 @@ mkdir storage\temp
 - DocumentRoot trỏ vào thư mục `public/` của dự án
 - Hoặc truy cập: `http://localhost/StudyShare_Website/public/`
 
----
-
-## Tài khoản demo (sau khi chạy seed.sql)
-
-| Vai trò | Email              | Mật khẩu   |
-|---------|--------------------|-------------|
-| Admin   | admin@studyhub.vn  | Admin@123   |
-| User    | user1@studyhub.vn  | User@123    |
-| User    | user2@studyhub.vn  | User@123    |
 
 ---
 
@@ -92,8 +83,7 @@ StudyShare_Website/
 ├── config/             # File cấu hình (config.php, database)
 ├── database/           # SQL schema, seed, migrations
 ├── docs/               # Tài liệu thiết kế UI, phân công, quy trình
-│   ├── QUY_CHUAN_THIET_KE_UI.md  # Thống nhất font, màu, header/footer, web cộng đồng
-│   └── PHAN_CONG_VA_QUY_TRINH.md # Phân công, quy định Lead DB & chạy code sau GD2
+│   └── QUY_CHUAN_THIET_KE_UI.md  # Thống nhất font, màu, header/footer, web cộng đồng
 ├── public/             # Điểm vào website (index.php, assets/css, assets/js)
 └── storage/            # File upload (không đưa lên Git)
 ```
