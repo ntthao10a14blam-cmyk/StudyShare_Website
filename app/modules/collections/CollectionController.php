@@ -1,5 +1,5 @@
 <?php
-// TV4: Điều khiển trang bộ sưu tập và yêu thích (PHP thuần).
+// TV4: Điều khiển trang bộ sưu tập và yêu thích.
 require_once __DIR__ . '/CollectionModel.php';
 
 class CollectionController
@@ -10,7 +10,7 @@ class CollectionController
 
     public function __construct()
     {
-        // Chỉ dùng API xác thực chung của nhóm; không tự đọc session user_id.
+     
         if (!Auth::check()) {
             header('Location: index.php?module=auth&action=login');
             exit;
@@ -22,8 +22,7 @@ class CollectionController
         }
         $this->userId = (int) Auth::id();
 
-        // Lấy kết nối PDO từ Database dùng chung của nhóm.
-        // Hỗ trợ cả hai cách đặt tên phương thức thường gặp trong file Database.php.
+      
         $database = Database::getInstance();
 
         if ($database instanceof PDO) {
@@ -44,8 +43,7 @@ class CollectionController
         $this->token = $_SESSION['tv4_token'];
     }
 
-    // public/index.php cua nhom goi thang ten action qua method_exists().
-    // Cac ham ngan nay chuyen ve bo xu ly chung de de hieu va bao tri.
+   
     public function index(): void { $this->handle('index'); }
     public function create(): void { $this->handle('create'); }
     public function store(): void { $this->handle('store'); }
@@ -171,7 +169,7 @@ class CollectionController
         $tv4Token = $this->token;
         $tv4UserId = $this->userId;
         $layout = __DIR__ . '/../../views/layouts/';
-        require $layout . 'header.php'; // header.php đã tự nạp navbar.php
+        require $layout . 'header.php'; 
         require __DIR__ . '/views/' . $page . '.php';
         require $layout . 'footer.php';
     }
@@ -206,8 +204,7 @@ class CollectionController
     }
 }
 
-// Router cua nhom tim class "CollectionsController" (so nhieu).
-// Giữ ten file CollectionController.php dung phan cong, khong doi router chung.
+
 class CollectionsController extends CollectionController
 {
 }
