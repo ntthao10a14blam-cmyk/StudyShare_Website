@@ -119,20 +119,20 @@ if (!function_exists('mdPlainPreview')) {
             'color' => '#dc2626',
             'items' => [],
         ],
-        'hidden' => [
-            'label' => '5. Bị ẩn do vi phạm',
-            'empty' => 'Không có tài liệu nào bị ẩn.',
-            'icon'  => 'bi-eye-slash-fill',
-            'bg'    => '#e5e7eb',
-            'color' => '#374151',
-            'items' => [],
-        ],
         'not_submitted' => [
             'label' => '4. Bản nháp',
             'empty' => 'Chưa có bản nháp nào.',
             'icon'  => 'bi-file-earmark-text',
             'bg'    => '#f1f5f9',
             'color' => '#475569',
+            'items' => [],
+        ],
+        'hidden' => [
+            'label' => '5. Bị ẩn do vi phạm',
+            'empty' => 'Không có tài liệu nào bị ẩn.',
+            'icon'  => 'bi-eye-slash-fill',
+            'bg'    => '#e5e7eb',
+            'color' => '#374151',
             'items' => [],
         ],
     ];
@@ -335,7 +335,7 @@ if (!function_exists('mdPlainPreview')) {
                                 <form method="POST" action="<?= url('?module=documents&action=delete') ?>">
                                     <?php csrfField(); ?>
                                     <input type="hidden" name="id" value="<?= $doc['id'] ?>">
-                                    <button type="submit" class="btn btn-danger btn-sm">Xóa vĩnh viễn</button>
+                                    <button type="submit" class="btn btn-danger btn-sm">Xóa tài liệu</button>
                                 </form>
                             </div>
                         </div>

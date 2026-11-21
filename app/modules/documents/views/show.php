@@ -305,7 +305,7 @@ $statusInfo = $statusMap[$doc['moderation_status']] ?? $statusMap['not_submitted
                 <form method="POST" action="<?= url('?module=documents&action=delete') ?>">
                     <?php csrfField(); ?>
                     <input type="hidden" name="id" value="<?= $doc['id'] ?>">
-                    <button type="submit" class="btn btn-danger btn-sm">Xóa vĩnh viễn</button>
+                    <button type="submit" class="btn btn-danger btn-sm">Xóa tài liệu</button>
                 </form>
             </div>
         </div>

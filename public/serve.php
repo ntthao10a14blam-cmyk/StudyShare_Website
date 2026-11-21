@@ -24,7 +24,7 @@ elseif (str_starts_with($relativePath, 'documents/')) {
 
     $db   = Database::getInstance();
     $stmt = $db->prepare(
-        "SELECT id, user_id, visibility, moderation_status, deleted_at FROM documents WHERE file_path = :path LIMIT 1"
+        "SELECT id, user_id, visibility, moderation_status, deleted_at, original_file_name FROM documents WHERE file_path = :path LIMIT 1"
     );
     $stmt->execute([':path' => $relativePath]);
     $doc = $stmt->fetch();
@@ -139,11 +139,19 @@ $download = isset($_GET['download']) && $_GET['download'] === '1';
 
 if ($download) {
 
+    $downloadName = basename($fullPath);
     if (str_starts_with($relativePath, 'documents/') && isset($doc)) {
-        $db->prepare("UPDATE documents SET download_count = download_count + 1 WHERE id = :id")
-           ->execute([':id' => $doc['id']]);
+        $isOwnerDownload = Auth::check() && Auth::id() === (int) $doc['user_id'];
+        if (!$isOwnerDownload) {
+            $db->prepare("UPDATE documents SET download_count = download_count + 1 WHERE id = :id")
+               ->execute([':id' => $doc['id']]);
+        }
+        if (!empty($doc['original_file_name'])) {
+            $downloadName = str_replace(['"', '\\', "\r", "\n", '/'], '', $doc['original_file_name']);
+        }
     }
-    header('Content-Disposition: attachment; filename="' . basename($fullPath) . '"');
+    $asciiName = preg_replace('/[^\x20-\x7E]/', '_', $downloadName);
+    header('Content-Disposition: attachment; filename="' . $asciiName . '"; filename*=UTF-8\'\'' . rawurlencode($downloadName));
 } else {
     header('Content-Disposition: inline; filename="' . basename($fullPath) . '"');
 }

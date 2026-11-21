@@ -54,7 +54,7 @@ class DocumentModel
 
         if (!empty($filters['q'])) {
             $sql .= " AND (d.title LIKE :query_title OR d.description LIKE :query_desc)";
-            $params[':query_title'] = $params[':query_desc'] = '%' . $filters['q'] . '%';
+            $params[':query_title'] = $params[':query_desc'] = '%' . addcslashes((string) $filters['q'], '%_\\') . '%';
         }
 
         if (!empty($filters['subject_id'])) {
@@ -100,7 +100,7 @@ class DocumentModel
 
         if (!empty($filters['q'])) {
             $sql .= " AND (d.title LIKE :query_title OR d.description LIKE :query_desc)";
-            $params[':query_title'] = $params[':query_desc'] = '%' . $filters['q'] . '%';
+            $params[':query_title'] = $params[':query_desc'] = '%' . addcslashes((string) $filters['q'], '%_\\') . '%';
         }
 
         if (!empty($filters['subject_id'])) {
@@ -270,7 +270,7 @@ class DocumentModel
 
         if (!empty($filters['q'])) {
             $sql .= " AND (d.title LIKE :query_title OR d.description LIKE :query_desc)";
-            $params[':query_title'] = $params[':query_desc'] = '%' . $filters['q'] . '%';
+            $params[':query_title'] = $params[':query_desc'] = '%' . addcslashes((string) $filters['q'], '%_\\') . '%';
         }
 
         if (!empty($filters['subject_id'])) {
@@ -307,7 +307,7 @@ class DocumentModel
 
         if (!empty($filters['q'])) {
             $sql .= " AND (d.title LIKE :query_title OR d.description LIKE :query_desc)";
-            $params[':query_title'] = $params[':query_desc'] = '%' . $filters['q'] . '%';
+            $params[':query_title'] = $params[':query_desc'] = '%' . addcslashes((string) $filters['q'], '%_\\') . '%';
         }
 
         if (!empty($filters['subject_id'])) {
