@@ -1,212 +1,154 @@
 <?php
-/**
- * COLLECTIONCONTROLLER.PHP — Bộ sưu tập và yêu thích
- * Phụ trách: TV4
- *
- * Actions:
- *   index       — Danh sách bộ sưu tập của tôi
- *   create      — Form tạo bộ sưu tập
- *   store       — Lưu bộ sưu tập mới
- *   show        — Chi tiết bộ sưu tập (danh sách tài liệu)
- *   edit        — Sửa tên/mô tả bộ sưu tập
- *   update      — Cập nhật
- *   delete      — Xóa bộ sưu tập
- *   addDoc      — Thêm tài liệu vào bộ sưu tập
- *   removeDoc   — Bỏ tài liệu khỏi bộ sưu tập
- *   favorites   — Danh sách tài liệu yêu thích
- *   toggleFav   — Lưu / bỏ lưu yêu thích
- *
- * Lưu ý bắt buộc:
- *   - Khi mở tài liệu trong bộ sưu tập: kiểm tra tài liệu còn approved không
- *   - Lưu bộ sưu tập không thay đổi quyền truy cập tài liệu
- *   - Tài liệu bị thu hồi / ẩn: vẫn còn trong DB collection_documents nhưng không xem được
- */
-require_once __DIR__ . '/CollectionModel.php';
-
-class CollectionController
+// TV4: Các câu lệnh SQL cho bộ sưu tập và tài liệu yêu thích.
+class CollectionModel
 {
-    private CollectionModel $model;
-    private int $userId;
-    private string $token;
+    private PDO $db;
 
-    public function __construct()
+    public function __construct(PDO $db)
     {
-        // Chỉ dùng API xác thực chung của nhóm; không tự đọc session user_id.
-        if (!Auth::check()) {
-            header('Location: index.php?module=auth&action=login');
-            exit;
-        }
-        if (!Auth::isActive()) {
-            Auth::logout();
-            header('Location: index.php?module=auth&action=login');
-            exit;
-        }
-        $this->userId = (int) Auth::id();
+        $this->db = $db;
+    }
 
-        $database = Database::getInstance();
+    public function all(int $userId): array
+    {
+        $sql = "SELECT c.*, (SELECT COUNT(*) FROM collection_documents cd
+                JOIN documents d ON d.id = cd.document_id
+                WHERE cd.collection_id = c.id AND d.deleted_at IS NULL
+                AND d.moderation_status <> 'hidden'
+                AND (d.user_id = c.user_id OR (d.visibility = 'public' AND d.moderation_status = 'approved'))) AS total
+                FROM collections c WHERE c.user_id = ? ORDER BY c.created_at DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
-        if ($database instanceof PDO) {
-            $db = $database;
-        } elseif (method_exists($database, 'getPdo')) {
-            $db = $database->getPdo();
-        } elseif (method_exists($database, 'getConnection')) {
-            $db = $database->getConnection();
+    public function find(int $id, int $userId)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM collections WHERE id = ? AND user_id = ?");
+        $stmt->execute([$id, $userId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function create(string $name, string $description, int $userId): void
+    {
+        $stmt = $this->db->prepare("INSERT INTO collections (name, description, user_id, created_at, updated_at)
+                                    VALUES (?, ?, ?, NOW(), NOW())");
+        $stmt->execute([$name, $description, $userId]);
+    }
+
+    public function update(int $id, string $name, string $description, int $userId): void
+    {
+        $stmt = $this->db->prepare("UPDATE collections SET name = ?, description = ?, updated_at = NOW()
+                                    WHERE id = ? AND user_id = ?");
+        $stmt->execute([$name, $description, $id, $userId]);
+    }
+
+    public function delete(int $id, int $userId): void
+    {
+        if (!$this->find($id, $userId)) return;
+        // Xóa liên kết trước; KHÔNG xóa tài liệu gốc.
+        $this->db->beginTransaction();
+        try {
+            $stmt = $this->db->prepare("DELETE FROM collection_documents WHERE collection_id = ?");
+            $stmt->execute([$id]);
+            $stmt = $this->db->prepare("DELETE FROM collections WHERE id = ? AND user_id = ?");
+            $stmt->execute([$id, $userId]);
+            $this->db->commit();
+        } catch (Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
+    public function documents(int $collectionId, int $userId): array
+    {
+        $sql = "SELECT d.id, d.title, d.user_id, d.visibility
+                FROM collection_documents cd JOIN documents d ON d.id = cd.document_id
+                WHERE cd.collection_id = ? AND d.deleted_at IS NULL
+                AND d.moderation_status <> 'hidden'
+                AND (d.user_id = ? OR (d.visibility = 'public' AND d.moderation_status = 'approved'))
+                ORDER BY cd.added_at DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$collectionId, $userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function accessibleDocument(int $documentId, int $userId): bool
+    {
+        $sql = "SELECT id FROM documents WHERE id = ? AND deleted_at IS NULL
+                AND moderation_status <> 'hidden'
+                AND (user_id = ? OR (visibility = 'public' AND moderation_status = 'approved'))";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$documentId, $userId]);
+        return (bool) $stmt->fetchColumn();
+    }
+
+    public function addableDocuments(int $userId, int $collectionId): array
+    {
+        $sql = "SELECT id, title FROM documents WHERE deleted_at IS NULL
+                AND moderation_status <> 'hidden'
+                AND (user_id = ? OR (visibility = 'public' AND moderation_status = 'approved'))
+                AND id NOT IN (SELECT document_id FROM collection_documents WHERE collection_id = ?)
+                ORDER BY created_at DESC LIMIT 100";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$userId, $collectionId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function addDocument(int $collectionId, int $documentId): void
+    {
+        $stmt = $this->db->prepare("INSERT IGNORE INTO collection_documents
+                                    (collection_id, document_id, added_at) VALUES (?, ?, NOW())");
+        $stmt->execute([$collectionId, $documentId]);
+    }
+
+    public function removeDocument(int $collectionId, int $documentId): void
+    {
+        $stmt = $this->db->prepare("DELETE FROM collection_documents WHERE collection_id = ? AND document_id = ?");
+        $stmt->execute([$collectionId, $documentId]);
+    }
+
+    public function favorites(int $userId): array
+    {
+        $sql = "SELECT d.id, d.title, d.user_id, d.visibility
+                FROM favorites f JOIN documents d ON d.id = f.document_id
+                WHERE f.user_id = ? AND d.deleted_at IS NULL
+                AND d.moderation_status <> 'hidden'
+                AND (d.user_id = ? OR (d.visibility = 'public' AND d.moderation_status = 'approved'))
+                ORDER BY f.created_at DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$userId, $userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function addableFavorites(int $userId): array
+    {
+        $sql = "SELECT id, title FROM documents WHERE deleted_at IS NULL
+                AND moderation_status <> 'hidden'
+                AND (user_id = ? OR (visibility = 'public' AND moderation_status = 'approved'))
+                AND id NOT IN (SELECT document_id FROM favorites WHERE user_id = ?)
+                ORDER BY created_at DESC LIMIT 100";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$userId, $userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function isFavorite(int $userId, int $documentId): bool
+    {
+        $stmt = $this->db->prepare("SELECT 1 FROM favorites WHERE user_id = ? AND document_id = ?");
+        $stmt->execute([$userId, $documentId]);
+        return (bool) $stmt->fetchColumn();
+    }
+
+    public function toggleFavorite(int $userId, int $documentId): void
+    {
+        if ($this->isFavorite($userId, $documentId)) {
+            $stmt = $this->db->prepare("DELETE FROM favorites WHERE user_id = ? AND document_id = ?");
+            $stmt->execute([$userId, $documentId]);
         } else {
-            throw new RuntimeException('Database chưa cung cấp kết nối PDO.');
-        }
-
-        $this->model = new CollectionModel($db);
-
-        if (empty($_SESSION['tv4_token'])) {
-            $_SESSION['tv4_token'] = bin2hex(random_bytes(16));
-        }
-        $this->token = $_SESSION['tv4_token'];
-    }
-
-    public function index(): void { $this->handle('index'); }
-    public function create(): void { $this->handle('create'); }
-    public function store(): void { $this->handle('store'); }
-    public function show(): void { $this->handle('show'); }
-    public function edit(): void { $this->handle('edit'); }
-    public function update(): void { $this->handle('update'); }
-    public function delete(): void { $this->handle('delete'); }
-    public function addDocument(): void { $this->handle('addDocument'); }
-    public function removeDocument(): void { $this->handle('removeDocument'); }
-    public function favorites(): void { $this->handle('favorites'); }
-    public function toggleFavorite(): void { $this->handle('toggleFavorite'); }
-
-    public function handle(string $action): void
-    {
-        switch ($action) {
-            case 'index':
-                $this->render('index', ['collections' => $this->model->all($this->userId)]);
-                break;
-            case 'create':
-                $this->render('create');
-                break;
-            case 'store':
-                $this->checkPost();
-                [$name, $description] = $this->formData();
-                $this->model->create($name, $description, $this->userId);
-                $this->go('index');
-                break;
-            case 'show':
-                $collection = $this->ownedCollection();
-                $this->render('show', [
-                    'collection' => $collection,
-                    'documents' => $this->model->documents((int) $collection['id'], $this->userId),
-                    'available' => $this->model->addableDocuments($this->userId, (int) $collection['id'])
-                ]);
-                break;
-            case 'edit':
-                $this->render('edit', ['collection' => $this->ownedCollection()]);
-                break;
-            case 'update':
-                $this->checkPost();
-                $collection = $this->ownedCollection(true);
-                [$name, $description] = $this->formData();
-                $this->model->update((int) $collection['id'], $name, $description, $this->userId);
-                $this->go('index');
-                break;
-            case 'delete':
-                $this->checkPost();
-                $collection = $this->ownedCollection(true);
-                $this->model->delete((int) $collection['id'], $this->userId);
-                $this->go('index');
-                break;
-            case 'addDocument':
-                $this->checkPost();
-                $collection = $this->ownedCollection(true);
-                $documentId = (int) ($_POST['document_id'] ?? 0);
-                if (!$this->model->accessibleDocument($documentId, $this->userId)) {
-                    $this->fail('Tài liệu không tồn tại hoặc bạn không có quyền truy cập.');
-                }
-                $this->model->addDocument((int) $collection['id'], $documentId);
-                $this->go('show', (int) $collection['id']);
-                break;
-            case 'removeDocument':
-                $this->checkPost();
-                $collection = $this->ownedCollection(true);
-                $this->model->removeDocument((int) $collection['id'], (int) ($_POST['document_id'] ?? 0));
-                $this->go('show', (int) $collection['id']);
-                break;
-            case 'favorites':
-                $this->render('favorites', [
-                    'favorites' => $this->model->favorites($this->userId),
-                    'available' => $this->model->addableFavorites($this->userId)
-                ]);
-                break;
-            case 'toggleFavorite':
-                $this->checkPost();
-                $documentId = (int) ($_POST['document_id'] ?? 0);
-                // Có thể bỏ yêu thích cũ; chỉ thêm mới khi có quyền xem tài liệu.
-                if (!$this->model->isFavorite($this->userId, $documentId)
-                    && !$this->model->accessibleDocument($documentId, $this->userId)) {
-                    $this->fail('Không thể yêu thích tài liệu này.');
-                }
-                $this->model->toggleFavorite($this->userId, $documentId);
-                $this->go('favorites');
-                break;
-            default:
-                $this->fail('Trang không tồn tại.', 404);
+            $stmt = $this->db->prepare("INSERT INTO favorites (user_id, document_id, created_at)
+                                        VALUES (?, ?, NOW())");
+            $stmt->execute([$userId, $documentId]);
         }
     }
-
-    private function ownedCollection(bool $post = false): array
-    {
-        $id = (int) (($post ? $_POST : $_GET)['id'] ?? 0);
-        $collection = $this->model->find($id, $this->userId);
-        if (!$collection) {
-            $this->fail('Không tìm thấy bộ sưu tập của bạn.', 404);
-        }
-        return $collection;
-    }
-
-    private function formData(): array
-    {
-        $name = trim($_POST['name'] ?? '');
-        $description = trim($_POST['description'] ?? '');
-        if ($name === '' || preg_match_all('/./u', $name) > 150) {
-            $this->fail('Tên bộ sưu tập phải từ 1 đến 150 ký tự.');
-        }
-        return [$name, $description];
-    }
-
-    private function checkPost(): void
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->fail('Thao tác này phải dùng form POST.', 405);
-        }
-        if (!hash_equals($this->token, (string) ($_POST['tv4_token'] ?? ''))) {
-            $this->fail('Phiên làm việc không hợp lệ. Vui lòng tải lại trang.', 403);
-        }
-    }
-
-    private function render(string $page, array $data = []): void
-    {
-        extract($data, EXTR_SKIP);
-        $tv4Token = $this->token;
-        $tv4UserId = $this->userId;
-        $layout = __DIR__ . '/../../views/layouts/';
-        require $layout . 'header.php';
-        require __DIR__ . '/views/' . $page . '.php';
-        require $layout . 'footer.php';
-    }
-
-    private function go(string $action, int $id = 0): void
-    {
-        $link = 'index.php?module=collections&action=' . $action;
-        if ($id > 0) $link .= '&id=' . $id;
-        header('Location: ' . $link);
-        exit;
-    }
-
-    private function fail(string $message, int $status = 400): void
-    {
-        http_response_code($status);
-        exit(htmlspecialchars($message, ENT_QUOTES, 'UTF-8'));
-    }
-}
-class CollectionsController extends CollectionController
-{
 }
