@@ -129,6 +129,7 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
                             <i class="bi bi-person-plus me-1"></i> Đăng ký tài khoản
                         </a>
                     <?php endif; ?>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -300,7 +301,6 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
                                                         </li>
                                                     <?php endif; ?>
 
-                                                <?php if ($isLoggedIn): ?>
                                                     <li>
                                                         <button type="button" class="dropdown-item py-1 text-muted btn-report-comment"
                                                                 data-id="<?= (int) $comment['id'] ?>">
