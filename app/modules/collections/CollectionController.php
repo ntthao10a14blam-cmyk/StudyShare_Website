@@ -1,5 +1,5 @@
 <?php
-
+// TV4: Điều khiển trang bộ sưu tập và yêu thích (PHP thuần).
 require_once __DIR__ . '/CollectionModel.php';
 
 class CollectionController
@@ -22,6 +22,8 @@ class CollectionController
         }
         $this->userId = (int) Auth::id();
 
+        // Lấy kết nối PDO từ Database dùng chung của nhóm.
+        // Hỗ trợ cả hai cách đặt tên phương thức thường gặp trong file Database.php.
         $database = Database::getInstance();
 
         if ($database instanceof PDO) {
@@ -42,6 +44,8 @@ class CollectionController
         $this->token = $_SESSION['tv4_token'];
     }
 
+    // public/index.php cua nhom goi thang ten action qua method_exists().
+    // Cac ham ngan nay chuyen ve bo xu ly chung de de hieu va bao tri.
     public function index(): void { $this->handle('index'); }
     public function create(): void { $this->handle('create'); }
     public function store(): void { $this->handle('store'); }
@@ -101,7 +105,7 @@ class CollectionController
                     $this->fail('Tài liệu không tồn tại hoặc bạn không có quyền truy cập.');
                 }
                 $this->model->addDocument((int) $collection['id'], $documentId);
-                $this->go('show', (int) $collection['id']);
+                $this->returnAfterSave($documentId, 'show', (int) $collection['id']);
                 break;
             case 'removeDocument':
                 $this->checkPost();
@@ -124,7 +128,7 @@ class CollectionController
                     $this->fail('Không thể yêu thích tài liệu này.');
                 }
                 $this->model->toggleFavorite($this->userId, $documentId);
-                $this->go('favorites');
+                $this->returnAfterSave($documentId, 'favorites');
                 break;
             default:
                 $this->fail('Trang không tồn tại.', 404);
@@ -167,9 +171,24 @@ class CollectionController
         $tv4Token = $this->token;
         $tv4UserId = $this->userId;
         $layout = __DIR__ . '/../../views/layouts/';
-        require $layout . 'header.php';
+        require $layout . 'header.php'; // header.php đã tự nạp navbar.php
         require __DIR__ . '/views/' . $page . '.php';
         require $layout . 'footer.php';
+    }
+
+    // Chỉ cho quay về hai trang cố định; không nhận URL tuỳ ý từ form.
+    private function returnAfterSave(int $documentId, string $fallback, int $collectionId = 0): void
+    {
+        $source = (string) ($_POST['return_to'] ?? '');
+        if ($source === 'community' && $documentId > 0) {
+            header('Location: ' . url('?module=community&action=show&id=' . $documentId));
+            exit;
+        }
+        if ($source === 'home') {
+            header('Location: ' . url('/'));
+            exit;
+        }
+        $this->go($fallback, $collectionId);
     }
 
     private function go(string $action, int $id = 0): void
@@ -186,6 +205,9 @@ class CollectionController
         exit(htmlspecialchars($message, ENT_QUOTES, 'UTF-8'));
     }
 }
+
+// Router cua nhom tim class "CollectionsController" (so nhieu).
+// Giữ ten file CollectionController.php dung phan cong, khong doi router chung.
 class CollectionsController extends CollectionController
 {
 }
