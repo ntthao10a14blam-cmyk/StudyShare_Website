@@ -1,5 +1,26 @@
 <?php
-
+/**
+ * COLLECTIONCONTROLLER.PHP — Bộ sưu tập và yêu thích
+ * Phụ trách: TV4
+ *
+ * Actions:
+ *   index       — Danh sách bộ sưu tập của tôi
+ *   create      — Form tạo bộ sưu tập
+ *   store       — Lưu bộ sưu tập mới
+ *   show        — Chi tiết bộ sưu tập (danh sách tài liệu)
+ *   edit        — Sửa tên/mô tả bộ sưu tập
+ *   update      — Cập nhật
+ *   delete      — Xóa bộ sưu tập
+ *   addDoc      — Thêm tài liệu vào bộ sưu tập
+ *   removeDoc   — Bỏ tài liệu khỏi bộ sưu tập
+ *   favorites   — Danh sách tài liệu yêu thích
+ *   toggleFav   — Lưu / bỏ lưu yêu thích
+ *
+ * Lưu ý bắt buộc:
+ *   - Khi mở tài liệu trong bộ sưu tập: kiểm tra tài liệu còn approved không
+ *   - Lưu bộ sưu tập không thay đổi quyền truy cập tài liệu
+ *   - Tài liệu bị thu hồi / ẩn: vẫn còn trong DB collection_documents nhưng không xem được
+ */
 require_once __DIR__ . '/CollectionModel.php';
 
 class CollectionController
@@ -10,7 +31,7 @@ class CollectionController
 
     public function __construct()
     {
-
+        // Chỉ dùng API xác thực chung của nhóm; không tự đọc session user_id.
         if (!Auth::check()) {
             header('Location: index.php?module=auth&action=login');
             exit;
@@ -101,9 +122,6 @@ class CollectionController
                     $this->fail('Tài liệu không tồn tại hoặc bạn không có quyền truy cập.');
                 }
                 $this->model->addDocument((int) $collection['id'], $documentId);
-                if (($_POST['return_to'] ?? '') === 'community') {
-                    redirect('?module=community&action=show&id=' . $documentId, 'Đã lưu tài liệu vào bộ sưu tập "' . $collection['name'] . '"!', 'success');
-                }
                 $this->go('show', (int) $collection['id']);
                 break;
             case 'removeDocument':
@@ -121,15 +139,12 @@ class CollectionController
             case 'toggleFavorite':
                 $this->checkPost();
                 $documentId = (int) ($_POST['document_id'] ?? 0);
-
+                // Có thể bỏ yêu thích cũ; chỉ thêm mới khi có quyền xem tài liệu.
                 if (!$this->model->isFavorite($this->userId, $documentId)
                     && !$this->model->accessibleDocument($documentId, $this->userId)) {
                     $this->fail('Không thể yêu thích tài liệu này.');
                 }
                 $this->model->toggleFavorite($this->userId, $documentId);
-                if (($_POST['return_to'] ?? '') === 'community') {
-                    redirect('?module=community&action=show&id=' . $documentId, 'Đã cập nhật trạng thái yêu thích!', 'success');
-                }
                 $this->go('favorites');
                 break;
             default:
