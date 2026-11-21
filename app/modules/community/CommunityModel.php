@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * COMMUNITYMODEL.PHP — Truy vấn database phân hệ Cộng đồng & Chia sẻ tài liệu
+ * Phụ trách: TV3
+ */
+
 class CommunityModel
 {
     private Database $db;
@@ -127,6 +132,9 @@ class CommunityModel
         return $stmt->fetch();
     }
 
+    /**
+     * Tăng lượt tải của tài liệu.
+     */
     public function incrementDownloadCount(int $documentId): void
     {
         $stmt = $this->db->prepare(
@@ -135,6 +143,9 @@ class CommunityModel
         $stmt->execute([':id' => $documentId]);
     }
 
+    /**
+     * Lấy các tài liệu liên quan / cùng môn học
+     */
     public function getRelatedDocuments(int $subjectId, int $excludeId, int $limit = 5): array
     {
         $stmt = $this->db->prepare(

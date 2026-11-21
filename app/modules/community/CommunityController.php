@@ -117,10 +117,11 @@ class CommunityController
         require_once BASE_PATH . '/app/modules/community/views/show.php';
     }
 
+    /**
+     * Tải xuống tài liệu công khai đã được duyệt.
+     */
     public function download(): void
     {
-        Auth::requireLogin();
-
         $id = (int) get('id', 0);
         $document = $id > 0 ? $this->model->getDocumentById($id) : false;
 
@@ -185,7 +186,7 @@ class CommunityController
         header('Content-Type: application/pdf');
         header(
             'Content-Disposition: attachment; filename="' . $fallbackName
-            . '"; filename*=UTF-8\'\'' . rawurlencode($downloadName)
+                . '"; filename*=UTF-8\'\'' . rawurlencode($downloadName)
         );
         header('X-Content-Type-Options: nosniff');
         header('Cache-Control: private, no-store');
@@ -267,65 +268,28 @@ class CommunityController
         Auth::requireActiveUser();
         verifyCsrf();
 
-        $targetType = (string) post('target_type', '');
-        $targetId   = (int) post('target_id', 0);
-        $reason     = (string) post('reason', '');
-        $details    = mb_substr(trim((string) post('details', '')), 0, 1000);
+        $reason     = trim((string) post('reason', ''));
+        $details    = trim((string) post('details', ''));
+        $documentId = (int) post('document_id', 0);
+        $commentId  = (int) post('comment_id', 0);
 
-        if (!in_array($targetType, ['document', 'comment'], true) || $targetId <= 0) {
-            redirect('?module=community&action=index', 'Đối tượng báo cáo không hợp lệ.', 'error');
-        }
-
-        if ($targetType === 'document') {
-            $document = $this->model->getDocumentById($targetId);
-            if (!$document) {
-                redirect('?module=community&action=index', 'Không tìm thấy tài liệu cần báo cáo.', 'error');
-            }
-            $redirectDocId = $targetId;
-            $ownerId = (int) ($document['user_id'] ?? 0);
-            $reportDocId = $targetId;
-            $reportCommentId = null;
-        } else {
-            $comment = $this->model->getCommentById($targetId);
-            if (!$comment) {
-                redirect('?module=community&action=index', 'Không tìm thấy bình luận cần báo cáo.', 'error');
-            }
-            $redirectDocId = (int) $comment['document_id'];
-            $ownerId = (int) ($comment['user_id'] ?? 0);
-            $reportDocId = null;
-            $reportCommentId = $targetId;
-        }
-
-        $anchor = $targetType === 'comment' ? '#comments' : '';
-        $backUrl = '?module=community&action=show&id=' . $redirectDocId . $anchor;
-
-        if ($ownerId === (int) Auth::id()) {
-            redirect($backUrl, 'Bạn không thể tự báo cáo nội dung của chính mình.', 'error');
-        }
-
-        if (!in_array($reason, self::REPORT_REASONS, true)) {
-            redirect($backUrl, 'Vui lòng chọn lý do báo cáo hợp lệ.', 'error');
-        }
-
-        if ($this->model->hasPendingReport((int) Auth::id(), $targetType, $targetId)) {
-            redirect($backUrl, 'Bạn đã gửi báo cáo cho nội dung này và đang chờ xử lý.', 'info');
+        if (empty($reason)) {
+            $redirectUrl = $_SERVER['HTTP_REFERER'] ?? url('?module=community&action=index');
+            redirect($redirectUrl, 'Vui lòng chọn lý do báo cáo.', 'error');
         }
 
         $reportData = [
             'reason'      => $reason,
             'details'     => $details,
-            'document_id' => $reportDocId,
-            'comment_id'  => $reportCommentId,
+            'document_id' => $documentId > 0 ? $documentId : null,
+            'comment_id'  => $commentId > 0 ? $commentId : null,
             'reporter_id' => (int) Auth::id(),
         ];
 
         $this->model->createReport($reportData);
 
-        redirect(
-            $backUrl,
-            'Cảm ơn bạn đã gửi báo cáo. Ban quản trị sẽ sớm xem xét.',
-            'success'
-        );
+        $redirectUrl = $_SERVER['HTTP_REFERER'] ?? url('?module=community&action=index');
+        redirect($redirectUrl, 'Cảm ơn bạn đã gửi báo cáo. Ban quản trị sẽ sớm xem xét.', 'success');
     }
 
     public function submit(): void

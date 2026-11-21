@@ -112,27 +112,11 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
                             <i class="bi bi-box-arrow-up-right me-1"></i> Đọc toàn màn hình
                         </a>
 
-                        <form action="<?= url('?module=collections&action=toggleFavorite') ?>" method="POST" class="d-inline">
-                            <input type="hidden" name="tv4_token" value="<?= h($tv4Token ?? '') ?>">
-                            <input type="hidden" name="document_id" value="<?= (int) $document['id'] ?>">
-                            <input type="hidden" name="return_to" value="community">
-                            <button type="submit" class="btn <?= !empty($isFavorited) ? 'btn-danger' : 'btn-outline-danger' ?>">
-                                <i class="bi <?= !empty($isFavorited) ? 'bi-heart-fill' : 'bi-heart' ?> me-1"></i>
-                                <?= !empty($isFavorited) ? 'Đã thích' : 'Yêu thích' ?>
-                            </button>
-                        </form>
-
-                        <button type="button" class="btn btn-outline-primary"
-                                data-bs-toggle="modal" data-bs-target="#saveCollectionModal">
-                            <i class="bi bi-bookmark-plus me-1"></i> Lưu vào bộ sưu tập
-                        </button>
-
-                        <button type="button" class="btn btn-light-subtle text-danger ms-auto btn-report-target"
-                                data-bs-toggle="modal" data-bs-target="#reportModal"
-                                data-report-type="document"
-                                data-report-id="<?= (int) $document['id'] ?>"
-                                data-report-label="tài liệu này">
-                            <i class="bi bi-flag me-1"></i> Báo cáo vi phạm
+                    <!-- Nút Báo cáo vi phạm -->
+                    <?php if ($isLoggedIn): ?>
+                        <button type="button" class="btn btn-light-subtle text-danger ms-auto" 
+                                data-bs-toggle="modal" data-bs-target="#reportDocModal">
+                            <i class="bi bi-flag me-1"></i> Báo cáo
                         </button>
                     <?php else: ?>
 
@@ -144,6 +128,7 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
                         <a href="<?= url('?module=auth&action=register') ?>" class="btn btn-outline-primary">
                             <i class="bi bi-person-plus me-1"></i> Đăng ký tài khoản
                         </a>
+                    <?php endif; ?>
                     <?php endif; ?>
                 </div>
             </div>
@@ -157,52 +142,27 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
                         </span>
                     </div>
                     <div>
-                        <?php if ($isLoggedIn): ?>
-                            <a href="<?= $serveUrl ?>" target="_blank"
-                               rel="noopener" class="btn btn-sm btn-outline-primary py-0 px-2">
-                                <i class="bi bi-arrows-fullscreen me-1"></i> Phóng to
-                            </a>
-                        <?php else: ?>
-                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
-                                <i class="bi bi-eye me-1"></i> Xem trước 3 trang đầu
-                            </span>
-                        <?php endif; ?>
+                        <a href="<?= $serveUrl ?>" target="_blank" 
+                           class="btn btn-sm btn-outline-light py-0 px-2" style="font-size: 0.8125rem;">
+                            <i class="bi bi-arrows-fullscreen me-1"></i> Phóng to
+                        </a>
                     </div>
                 </div>
 
                 <?php if ($isLoggedIn): ?>
-                    <iframe src="<?= $serveUrl ?>"
-                            class="tailieu-reader-frame" title="Xem trước PDF: <?= h($document['title']) ?>">
+                    <iframe src="<?= $serveUrl ?>" 
+                            class="tailieu-reader-frame" title="Xem trực tuyến tài liệu">
                     </iframe>
                 <?php else: ?>
-                    <div class="p-3 bg-light" style="max-height: 750px; overflow-y: auto;" oncontextmenu="return false;">
-                        <?php for ($p = 1; $p <= 3; $p++): ?>
-                            <?php $previewImgUrl = url('serve.php?file=' . urlencode($document['file_path']) . '&preview_page=' . $p); ?>
-                            <div class="mb-3 text-center bg-white rounded shadow-sm p-2 border">
-                                <div class="text-muted small mb-1 text-start px-2">Trang <?= $p ?> / 3 (Xem trước)</div>
-                                <img src="<?= $previewImgUrl ?>"
-                                     alt="Xem trước trang <?= $p ?> tài liệu <?= h($document['title']) ?>"
-                                     class="img-fluid rounded border-top"
-                                     style="user-select: none; pointer-events: none;"
-                                     onerror="this.closest('.mb-3').style.display='none';">
-                            </div>
-                        <?php endfor; ?>
-
-                        <div class="tailieu-reader-login text-center bg-white rounded border p-4 mt-2">
-                            <i class="bi bi-file-earmark-lock display-5 text-warning mb-2 d-block"></i>
-                            <h5 class="fw-bold text-dark mb-2">Bạn đang xem trước 3 trang đầu tiên</h5>
-                            <p class="small text-muted mb-3 tailieu-reader-login-copy">
-                                Vui lòng đăng nhập tài khoản StudyShare để xem toàn bộ nội dung tài liệu trực tuyến và tải file PDF về máy.
-                            </p>
-                            <div class="d-flex justify-content-center gap-2">
-                                <a href="<?= url('?module=auth&action=login') ?>" class="btn btn-primary btn-sm px-4 fw-medium">
-                                    <i class="bi bi-box-arrow-in-right me-1"></i> Đăng nhập để xem đầy đủ
-                                </a>
-                                <a href="<?= url('?module=auth&action=register') ?>" class="btn btn-outline-secondary btn-sm px-3">
-                                    Đăng ký
-                                </a>
-                            </div>
-                        </div>
+                    <div class="p-5 text-center bg-white text-muted">
+                        <i class="bi bi-file-earmark-lock display-4 text-warning mb-3 d-block"></i>
+                        <h5 class="fw-bold text-dark mb-2">Tài liệu phục vụ học tập sinh viên StudyHub</h5>
+                        <p class="small text-muted mb-3" style="max-width: 460px; margin: 0 auto;">
+                            Theo quy chuẩn bảo mật học liệu của hệ thống, vui lòng đăng nhập tài khoản để đọc toàn bộ tài liệu trực tuyến và tải file về máy.
+                        </p>
+                        <a href="<?= url('?module=auth&action=login') ?>" class="btn btn-primary btn-sm px-4 fw-medium">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Đăng nhập để xem trực tuyến
+                        </a>
                     </div>
                 <?php endif; ?>
             </div>
@@ -214,13 +174,11 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
                     </h5>
                     <div class="row g-2">
                         <?php foreach ($images as $img): ?>
-                            <div class="col-6 col-md-4 col-lg-3">
-                                <div class="tailieu-preview-card">
-                                    <a href="<?= h(storageUrl($img['image_path'])) ?>" target="_blank" rel="noopener"
-                                       aria-label="Mở ảnh minh họa kích thước đầy đủ">
-                                        <img src="<?= h(storageUrl($img['image_path'])) ?>"
-                                             alt="Ảnh minh họa tài liệu: <?= h($document['title']) ?>"
-                                             class="tailieu-preview-image" loading="lazy">
+                            <div class="col-md-6">
+                                <div class="border rounded p-1 bg-light">
+                                    <a href="serve.php?file=<?= urlencode($img['image_path']) ?>" target="_blank">
+                                        <img src="serve.php?file=<?= urlencode($img['image_path']) ?>" 
+                                             alt="Trang xem trước" class="img-fluid rounded" loading="lazy">
                                     </a>
                                 </div>
                             </div>
@@ -344,11 +302,8 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
                                                     <?php endif; ?>
 
                                                     <li>
-                                                        <button type="button" class="dropdown-item py-1 text-muted btn-report-target"
-                                                                data-bs-toggle="modal" data-bs-target="#reportModal"
-                                                                data-report-type="comment"
-                                                                data-report-id="<?= (int) $comment['id'] ?>"
-                                                                data-report-label="bình luận này">
+                                                        <button type="button" class="dropdown-item py-1 text-muted btn-report-comment"
+                                                                data-id="<?= (int) $comment['id'] ?>">
                                                             <i class="bi bi-flag me-2"></i>Báo cáo vi phạm
                                                         </button>
                                                     </li>
@@ -468,6 +423,7 @@ $downloadUrl = url('?module=community&action=download&id=' . (int) $document['id
 
 </div>
 
+<!-- MODAL BÁO CÁO VI PHẠM TÀI LIỆU -->
 <?php if ($isLoggedIn): ?>
 <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
     <div class="modal-dialog">
