@@ -1,285 +1,524 @@
 <?php
-/**
- * TRANG CHỦ — StudyShare
- * Phong cách chuẩn định hướng https://www.khotailieusinhvien.com/:
- * - 3 Lối vào cốt lõi: Theo Trường | Theo Môn Học | Theo Loại Tài Liệu
- * - Thanh tìm kiếm tài liệu lớn, trực diện, gợi ý từ khoá & bộ lọc nhanh
- * - Bảng tài liệu mới đăng tải, thẻ định dạng tài liệu rõ ràng (PDF, Word, Slide)
- * - Tác vụ đóng góp, hỏi đáp và tiêu chuẩn cộng đồng sinh viên
- */
+
 $pageTitle = $pageTitle ?? 'Trang chủ — Kho Tài Liệu Sinh Viên & Cộng Đồng Học Tập';
 require_once BASE_PATH . '/app/views/layouts/header.php';
+
+$isLoggedInHome = Auth::check();
+$shareDocUrl    = url($isLoggedInHome ? '?module=documents&action=create' : '?module=auth&action=login');
+$askQuestionUrl = url($isLoggedInHome ? '?module=questions&action=create' : '?module=auth&action=login');
+$featuredDoc    = $recentDocs[0] ?? null;
 ?>
 
-<div class="container py-4">
+<section class="home-v2-hero py-5">
+    <div class="container py-lg-3 position-relative" style="z-index: 2;">
+        <div class="row align-items-center g-5">
 
-    <div class="card border-0 rounded-4 shadow-sm p-4 p-md-5 mb-4 text-white position-relative overflow-hidden" 
-         style="background: linear-gradient(135deg, #075e57 0%, #0b766e 60%, #115e59 100%);">
-
-        <div class="row align-items-center position-relative" style="z-index: 2;">
-            <div class="col-lg-8 pe-lg-4">
-                <!-- Badge định hướng -->
-                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" 
-                     style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); font-size: 0.85rem;">
-                    <i class="bi bi-check-circle-fill text-warning"></i>
-                    <span class="text-white fw-medium">Tài liệu đúng trường, đúng môn, đúng nhu cầu</span>
+            <div class="col-lg-6">
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3"
+                     style="background: rgba(255, 255, 255, 0.14); border: 1px solid rgba(255, 255, 255, 0.25); font-size: 0.8rem;">
+                    <i class="bi bi-stars text-warning"></i>
+                    <span>Cộng đồng chia sẻ học liệu sinh viên StudyShare</span>
                 </div>
 
-                <h1 class="display-6 fw-bold mb-2 text-white">
-                    Kho Học Liệu Rõ Ràng Cho Hành Trình Đại Học
+                <h1 class="display-5 fw-bold text-white mb-3 lh-sm">
+                    Kho Học Liệu <span class="home-v2-accent-italic fw-semibold">Tin Cậy</span> Cho Hành Trình Đại Học
                 </h1>
-                <p class="lead fs-6 text-white text-opacity-75 mb-4" style="max-width: 650px;">
-                    Tìm giáo trình, bài giảng, đề thi và tài liệu tham khảo nhanh chóng, có cấu trúc khoa học dành riêng cho sinh viên các trường đại học.
+
+                <p class="text-white text-opacity-75 mb-4" style="max-width: 540px; font-size: 0.98rem;">
+                    Tìm kiếm giáo trình, đề thi có đáp án, slide bài giảng và trao đổi hỏi đáp học thuật cùng hàng nghìn sinh viên các trường đại học.
                 </p>
 
-                <!-- THANH TÌM KIẾM TRỰC DIỆN -->
                 <form action="<?= url() ?>" method="GET" class="mb-3">
                     <input type="hidden" name="module" value="community">
                     <input type="hidden" name="action" value="index">
                     <div class="bg-white rounded-pill p-1 shadow-sm d-flex align-items-center">
-                        <span class="ps-3 text-muted"><i class="bi bi-search fs-5"></i></span>
-                        <input type="text" name="keyword" class="form-control border-0 bg-transparent py-2 px-3 shadow-none text-dark"
-                               placeholder="Tìm giáo trình, đề thi, slide bài giảng, môn học...">
+                        <span class="ps-3 text-muted"><i class="bi bi-search"></i></span>
+                        <input type="text" name="keyword"
+                               class="form-control border-0 bg-transparent py-2 px-3 shadow-none text-dark"
+                               placeholder="Tìm giáo trình, đề thi, môn học...">
                         <button type="submit" class="btn btn-warning rounded-pill px-4 py-2 fw-semibold text-dark flex-shrink-0">
                             Tìm kiếm
                         </button>
                     </div>
                 </form>
 
-                <!-- TỪ KHÓA GỢI Ý NHANH -->
-                <div class="d-flex align-items-center gap-2 flex-wrap small">
-                    <span class="text-white text-opacity-75"><i class="bi bi-fire text-warning me-1"></i>Từ khoá phổ biến:</span>
-                    <?php if (!empty($popularTags)): ?>
-                        <?php foreach (array_slice($popularTags, 0, 6) as $tag): ?>
-                            <a href="<?= url('?module=community&action=index&tag_id=' . (int)$tag['id']) ?>"
-                               class="text-decoration-none rounded-pill px-2 py-1 text-white"
-                               style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.25); font-size: 0.8rem;">
-                                #<?= h($tag['name']) ?>
-                            </a>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <span class="rounded-pill px-2 py-1 text-white" style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.25); font-size: 0.8rem;">#đề thi</span>
-                        <span class="rounded-pill px-2 py-1 text-white" style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.25); font-size: 0.8rem;">#bài tập</span>
-                        <span class="rounded-pill px-2 py-1 text-white" style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.25); font-size: 0.8rem;">#tóm tắt lý thuyết</span>
-                    <?php endif; ?>
+                <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+                    <a href="<?= url('?module=community&action=index') ?>" class="btn home-v2-btn-accent rounded-pill px-4 py-2 fw-semibold">
+                        Khám phá tài liệu <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                    <a href="<?= $shareDocUrl ?>" class="btn btn-outline-light rounded-pill px-4 py-2 fw-medium">
+                        <i class="bi bi-cloud-arrow-up me-1"></i> Đóng góp tài liệu
+                    </a>
+                </div>
+
+                <div class="d-flex flex-wrap gap-4 pt-3 border-top border-white border-opacity-25">
+                    <div>
+                        <div class="fs-4 fw-bold text-white lh-1"><?= number_format($stats['documents']) ?>+</div>
+                        <small class="text-white text-opacity-75">Tài liệu đã duyệt</small>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-white lh-1"><?= number_format($stats['questions']) ?>+</div>
+                        <small class="text-white text-opacity-75">Câu hỏi thảo luận</small>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-white lh-1"><?= number_format($stats['users']) ?>+</div>
+                        <small class="text-white text-opacity-75">Sinh viên tham gia</small>
+                    </div>
                 </div>
             </div>
 
-            <!-- CỘT THỐNG KÊ NHANH -->
-            <div class="col-lg-4 mt-4 mt-lg-0">
-                <div class="d-flex flex-column gap-3">
-                    <!-- Ô 1: Tài liệu học tập -->
-                    <div class="p-3 rounded-4 d-flex align-items-center gap-3 transition-all"
-                         style="background: rgba(255, 255, 255, 0.16); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.18);">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-                             style="width: 50px; height: 50px; background: rgba(255, 193, 7, 0.22); border: 1.5px solid #ffc107; box-shadow: 0 0 16px rgba(255, 193, 7, 0.45);">
-                            <i class="bi bi-file-earmark-pdf-fill fs-4 text-warning"></i>
-                        </div>
-                        <div>
-                            <div class="fs-4 fw-bold text-white lh-1 mb-1"><?= number_format($stats['documents']) ?>+</div>
-                            <div class="small text-white text-opacity-90 fw-medium">Tài liệu học tập</div>
-                        </div>
-                    </div>
-
-                    <!-- Ô 2: Câu hỏi thảo luận -->
-                    <div class="p-3 rounded-4 d-flex align-items-center gap-3 transition-all"
-                         style="background: rgba(255, 255, 255, 0.16); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.18);">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-                             style="width: 50px; height: 50px; background: rgba(13, 202, 240, 0.22); border: 1.5px solid #0dcaf0; box-shadow: 0 0 16px rgba(13, 202, 240, 0.45);">
-                            <i class="bi bi-question-circle-fill fs-4 text-info"></i>
-                        </div>
-                        <div>
-                            <div class="fs-4 fw-bold text-white lh-1 mb-1"><?= number_format($stats['questions']) ?>+</div>
-                            <div class="small text-white text-opacity-90 fw-medium">Câu hỏi thảo luận</div>
+            <div class="col-lg-6">
+                <div class="row g-3 position-relative">
+                    <div class="col-12">
+                        <div class="home-v2-bento-card p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <span class="badge rounded-pill px-3 py-2 fw-semibold"
+                                      style="background: rgba(245, 215, 122, 0.2); color: #f5d77a; border: 1px solid rgba(245, 215, 122, 0.45);">
+                                    <i class="bi bi-shield-check me-1"></i> Kiểm duyệt chất lượng
+                                </span>
+                                <i class="bi bi-file-earmark-pdf-fill fs-2 text-warning"></i>
+                            </div>
+                            <h2 class="h5 fw-bold text-white mb-2">Xem trước trực tuyến &amp; Tải PDF chuẩn xác</h2>
+                            <p class="small text-white text-opacity-75 mb-0">
+                                Tài liệu được phân loại rõ ràng theo từng môn học và từ khóa, hỗ trợ xem trước trực tiếp trước khi lưu về máy.
+                            </p>
                         </div>
                     </div>
-
-                    <!-- Ô 3: Sinh viên tham gia -->
-                    <div class="p-3 rounded-4 d-flex align-items-center gap-3 transition-all"
-                         style="background: rgba(255, 255, 255, 0.16); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.18);">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-                             style="width: 50px; height: 50px; background: rgba(25, 135, 84, 0.28); border: 1.5px solid #20c997; box-shadow: 0 0 16px rgba(32, 201, 151, 0.45);">
-                            <i class="bi bi-people-fill fs-4" style="color: #20c997;"></i>
+                    <div class="col-sm-6">
+                        <div class="home-v2-bento-card p-3 h-100">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="rounded-circle d-inline-flex align-items-center justify-content-center"
+                                      style="width: 36px; height: 36px; background: rgba(255, 255, 255, 0.16);">
+                                    <i class="bi bi-chat-dots-fill text-warning"></i>
+                                </span>
+                                <strong class="text-white small">Hỏi đáp học tập</strong>
+                            </div>
+                            <p class="small text-white text-opacity-75 mb-0" style="font-size: 0.8rem;">
+                                Giải đáp bài tập nhanh chóng, đánh dấu câu trả lời chính xác nhất.
+                            </p>
                         </div>
-                        <div>
-                            <div class="fs-4 fw-bold text-white lh-1 mb-1"><?= number_format($stats['users']) ?>+</div>
-                            <div class="small text-white text-opacity-90 fw-medium">Sinh viên tham gia</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="home-v2-bento-card p-3 h-100">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="rounded-circle d-inline-flex align-items-center justify-content-center"
+                                      style="width: 36px; height: 36px; background: rgba(255, 255, 255, 0.16);">
+                                    <i class="bi bi-collection-fill text-warning"></i>
+                                </span>
+                                <strong class="text-white small">Bộ sưu tập riêng</strong>
+                            </div>
+                            <p class="small text-white text-opacity-75 mb-0" style="font-size: 0.8rem;">
+                                Lưu trữ tài liệu yêu thích và sắp xếp theo từng học kỳ ôn thi.
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</section>
 
-
-    <!-- ============================================================
-         3. DANH SÁCH TÀI LIỆU (FEED CHÍNH)
-         ============================================================ -->
-    <div class="row g-4 mb-5">
-        <!-- Cột trái (8): Feed Tài liệu & Diễn đàn -->
-        <div class="col-lg-8">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <span class="text-uppercase fw-bold text-primary small" style="letter-spacing: 0.08em;">HỌC LIỆU MỚI</span>
-                </div>
-                <a href="<?= url('?module=community&action=index') ?>" class="btn btn-sm btn-light border text-decoration-none">
-                    Xem tất cả tài liệu <i class="bi bi-chevron-right ms-1"></i>
-                </a>
-            </div>
-
-            <?php if (!empty($recentDocs)): ?>
-                <div class="d-flex flex-column gap-3">
-                    <?php foreach ($recentDocs as $doc): ?>
-                        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white hover-shadow transition-all">
-                            <div class="d-flex gap-3 align-items-start">
-                                <!-- Icon định dạng file chuẩn -->
-                                <div class="rounded-3 bg-danger bg-opacity-10 text-danger p-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 50px; height: 50px;">
-                                    <i class="bi bi-file-earmark-pdf fs-3"></i>
-                                </div>
-
-                                <div class="flex-grow-1 min-w-0">
-                                    <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
-                                        <a href="<?= url('?module=community&action=show&id=' . (int)$doc['id']) ?>"
-                                           class="fw-bold text-dark text-decoration-none text-truncate-2 hover-primary fs-6">
-                                            <?= h($doc['title']) ?>
-                                        </a>
-                                        <?php if (!empty($doc['subject_name'])): ?>
-                                            <a href="<?= url('?module=community&action=index&subject_id=' . (int)($doc['subject_id'] ?? 0)) ?>" 
-                                               class="badge bg-primary-subtle text-primary border border-primary-subtle text-decoration-none flex-shrink-0 py-1 px-2">
-                                                <?= h($doc['subject_name']) ?>
-                                            </a>
-                                        <?php endif; ?>
-                                    </div>
-
-                                    <!-- Metadata trước khi tải: Tác giả, Thời gian, Dung lượng, Lượt tải -->
-                                    <div class="d-flex align-items-center gap-3 text-muted small mt-2 flex-wrap">
-                                        <span><i class="bi bi-person me-1"></i><?= h($doc['author_name'] ?? 'Thành viên StudyShare') ?></span>
-                                        <span><i class="bi bi-clock me-1"></i><?= timeAgo($doc['created_at']) ?></span>
-                                        <span><i class="bi bi-hdd me-1"></i><?= formatFileSize((int)($doc['file_size'] ?? 0)) ?></span>
-                                        <span class="text-success fw-medium"><i class="bi bi-download me-1"></i><?= number_format((int)($doc['download_count'] ?? 0)) ?> lượt tải</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+<section class="home-v2-trust-bar py-3">
+    <div class="container">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <span class="small fw-semibold text-muted text-uppercase" style="letter-spacing: 0.06em;">
+                <i class="bi bi-bookmark-check text-primary me-1"></i> Lĩnh vực trọng tâm:
+            </span>
+            <div class="d-flex flex-wrap align-items-center gap-2 gap-md-4">
+                <?php if (!empty($popularSubjects)): ?>
+                    <?php foreach (array_slice($popularSubjects, 0, 5) as $sub): ?>
+                        <a href="<?= url('?module=community&action=index&subject_id=' . (int)$sub['id']) ?>"
+                           class="text-decoration-none small fw-semibold text-dark hover-primary">
+                            <?= h($sub['name']) ?>
+                        </a>
                     <?php endforeach; ?>
-                </div>
-            <?php else: ?>
-                <div class="card border-0 shadow-sm rounded-3 text-center p-5 bg-white">
-                    <i class="bi bi-inbox text-muted fs-1 mb-2"></i>
-                    <p class="text-muted mb-0">Chưa có tài liệu công khai nào trong hệ thống.</p>
-                </div>
-            <?php endif; ?>
-
-
-            <!-- ============================================================
-                 4. GÓC HỎI ĐÁP HỌC TẬP SINH VIÊN
-                 ============================================================ -->
-            <div class="d-flex justify-content-between align-items-center mb-3 mt-5">
-                <div>
-                    <span class="text-uppercase fw-bold text-primary small" style="letter-spacing: 0.08em;">DIỄN ĐÀN THẢO LUẬN</span>
-                </div>
-                <a href="<?= url('?module=questions&action=index') ?>" class="btn btn-sm btn-light border text-decoration-none">
-                    Xem tất cả câu hỏi <i class="bi bi-chevron-right ms-1"></i>
-                </a>
+                <?php endif; ?>
             </div>
+        </div>
+    </div>
+</section>
 
-            <?php if (!empty($recentQuestions)): ?>
-                <div class="d-flex flex-column gap-2">
-                    <?php foreach ($recentQuestions as $q): ?>
-                        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white hover-shadow transition-all">
-                            <div class="d-flex justify-content-between align-items-start gap-2">
-                                <a href="<?= url('?module=questions&action=show&id=' . (int)$q['id']) ?>"
-                                   class="fw-semibold text-dark text-decoration-none hover-primary">
-                                    <i class="bi bi-question-circle text-primary me-1"></i>
-                                    <?= h($q['title']) ?>
-                                </a>
-                                <span class="badge bg-warning-subtle text-dark border border-warning-subtle flex-shrink-0">
-                                    <i class="bi bi-chat-left-text me-1"></i><?= (int)($q['answer_count'] ?? 0) ?> trả lời
-                                </span>
-                            </div>
-                            <div class="d-flex align-items-center gap-3 text-muted small mt-2">
-                                <?php if (!empty($q['subject_name'])): ?>
-                                    <span class="badge bg-light text-secondary border"><?= h($q['subject_name']) ?></span>
-                                <?php endif; ?>
-                                <span><i class="bi bi-person me-1"></i><?= h($q['author_name'] ?? 'Sinh viên') ?></span>
-                                <span><i class="bi bi-clock me-1"></i><?= timeAgo($q['created_at']) ?></span>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php else: ?>
-                <div class="card border-0 shadow-sm rounded-3 text-center p-4 bg-white">
-                    <p class="text-muted small mb-0">Chưa có câu hỏi thảo luận nào.</p>
-                </div>
-            <?php endif; ?>
+<?php
+$topDocs = !empty($topDownloadedDocs) ? array_slice($topDownloadedDocs, 0, 3) : [];
+if (empty($topDocs) && !empty($recentDocs)) {
+    $sortedDocs = $recentDocs;
+    usort($sortedDocs, fn($a, $b) => (int)($b['download_count'] ?? 0) <=> (int)($a['download_count'] ?? 0));
+    $topDocs = array_slice($sortedDocs, 0, 3);
+}
+$topDocIds = array_map(fn($d) => (int)$d['id'], $topDocs);
+$otherDocs = array_values(array_filter($recentDocs ?? [], fn($d) => !in_array((int)$d['id'], $topDocIds, true)));
+?>
+<section class="home-v2-section-light py-5">
+    <div class="container py-2">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-4 gap-3">
+            <div>
+                <span class="home-v2-eyebrow">MỚI CẬP NHẬT</span>
+                <h2 class="h2 fw-bold text-dark mb-0">
+                    Tài Liệu <span class="home-v2-accent-italic">Vừa Chia Sẻ</span>
+                </h2>
+            </div>
+            <a href="<?= url('?module=community&action=index') ?>" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-medium flex-shrink-0">
+                Xem tất cả <i class="bi bi-arrow-right ms-1"></i>
+            </a>
         </div>
 
-        <!-- Cột phải (4): Tác vụ đóng góp, Môn học nổi bật & Tiêu chuẩn học liệu -->
-        <div class="col-lg-4">
-            
-            <!-- Hộp Đóng góp / Chia sẻ tài liệu -->
-            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
-                <div class="d-flex align-items-center gap-2 mb-2">
-                    <div class="rounded-circle bg-primary-subtle text-primary p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
-                        <i class="bi bi-cloud-arrow-up-fill fs-5"></i>
+        <?php if (!empty($topDocs)): ?>
+
+            <div class="row g-4 mb-4">
+                <?php foreach ($topDocs as $doc): ?>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="home-v2-card overflow-hidden h-100 d-flex flex-column">
+                            <div class="home-v2-doc-thumb d-flex justify-content-between align-items-center gap-2">
+                                <span class="badge bg-white text-primary border border-primary-subtle px-2 py-1 small text-truncate">
+                                    <?= h($doc['subject_name'] ?? 'Tài liệu') ?>
+                                </span>
+                                <span class="badge bg-danger-subtle text-danger px-2 py-1 small flex-shrink-0">
+                                    <i class="bi bi-file-earmark-pdf-fill me-1"></i><?= formatFileSize((int)$doc['file_size']) ?>
+                                </span>
+                            </div>
+                            <div class="p-4 d-flex flex-column flex-grow-1">
+                                <div class="small text-muted mb-2 d-flex align-items-center flex-wrap gap-2">
+                                    <span><i class="bi bi-person me-1"></i><?= h($doc['author_name'] ?? 'Sinh viên') ?></span>
+                                    <span>•</span>
+                                    <span class="fw-semibold text-primary"><i class="bi bi-download me-1"></i><?= number_format((int)$doc['download_count']) ?> lượt tải</span>
+                                </div>
+                                <h3 class="h6 fw-bold text-dark mb-3 flex-grow-1 text-truncate-2">
+                                    <a href="<?= url('?module=community&action=show&id=' . (int)$doc['id']) ?>"
+                                       class="text-decoration-none text-dark hover-primary">
+                                        <?= h($doc['title']) ?>
+                                    </a>
+                                </h3>
+                                <a href="<?= url('?module=community&action=show&id=' . (int)$doc['id']) ?>"
+                                   class="text-decoration-none small fw-semibold text-primary">
+                                    Xem tài liệu <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                    <h3 class="h6 fw-bold text-dark mb-0">Chia sẻ tài liệu của bạn</h3>
+                <?php endforeach; ?>
+            </div>
+
+            <?php if (!empty($otherDocs)): ?>
+                <div class="home-v2-card overflow-hidden">
+                    <div class="list-group list-group-flush">
+                        <?php foreach ($otherDocs as $doc): ?>
+                            <a href="<?= url('?module=community&action=show&id=' . (int)$doc['id']) ?>"
+                               class="list-group-item list-group-item-action px-4 py-3 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+                                <div class="d-flex align-items-center gap-3 min-w-0">
+                                    <span class="rounded-3 bg-danger-subtle text-danger d-inline-flex align-items-center justify-content-center flex-shrink-0"
+                                          style="width: 40px; height: 40px;">
+                                        <i class="bi bi-file-earmark-pdf-fill fs-5"></i>
+                                    </span>
+                                    <div class="min-w-0">
+                                        <div class="fw-semibold text-dark text-truncate"><?= h($doc['title']) ?></div>
+                                        <div class="small text-muted d-flex flex-wrap align-items-center gap-2">
+                                            <span class="badge bg-light text-primary border"><?= h($doc['subject_name'] ?? 'Tài liệu') ?></span>
+                                            <span><i class="bi bi-person me-1"></i><?= h($doc['author_name'] ?? 'Sinh viên') ?></span>
+                                            <span>•</span>
+                                            <span><?= formatFileSize((int)$doc['file_size']) ?></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-3 flex-shrink-0">
+                                    <span class="small text-muted">
+                                        <i class="bi bi-download me-1 text-primary"></i><?= number_format((int)$doc['download_count']) ?> lượt tải
+                                    </span>
+                                    <span class="small fw-semibold text-primary">Xem tài liệu <i class="bi bi-arrow-right ms-1"></i></span>
+                                </div>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
-                <p class="text-muted small mb-3">
+            <?php endif; ?>
+        <?php else: ?>
+            <div class="empty-state">Chưa có tài liệu nào được chia sẻ.</div>
+        <?php endif; ?>
+    </div>
+</section>
+
+<section class="home-v2-dark-section py-4">
+    <div class="container py-1">
+        <div class="row align-items-center g-4">
+
+            <div class="col-lg-4 text-center">
+                <div class="home-v2-circle-showcase p-3">
+                    <i class="bi bi-mortarboard-fill fs-1 text-warning mb-2"></i>
+                    <div class="fs-2 fw-bold text-white lh-1 mb-1"><?= number_format($stats['documents']) ?>+</div>
+                    <div class="text-white text-opacity-75 small">Học liệu đã kiểm duyệt</div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <span class="home-v2-eyebrow home-v2-eyebrow-light">CAM KẾT CHẤT LƯỢNG</span>
+                <h2 class="h3 fw-bold text-white mb-2">
+                    Nền Tảng <span class="home-v2-accent-italic">Chuẩn Hóa</span> Tri Thức Sinh Viên
+                </h2>
+                <p class="small text-white text-opacity-75 mb-3">
+                    Mỗi tài liệu đăng tải lên cộng đồng StudyShare đều trải qua quy trình kiểm duyệt kỹ lưỡng nhằm đảm bảo tính chính xác, an toàn và giá trị học thuật cao.
+                </p>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-sm-6">
+                        <div class="home-v2-dark-pill d-flex align-items-center gap-2 h-100">
+                            <i class="bi bi-check-circle-fill text-warning"></i>
+                            <span class="small text-white fw-medium">Kiểm tra định dạng PDF thực tế</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="home-v2-dark-pill d-flex align-items-center gap-2 h-100">
+                            <i class="bi bi-check-circle-fill text-warning"></i>
+                            <span class="small text-white fw-medium">Xem trước 3 trang đầu trên web</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="home-v2-dark-pill d-flex align-items-center gap-2 h-100">
+                            <i class="bi bi-check-circle-fill text-warning"></i>
+                            <span class="small text-white fw-medium">Báo cáo &amp; xử lý vi phạm nhanh</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="home-v2-dark-pill d-flex align-items-center gap-2 h-100">
+                            <i class="bi bi-check-circle-fill text-warning"></i>
+                            <span class="small text-white fw-medium">Phân loại theo môn học &amp; từ khóa</span>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="<?= url('?module=community&action=index') ?>" class="btn home-v2-btn-accent btn-sm rounded-pill px-4 py-2 fw-semibold">
+                    Tìm hiểu kho tài liệu <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="home-v2-section-white py-5">
+    <div class="container py-2">
+        <div class="row align-items-center g-5">
+
+            <div class="col-lg-5">
+                <span class="home-v2-eyebrow">CHIA SẺ CÙNG CỘNG ĐỒNG</span>
+                <h2 class="h2 fw-bold text-dark mb-3">
+                    Chia Sẻ Tài Liệu <span class="home-v2-accent-italic">Của Bạn</span>
+                </h2>
+                <p class="text-muted mb-4">
                     Đóng góp bài giảng, đề thi hoặc đồ án đã học để xây dựng kho học liệu hữu ích cho các bạn sinh viên khóa sau.
                 </p>
-                <div class="d-grid gap-2">
-                    <a href="<?= url('?module=documents&action=create') ?>" class="btn btn-primary rounded-pill btn-sm py-2">
+
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    <a href="<?= $shareDocUrl ?>" class="btn btn-primary rounded-pill px-4 py-2 fw-medium">
                         <i class="bi bi-upload me-1"></i> Tải lên tài liệu mới
                     </a>
-                    <a href="<?= url('?module=questions&action=create') ?>" class="btn btn-outline-secondary rounded-pill btn-sm py-2">
+                    <a href="<?= $askQuestionUrl ?>" class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-medium">
                         <i class="bi bi-pencil-square me-1"></i> Đặt câu hỏi thắc mắc
                     </a>
                 </div>
-            </div>
 
-            <!-- Danh mục môn học trọng tâm -->
-            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
-                <h3 class="h6 fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-                    <i class="bi bi-journal-bookmark-fill text-primary"></i> Môn học trọng tâm
-                </h3>
-                <div class="d-flex flex-column gap-2">
-                    <?php if (!empty($popularSubjects)): ?>
-                        <?php foreach ($popularSubjects as $sub): ?>
-                            <a href="<?= url('?module=community&action=index&subject_id=' . (int)$sub['id']) ?>"
-                               class="d-flex justify-content-between align-items-center text-decoration-none p-2 rounded-2 hover-bg-light text-dark small border-bottom border-light">
-                                <span class="fw-medium"><i class="bi bi-bookmark text-muted me-2"></i><?= h($sub['name']) ?></span>
-                                <i class="bi bi-chevron-right text-muted" style="font-size: 11px;"></i>
+                <?php if (!empty($popularTags)): ?>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <span class="small text-muted fw-medium me-1">Từ khóa:</span>
+                        <?php foreach (array_slice($popularTags, 0, 6) as $tag): ?>
+                            <a href="<?= url('?module=community&action=index&tag_id=' . (int)$tag['id']) ?>"
+                               class="badge bg-light text-dark border text-decoration-none py-1 px-2">
+                                #<?= h($tag['name']) ?>
                             </a>
                         <?php endforeach; ?>
-                    <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="p-4 rounded-4 border" style="background: var(--color-bg); border-color: var(--color-border) !important;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="h6 fw-bold text-dark mb-0">
+                            <i class="bi bi-journal-bookmark-fill text-primary me-2"></i>Môn Học Trọng Tâm
+                        </h3>
+                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1">
+                            <?= count($popularSubjects) ?> môn phổ biến
+                        </span>
+                    </div>
+                    <div class="row g-2">
+                        <?php if (!empty($popularSubjects)): ?>
+                            <?php foreach ($popularSubjects as $sub): ?>
+                                <div class="col-sm-6">
+                                    <a href="<?= url('?module=community&action=index&subject_id=' . (int)$sub['id']) ?>"
+                                       class="home-v2-card p-3 d-flex justify-content-between align-items-center text-decoration-none text-dark">
+                                        <span class="small fw-semibold text-truncate pe-2">
+                                            <i class="bi bi-bookmark-fill text-primary me-2"></i><?= h($sub['name']) ?>
+                                        </span>
+                                        <i class="bi bi-chevron-right text-muted small"></i>
+                                    </a>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="home-v2-section-light py-5">
+    <div class="container py-2">
+        <div class="text-center mb-5">
+            <span class="home-v2-eyebrow">PHẢN HỒI CỘNG ĐỒNG</span>
+            <h2 class="h2 fw-bold text-dark mb-2">
+                Được Tin Dùng Bởi <span class="home-v2-accent-italic">Sinh Viên</span>
+            </h2>
+            <p class="text-muted small mb-0">Những chia sẻ thực tế từ các bạn sinh viên sử dụng StudyShare mỗi ngày.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="home-v2-testimonial-featured p-4 h-100 d-flex flex-column justify-content-between shadow-sm">
+                    <div>
+                        <div class="text-warning mb-3 small">
+                            <i class="bi bi-star-fill"></i> <i class="bi bi-star-fill"></i> <i class="bi bi-star-fill"></i> <i class="bi bi-star-fill"></i> <i class="bi bi-star-fill"></i>
+                        </div>
+                        <p class="small lh-lg mb-4 text-white text-opacity-90">
+                            "Kho đề thi Cơ sở dữ liệu và Lập trình Web ở đây cực kỳ sát với chương trình học. Mình có thể xem trước nội dung rồi tải về ôn tập rất nhanh."
+                        </p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 pt-3 border-top border-white border-opacity-25">
+                        <div class="rounded-circle bg-white text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">A</div>
+                        <div>
+                            <div class="fw-semibold small text-white">Nguyễn Văn An</div>
+                            <div class="text-white text-opacity-75" style="font-size: 0.75rem;">Sinh viên Công nghệ thông tin</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Tiêu chuẩn tài liệu (Chuẩn hoá theo khotailieusinhvien.com) -->
-            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
-                <h3 class="h6 fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-                    <i class="bi bi-shield-check text-success"></i> Tiêu chuẩn học liệu
-                </h3>
-                <ul class="list-unstyled small text-muted d-flex flex-column gap-2 mb-0">
-                    <li class="d-flex align-items-start gap-2">
-                        <i class="bi bi-check-circle text-primary mt-1"></i>
-                        <span><strong>Đúng trường, đúng môn:</strong> Tài liệu gắn chính xác theo chương trình học đại học.</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2">
-                        <i class="bi bi-check-circle text-primary mt-1"></i>
-                        <span><strong>Minh bạch thông tin:</strong> Tóm tắt nội dung, nguồn tài liệu và tác giả rõ ràng trước khi tải.</span>
-                    </li>
-                    <li class="d-flex align-items-start gap-2">
-                        <i class="bi bi-check-circle text-primary mt-1"></i>
-                        <span><strong>Đã qua kiểm duyệt:</strong> Admin kiểm duyệt tính xác thực và an toàn nội dung trước khi xuất bản.</span>
-                    </li>
-                </ul>
+            <div class="col-lg-4">
+                <div class="home-v2-card p-4 h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="text-warning mb-3 small">
+                            <i class="bi bi-star-fill"></i> <i class="bi bi-star-fill"></i> <i class="bi bi-star-fill"></i> <i class="bi bi-star-fill"></i> <i class="bi bi-star-fill"></i>
+                        </div>
+                        <p class="small lh-lg mb-4 text-muted">
+                            "Mục Hỏi đáp học tập giúp mình giải quyết nhiều bài tập Mạng máy tính hóc búa nhờ có phần đánh dấu câu trả lời đúng rất dễ theo dõi."
+                        </p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 pt-3 border-top">
+                        <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">B</div>
+                        <div>
+                            <div class="fw-semibold small text-dark">Trần Thị Bình</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">Sinh viên An toàn thông tin</div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
+            <div class="col-lg-4">
+                <div class="home-v2-card p-4 h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="text-warning mb-3 small">
+                            <i class="bi bi-star-fill"></i> <i class="bi bi-star-fill"></i> <i class="bi bi-star-fill"></i> <i class="bi bi-star-fill"></i> <i class="bi bi-star-fill"></i>
+                        </div>
+                        <p class="small lh-lg mb-4 text-muted">
+                            "Tính năng Bộ sưu tập rất tiện lợi để gom toàn bộ slide và tài liệu ôn thi cuối kỳ vào một chỗ, không phải mất công tìm lại nhiều lần."
+                        </p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 pt-3 border-top">
+                        <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">C</div>
+                        <div>
+                            <div class="fw-semibold small text-dark">Lê Hoàng Cường</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">Sinh viên Khoa học dữ liệu</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+</section>
 
-</div>
+<section class="home-v2-section-white py-5">
+    <div class="container py-2">
+        <div class="row align-items-center g-5">
 
-<?php require_once BASE_PATH . '/app/views/layouts/footer.php'; ?>
+            <div class="col-lg-6">
+                <div class="home-v2-mockup-frame p-4 text-white">
+                    <div class="d-flex justify-content-between align-items-center pb-3 mb-3 border-bottom border-white border-opacity-10">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="rounded-circle bg-warning d-inline-block" style="width: 10px; height: 10px;"></span>
+                            <span class="small fw-semibold">Câu hỏi học tập gần đây</span>
+                        </div>
+                        <a href="<?= url('?module=questions&action=index') ?>" class="text-warning small text-decoration-none">
+                            Xem tất cả →
+                        </a>
+                    </div>
+
+                    <div class="d-flex flex-column gap-3">
+                        <?php if (!empty($recentQuestions)): ?>
+                            <?php foreach (array_slice($recentQuestions, 0, 4) as $q): ?>
+                                <a href="<?= url('?module=questions&action=show&id=' . (int)$q['id']) ?>"
+                                   class="home-v2-dark-pill text-decoration-none d-flex justify-content-between align-items-start gap-3">
+                                    <div>
+                                        <div class="small fw-semibold text-white mb-1"><?= h($q['title']) ?></div>
+                                        <div class="text-white text-opacity-75" style="font-size: 0.75rem;">
+                                            <span class="text-warning"><?= h($q['subject_name'] ?? 'Chung') ?></span> • <?= h($q['author_name'] ?? 'Sinh viên') ?>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-white text-dark rounded-pill flex-shrink-0">
+                                        <?= (int)($q['answer_count'] ?? 0) ?> trả lời
+                                    </span>
+                                </a>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <div class="text-white text-opacity-75 small py-3 text-center">Chưa có câu hỏi nào gần đây.</div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <span class="home-v2-eyebrow">TRAO ĐỔI HỌC THUẬT</span>
+                <h2 class="h2 fw-bold text-dark mb-3">
+                    Thảo Luận <span class="home-v2-accent-italic">Hỏi Đáp</span> Nhanh Chóng
+                </h2>
+                <p class="text-muted mb-4">
+                    Gặp bài tập khó hoặc vấn đề chưa rõ khi đọc tài liệu? Hãy đặt câu hỏi để nhận hỗ trợ trực tiếp từ cộng đồng sinh viên cùng chuyên ngành.
+                </p>
+
+                <div class="d-flex flex-column gap-3 mb-4">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="rounded-3 bg-primary-subtle text-primary p-2 flex-shrink-0">
+                            <i class="bi bi-funnel-fill"></i>
+                        </div>
+                        <div>
+                            <h3 class="h6 fw-bold text-dark mb-1">Lọc theo trạng thái &amp; môn học</h3>
+                            <p class="small text-muted mb-0">Tìm ngay các câu hỏi đã có lời giải chuẩn hoặc câu hỏi mới đang chờ giải đáp.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="rounded-3 bg-primary-subtle text-primary p-2 flex-shrink-0">
+                            <i class="bi bi-patch-check-fill"></i>
+                        </div>
+                        <div>
+                            <h3 class="h6 fw-bold text-dark mb-1">Xác nhận câu trả lời đúng</h3>
+                            <p class="small text-muted mb-0">Tác giả có thể đánh dấu câu trả lời chính xác nhất để các bạn khác dễ tham khảo.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="rounded-3 bg-primary-subtle text-primary p-2 flex-shrink-0">
+                            <i class="bi bi-markdown-fill"></i>
+                        </div>
+                        <div>
+                            <h3 class="h6 fw-bold text-dark mb-1">Trình soạn thảo Markdown &amp; Ảnh</h3>
+                            <p class="small text-muted mb-0">Hỗ trợ chèn công thức, đoạn mã nguồn và hình ảnh đề bài trực quan.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="<?= url('?module=questions&action=index') ?>" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold">
+                    Tham gia Hỏi đáp <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<?php
+$hideFooterCta = true;
+require_once BASE_PATH . '/app/views/layouts/footer.php';
+?>

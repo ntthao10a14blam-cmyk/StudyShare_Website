@@ -1,14 +1,4 @@
 <?php
-/**
- * QUESTIONMODEL.PHP — Truy vấn bảng questions, answers, question_images,
- * question_tags, reports (phần báo cáo câu hỏi / câu trả lời)
- * Phụ trách: TV5
- *
- * Quy ước:
- *  - Chỉ chứa truy vấn SQL (PDO prepared statements), không echo/redirect.
- *  - Mọi truy vấn "bình thường" phải loại nội dung đã xóa mềm: deleted_at IS NULL
- *  - Câu hỏi / câu trả lời bị Admin ẩn (status = 'hidden') không hiện ra danh sách.
- */
 
 class QuestionModel
 {
@@ -18,10 +8,6 @@ class QuestionModel
     {
         $this->db = Database::getInstance();
     }
-
-    // ============================================================
-    // DỮ LIỆU DÙNG CHO BỘ LỌC / FORM
-    // ============================================================
 
     public function getSubjects(): array
     {
@@ -40,11 +26,6 @@ class QuestionModel
         return (bool) $stmt->fetchColumn();
     }
 
-    /**
-     * Lọc ra các tag id có thật trong DB (chống giả mạo ID từ form).
-     * @param int[] $ids
-     * @return int[]
-     */
     public function filterExistingTagIds(array $ids): array
     {
         $ids = array_values(array_unique(array_filter(array_map('intval', $ids), fn($v) => $v > 0)));
@@ -55,24 +36,15 @@ class QuestionModel
         return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
     }
 
-    // ============================================================
-    // DANH SÁCH CÂU HỎI (index)
-    // ============================================================
-
-    /**
-     * Ghép điều kiện WHERE từ bộ lọc.
-     * $filters: q (từ khóa), subject_id, tag_id, status ('answered'|'unanswered'|'')
-     * @return array{0:string,1:array} [chuỗi WHERE, mảng tham số]
-     */
     private function buildWhere(array $filters): array
     {
         $where  = ["q.deleted_at IS NULL", "q.status = 'visible'"];
         $params = [];
 
         if (($filters['q'] ?? '') !== '') {
-            // Escape ký tự đặc biệt của LIKE
+
             $kw = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $filters['q']) . '%';
-            // PDO (EMULATE_PREPARES = false) không cho dùng lại cùng một tên tham số 2 lần
+
             $where[] = "(q.title LIKE :kw1 OR q.content LIKE :kw2)";
             $params[':kw1'] = $kw;
             $params[':kw2'] = $kw;
@@ -89,6 +61,9 @@ class QuestionModel
             $where[] = "q.accepted_answer_id IS NOT NULL";
         } elseif (($filters['status'] ?? '') === 'unanswered') {
             $where[] = "q.accepted_answer_id IS NULL";
+        } elseif (($filters['status'] ?? '') === 'mine' && !empty($filters['user_id'])) {
+            $where[] = "q.user_id = :mine_uid";
+            $params[':mine_uid'] = (int) $filters['user_id'];
         }
 
         return ['WHERE ' . implode(' AND ', $where), $params];
@@ -102,10 +77,6 @@ class QuestionModel
         return (int) $stmt->fetchColumn();
     }
 
-    /**
-     * Một trang danh sách câu hỏi, mỗi dòng có thêm: tên người hỏi, tên môn,
-     * số câu trả lời, mảng 'tags'.
-     */
     public function listQuestions(array $filters, int $offset, int $limit): array
     {
         [$where, $params] = $this->buildWhere($filters);
@@ -131,7 +102,6 @@ class QuestionModel
         $stmt->execute();
         $rows = $stmt->fetchAll();
 
-        // Gắn tag cho từng câu hỏi bằng 1 truy vấn (tránh N+1)
         $tagsByQuestion = $this->getTagsForQuestions(array_column($rows, 'id'));
         foreach ($rows as &$row) {
             $row['tags'] = $tagsByQuestion[$row['id']] ?? [];
@@ -141,10 +111,6 @@ class QuestionModel
         return $rows;
     }
 
-    /**
-     * @param int[] $questionIds
-     * @return array<int, array> [question_id => [ ['id'=>..,'name'=>..], ... ]]
-     */
     private function getTagsForQuestions(array $questionIds): array
     {
         if (!$questionIds) return [];
@@ -162,13 +128,6 @@ class QuestionModel
         return $out;
     }
 
-    // ============================================================
-    // CHI TIẾT CÂU HỎI (show / edit)
-    // ============================================================
-
-    /**
-     * Lấy 1 câu hỏi chưa bị xóa (kể cả đang bị ẩn — controller tự quyết định cho xem hay không).
-     */
     public function findQuestion(int $id): ?array
     {
         $stmt = $this->db->prepare(
@@ -199,14 +158,6 @@ class QuestionModel
         return $stmt->fetchAll();
     }
 
-    // ============================================================
-    // TẠO / SỬA / XÓA CÂU HỎI
-    // ============================================================
-
-    /**
-     * Thêm câu hỏi + tag. Trả về id câu hỏi mới.
-     * Controller bọc trong transaction (cùng với upload ảnh).
-     */
     public function createQuestion(int $userId, int $subjectId, string $title, string $content, array $tagIds): int
     {
         $stmt = $this->db->prepare(
@@ -239,7 +190,6 @@ class QuestionModel
         $this->setQuestionTags($id, $tagIds);
     }
 
-    /** Ghi đè toàn bộ tag của câu hỏi. */
     private function setQuestionTags(int $questionId, array $tagIds): void
     {
         $this->db->prepare("DELETE FROM question_tags WHERE question_id = :id")
@@ -251,14 +201,11 @@ class QuestionModel
         }
     }
 
-    /** Xóa mềm câu hỏi (câu trả lời giữ nguyên nhưng không còn truy cập được qua câu hỏi). */
     public function softDeleteQuestion(int $id): void
     {
         $this->db->prepare("UPDATE questions SET deleted_at = NOW() WHERE id = :id AND deleted_at IS NULL")
                  ->execute([':id' => $id]);
     }
-
-    // --- Ảnh đính kèm ---
 
     public function countImages(int $questionId): int
     {
@@ -274,10 +221,6 @@ class QuestionModel
         )->execute([':q' => $questionId, ':p' => $path, ':s' => $sortOrder]);
     }
 
-    /**
-     * Xóa các ảnh (thuộc đúng câu hỏi này) khỏi DB.
-     * @return string[] đường dẫn file đã xóa khỏi DB — controller dùng để xóa file thật
-     */
     public function deleteImages(int $questionId, array $imageIds): array
     {
         $imageIds = array_values(array_filter(array_map('intval', $imageIds), fn($v) => $v > 0));
@@ -298,31 +241,62 @@ class QuestionModel
         return array_column($rows, 'image_path');
     }
 
-    // ============================================================
-    // CÂU TRẢ LỜI
-    // ============================================================
-
-    /**
-     * Các câu trả lời hiển thị được của 1 câu hỏi.
-     * Câu trả lời được chấp nhận đứng đầu, còn lại cũ → mới.
-     */
-    public function getAnswers(int $questionId): array
+    private function ensureLikesTable(): void
     {
+        $this->db->prepare(
+            "CREATE TABLE IF NOT EXISTS answer_likes (
+                answer_id  BIGINT   NOT NULL,
+                user_id    BIGINT   NOT NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (answer_id, user_id),
+                INDEX idx_answer_likes_user (user_id),
+                CONSTRAINT fk_answer_likes_answer FOREIGN KEY (answer_id) REFERENCES answers(id) ON DELETE CASCADE ON UPDATE CASCADE,
+                CONSTRAINT fk_answer_likes_user   FOREIGN KEY (user_id)   REFERENCES users(id)   ON DELETE CASCADE ON UPDATE CASCADE
+            ) ENGINE=InnoDB"
+        )->execute();
+    }
+
+    public function getAnswers(int $questionId, ?int $currentUserId = null): array
+    {
+        $this->ensureLikesTable();
         $stmt = $this->db->prepare(
             "SELECT a.id, a.content, a.created_at, a.updated_at, a.user_id,
                     u.full_name AS author_name, u.avatar_path AS author_avatar,
-                    (q.accepted_answer_id = a.id) AS is_accepted
+                    (SELECT COUNT(*) FROM answer_likes al WHERE al.answer_id = a.id) AS like_count,
+                    (SELECT COUNT(*) FROM answer_likes al2 WHERE al2.answer_id = a.id AND al2.user_id = :uid) AS is_liked
                FROM answers a
-               JOIN users u     ON u.id = a.user_id
-               JOIN questions q ON q.id = a.question_id
+               JOIN users u ON u.id = a.user_id
               WHERE a.question_id = :id AND a.deleted_at IS NULL AND a.status = 'visible'
-              ORDER BY is_accepted DESC, a.created_at ASC, a.id ASC"
+              ORDER BY like_count DESC, a.created_at ASC, a.id ASC"
         );
-        $stmt->execute([':id' => $questionId]);
+        $stmt->execute([
+            ':id'  => $questionId,
+            ':uid' => $currentUserId ?? 0,
+        ]);
         return $stmt->fetchAll();
     }
 
-    /** Câu trả lời chưa xóa (kể cả bị ẩn) — dùng để kiểm tra quyền sở hữu. */
+    public function toggleAnswerLike(int $answerId, int $userId): bool
+    {
+        $this->ensureLikesTable();
+        $check = $this->db->prepare(
+            "SELECT 1 FROM answer_likes WHERE answer_id = :a AND user_id = :u LIMIT 1"
+        );
+        $check->execute([':a' => $answerId, ':u' => $userId]);
+
+        if ($check->fetchColumn()) {
+            $this->db->prepare(
+                "DELETE FROM answer_likes WHERE answer_id = :a AND user_id = :u"
+            )->execute([':a' => $answerId, ':u' => $userId]);
+            return false;
+        }
+
+        $this->db->prepare(
+            "INSERT INTO answer_likes (answer_id, user_id) VALUES (:a, :u)"
+        )->execute([':a' => $answerId, ':u' => $userId]);
+        return true;
+    }
+
     public function findAnswer(int $answerId): ?array
     {
         $stmt = $this->db->prepare("SELECT * FROM answers WHERE id = :id AND deleted_at IS NULL");
@@ -345,10 +319,6 @@ class QuestionModel
                  ->execute([':c' => $content, ':id' => $answerId]);
     }
 
-    /**
-     * Xóa mềm câu trả lời. Nếu đang là câu trả lời được chấp nhận thì gỡ chấp nhận trước,
-     * để câu hỏi không trỏ tới một câu trả lời đã xóa.
-     */
     public function softDeleteAnswer(int $answerId, int $questionId): void
     {
         $this->db->beginTransaction();
@@ -370,7 +340,6 @@ class QuestionModel
         }
     }
 
-    /** Câu trả lời này có thuộc câu hỏi này, còn hiển thị được không? (chống giả mạo ID) */
     public function answerBelongsToQuestion(int $answerId, int $questionId): bool
     {
         $stmt = $this->db->prepare(
@@ -395,11 +364,6 @@ class QuestionModel
         )->execute([':q' => $questionId]);
     }
 
-    // ============================================================
-    // BÁO CÁO VI PHẠM
-    // ============================================================
-
-    /** Người này đã báo cáo mục tiêu này mà admin chưa xử lý chưa? */
     public function hasPendingReport(int $reporterId, string $targetType, int $targetId): bool
     {
         $col  = $targetType === 'answer' ? 'answer_id' : 'question_id';
@@ -410,10 +374,6 @@ class QuestionModel
         return (bool) $stmt->fetchColumn();
     }
 
-    /**
-     * Tạo báo cáo. Bảng reports có CHECK: đúng 1 trong 4 cột đích khác NULL.
-     * $targetType: 'question' | 'answer'
-     */
     public function createReport(int $reporterId, string $targetType, int $targetId, string $reason, ?string $details): void
     {
         $col = $targetType === 'answer' ? 'answer_id' : 'question_id';

@@ -1,9 +1,4 @@
 <?php
-/**
- * DOCUMENTMODEL.PHP — Truy vấn database liên quan đến tài liệu
- * Phụ trách: TV2
- * TV3 và TV6 cũng dùng class này — thêm method mới, không sửa method cũ
- */
 
 class DocumentModel
 {
@@ -14,9 +9,6 @@ class DocumentModel
         $this->db = Database::getInstance();
     }
 
-    /**
-     * Tìm tài liệu theo ID (kèm thông tin môn học, tác giả)
-     */
     public function findById(int $id, bool $includeDeleted = false): array|false
     {
         $sql = "
@@ -42,16 +34,16 @@ class DocumentModel
         return $stmt->fetch();
     }
 
-    /**
-     * Lấy danh sách tài liệu của một user (có bộ lọc, tìm kiếm, phân trang)
-     */
     public function findByUser(int $userId, array $filters = [], int $limit = 12, int $offset = 0): array
     {
         $sql = "
             SELECT d.*,
                    s.name AS subject_name,
                    (SELECT COUNT(*) FROM document_images di WHERE di.document_id = d.id) AS image_count,
-                   (SELECT image_path FROM document_images di WHERE di.document_id = d.id ORDER BY di.sort_order ASC, di.id ASC LIMIT 1) AS thumbnail_path
+                   (SELECT image_path FROM document_images di WHERE di.document_id = d.id ORDER BY di.sort_order ASC, di.id ASC LIMIT 1) AS thumbnail_path,
+                   (SELECT dr.reason FROM document_reviews dr WHERE dr.document_id = d.id AND dr.action = 'rejected' ORDER BY dr.created_at DESC, dr.id DESC LIMIT 1) AS rejection_reason,
+                   (SELECT u.full_name FROM document_reviews dr JOIN users u ON dr.admin_id = u.id WHERE dr.document_id = d.id AND dr.action = 'rejected' ORDER BY dr.created_at DESC, dr.id DESC LIMIT 1) AS reviewer_name,
+                   (SELECT dr.created_at FROM document_reviews dr WHERE dr.document_id = d.id AND dr.action = 'rejected' ORDER BY dr.created_at DESC, dr.id DESC LIMIT 1) AS rejected_at
             FROM documents d
             LEFT JOIN subjects s ON d.subject_id = s.id
             WHERE d.user_id = :user_id
@@ -60,31 +52,26 @@ class DocumentModel
 
         $params = [':user_id' => $userId];
 
-        // Tìm kiếm theo từ khoá (tiêu đề hoặc mô tả)
         if (!empty($filters['q'])) {
             $sql .= " AND (d.title LIKE :query OR d.description LIKE :query)";
             $params[':query'] = '%' . $filters['q'] . '%';
         }
 
-        // Lọc theo môn học
         if (!empty($filters['subject_id'])) {
             $sql .= " AND d.subject_id = :subject_id";
             $params[':subject_id'] = (int) $filters['subject_id'];
         }
 
-        // Lọc theo trạng thái kiểm duyệt (moderation_status)
         if (!empty($filters['status']) && $filters['status'] !== 'all') {
             $sql .= " AND d.moderation_status = :status";
             $params[':status'] = $filters['status'];
         }
 
-        // Lọc theo hiển thị (visibility: public | private)
         if (!empty($filters['visibility']) && $filters['visibility'] !== 'all') {
             $sql .= " AND d.visibility = :visibility";
             $params[':visibility'] = $filters['visibility'];
         }
 
-        // Sắp xếp
         $sort = $filters['sort'] ?? 'newest';
         $orderBy = match ($sort) {
             'oldest'    => 'd.created_at ASC',
@@ -100,9 +87,6 @@ class DocumentModel
         return $stmt->fetchAll();
     }
 
-    /**
-     * Đếm tổng số tài liệu của user theo bộ lọc (phục vụ phân trang)
-     */
     public function countByUser(int $userId, array $filters = []): int
     {
         $sql = "
@@ -139,9 +123,6 @@ class DocumentModel
         return (int) $stmt->fetchColumn();
     }
 
-    /**
-     * Thống kê tổng hợp số liệu tài liệu của một user
-     */
     public function getUserStats(int $userId): array
     {
         $sql = "
@@ -149,6 +130,8 @@ class DocumentModel
                 COUNT(*) AS total_docs,
                 SUM(CASE WHEN moderation_status = 'approved' THEN 1 ELSE 0 END) AS approved_docs,
                 SUM(CASE WHEN moderation_status = 'pending' THEN 1 ELSE 0 END) AS pending_docs,
+                SUM(CASE WHEN moderation_status = 'rejected' THEN 1 ELSE 0 END) AS rejected_docs,
+                SUM(CASE WHEN moderation_status = 'not_submitted' THEN 1 ELSE 0 END) AS draft_docs,
                 SUM(CASE WHEN visibility = 'private' THEN 1 ELSE 0 END) AS private_docs,
                 COALESCE(SUM(download_count), 0) AS total_downloads
             FROM documents
@@ -164,14 +147,13 @@ class DocumentModel
             'total'     => (int) ($row['total_docs'] ?? 0),
             'approved'  => (int) ($row['approved_docs'] ?? 0),
             'pending'   => (int) ($row['pending_docs'] ?? 0),
+            'rejected'  => (int) ($row['rejected_docs'] ?? 0),
+            'draft'     => (int) ($row['draft_docs'] ?? 0),
             'private'   => (int) ($row['private_docs'] ?? 0),
             'downloads' => (int) ($row['total_downloads'] ?? 0),
         ];
     }
 
-    /**
-     * Tạo tài liệu mới
-     */
     public function create(array $data): int
     {
         $stmt = $this->db->prepare("
@@ -200,9 +182,6 @@ class DocumentModel
         return (int) $this->db->lastInsertId();
     }
 
-    /**
-     * Cập nhật thông tin tài liệu
-     */
     public function update(int $id, array $data): bool
     {
         $fields = [];
@@ -232,19 +211,12 @@ class DocumentModel
         return $stmt->execute($params);
     }
 
-    /**
-     * Xóa mềm tài liệu
-     */
     public function softDelete(int $id): bool
     {
         $stmt = $this->db->prepare("UPDATE documents SET deleted_at = NOW() WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
 
-    /**
-     * Gửi tài liệu yêu cầu duyệt (chuyển sang pending)
-     * Ràng buộc: Tài liệu bị admin ẩn (hidden) không được phép tự gửi duyệt lại.
-     */
     public function submitForReview(int $id): bool
     {
         $doc = $this->findById($id);
@@ -263,9 +235,6 @@ class DocumentModel
         return $stmt->execute([':id' => $id]);
     }
 
-    /**
-     * Thu hồi chia sẻ tài liệu (về private, not_submitted)
-     */
     public function revokeShare(int $id): bool
     {
         $stmt = $this->db->prepare("
@@ -279,13 +248,6 @@ class DocumentModel
         return $stmt->execute([':id' => $id]);
     }
 
-    // ============================================================
-    // PHƯƠNG THỨC CHO TV3 (COMMUNITY) VÀ TV6 (ADMIN)
-    // ============================================================
-
-    /**
-     * Lấy danh sách tài liệu công khai đã duyệt (cho TV3)
-     */
     public function findPublicApproved(array $filters = [], int $limit = 12, int $offset = 0): array
     {
         $sql = "
@@ -331,9 +293,6 @@ class DocumentModel
         return $stmt->fetchAll();
     }
 
-    /**
-     * Đếm tổng số tài liệu công khai đã duyệt (cho TV3)
-     */
     public function countPublicApproved(array $filters = []): int
     {
         $sql = "
@@ -361,9 +320,6 @@ class DocumentModel
         return (int) $stmt->fetchColumn();
     }
 
-    /**
-     * Cập nhật trạng thái duyệt từ Admin (cho TV6)
-     */
     public function updateModerationStatus(int $id, string $status, ?string $reason = null, ?int $adminId = null): bool
     {
         $publishedAt = ($status === 'approved') ? 'NOW()' : 'published_at';
@@ -397,13 +353,6 @@ class DocumentModel
         return $success;
     }
 
-    // ============================================================
-    // QUẢN LÝ ẢNH MINH HOẠ (document_images)
-    // ============================================================
-
-    /**
-     * Lấy danh sách ảnh minh hoạ của tài liệu
-     */
     public function getImages(int $documentId): array
     {
         $stmt = $this->db->prepare("
@@ -416,9 +365,6 @@ class DocumentModel
         return $stmt->fetchAll();
     }
 
-    /**
-     * Đếm số ảnh hiện có của tài liệu
-     */
     public function countImages(int $documentId): int
     {
         $stmt = $this->db->prepare("SELECT COUNT(*) FROM document_images WHERE document_id = :document_id");
@@ -426,9 +372,6 @@ class DocumentModel
         return (int) $stmt->fetchColumn();
     }
 
-    /**
-     * Thêm một ảnh minh hoạ vào tài liệu
-     */
     public function addImage(int $documentId, string $imagePath, int $sortOrder = 0): int
     {
         $stmt = $this->db->prepare("
@@ -443,9 +386,6 @@ class DocumentModel
         return (int) $this->db->lastInsertId();
     }
 
-    /**
-     * Xoá một ảnh minh hoạ (cả file vật lý trong storage)
-     */
     public function deleteImage(int $imageId, int $documentId): bool
     {
         $stmt = $this->db->prepare("
@@ -460,17 +400,12 @@ class DocumentModel
             return false;
         }
 
-        // Xoá file vật lý
         Upload::delete($image['image_path']);
 
-        // Xoá trong database
         $del = $this->db->prepare("DELETE FROM document_images WHERE id = :id");
         return $del->execute([':id' => $imageId]);
     }
 
-    /**
-     * Xoá toàn bộ ảnh minh hoạ của tài liệu
-     */
     public function deleteImages(int $documentId): void
     {
         $images = $this->getImages($documentId);
@@ -481,13 +416,6 @@ class DocumentModel
         $del->execute([':document_id' => $documentId]);
     }
 
-    // ============================================================
-    // QUẢN LÝ TỪ KHOÁ (document_tags) & MÔN HỌC (subjects)
-    // ============================================================
-
-    /**
-     * Lấy các từ khoá của tài liệu
-     */
     public function getTags(int $documentId): array
     {
         $stmt = $this->db->prepare("
@@ -501,9 +429,6 @@ class DocumentModel
         return $stmt->fetchAll();
     }
 
-    /**
-     * Đồng bộ từ khoá cho tài liệu (nhận mảng tên tag hoặc chuỗi phân cách bởi dấu phẩy)
-     */
     public function syncTags(int $documentId, array|string $tags): void
     {
         if (is_string($tags)) {
@@ -512,10 +437,8 @@ class DocumentModel
             $tagList = $tags;
         }
 
-        // Loại bỏ rỗng và trùng lặp
         $tagList = array_values(array_unique(array_filter($tagList, fn($t) => trim($t) !== '')));
 
-        // Xoá liên kết cũ
         $delStmt = $this->db->prepare("DELETE FROM document_tags WHERE document_id = :document_id");
         $delStmt->execute([':document_id' => $documentId]);
 
@@ -546,9 +469,6 @@ class DocumentModel
         }
     }
 
-    /**
-     * Lấy lịch sử đánh giá / kiểm duyệt của tài liệu
-     */
     public function getReviews(int $documentId): array
     {
         $stmt = $this->db->prepare("
@@ -562,17 +482,11 @@ class DocumentModel
         return $stmt->fetchAll();
     }
 
-    /**
-     * Lấy toàn bộ danh sách môn học
-     */
     public function getAllSubjects(): array
     {
         return $this->db->query("SELECT id, name, description FROM subjects ORDER BY name ASC")->fetchAll();
     }
 
-    /**
-     * Lấy danh sách từ khoá phổ biến
-     */
     public function getAllTags(int $limit = 30): array
     {
         return $this->db->query("SELECT id, name FROM tags ORDER BY name ASC LIMIT {$limit}")->fetchAll();

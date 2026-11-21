@@ -1,8 +1,4 @@
 <?php
-/**
- * COMMUNITYCONTROLLER.PHP — Tài liệu công khai, chia sẻ, bình luận
- * Phụ trách: TV3
- */
 
 require_once BASE_PATH . '/app/modules/community/CommunityModel.php';
 
@@ -23,13 +19,9 @@ class CommunityController
         $this->model = new CommunityModel();
     }
 
-    /**
-     * Danh sách tài liệu công khai (Guest + User)
-     * Thiết kế theo phong cách giao diện tailieu.vn & quy chuẩn UI StudyHub
-     */
     public function index(): void
     {
-        // Nhận tham số tìm kiếm, lọc & sắp xếp
+
         $keyword   = trim((string) get('keyword', ''));
         $subjectId = (int) get('subject_id', 0);
         $tagId     = (int) get('tag_id', 0);
@@ -42,20 +34,16 @@ class CommunityController
             'sort'       => $sort,
         ];
 
-        // Đếm tổng số lượng và phân trang
         $totalDocs = $this->model->countPublicDocuments($filters);
-        $perPage   = ITEMS_PER_PAGE; // 12
+        $perPage   = ITEMS_PER_PAGE;
         $pagination = paginate($totalDocs, $perPage);
 
-        // Lấy danh sách tài liệu
         $documents = $this->model->getPublicDocuments($filters, $pagination['limit'], $pagination['offset']);
 
-        // Dữ liệu cho Sidebar: Môn học, Tags, Thống kê
         $subjects = $this->model->getAllSubjectsWithCount();
         $tags     = $this->model->getPopularTags(15);
         $stats    = $this->model->getCommunityStats();
 
-        // Tên môn học hiện tại nếu đang lọc
         $currentSubject = null;
         if ($subjectId > 0) {
             foreach ($subjects as $s) {
@@ -72,10 +60,6 @@ class CommunityController
         require_once BASE_PATH . '/app/modules/community/views/index.php';
     }
 
-    /**
-     * Chi tiết tài liệu công khai (Guest + User xem; User bình luận)
-     * Thiết kế theo phong cách tailieu.vn & quy chuẩn UI StudyHub
-     */
     public function show(): void
     {
         $id = (int) get('id', 0);
@@ -89,8 +73,6 @@ class CommunityController
             redirect('?module=community&action=index', 'Không tìm thấy tài liệu yêu cầu.', 'error');
         }
 
-        // Kiểm tra quyền xem:
-        // Nếu không phải approved thì chỉ Admin hoặc chủ sở hữu mới xem được
         $isOwner = Auth::check() && (int) Auth::id() === (int) $document['user_id'];
         $isAdmin = Auth::isAdmin();
 
@@ -100,15 +82,35 @@ class CommunityController
             }
         }
 
-        // Lấy dữ liệu liên quan
         $images       = $this->model->getDocumentImages($id);
         $tags         = $this->model->getDocumentTags($id);
         $comments     = $this->model->getComments($id);
         $relatedDocs  = $this->model->getRelatedDocuments((int) $document['subject_id'], $id, 5);
 
+        $userCollections = [];
+        $isFavorited     = false;
+        $tv4Token        = '';
+        if (Auth::check()) {
+            $uid = (int) Auth::id();
+            $db  = Database::getInstance();
+
+            $stmtCol = $db->prepare("SELECT id, name FROM collections WHERE user_id = :uid ORDER BY created_at DESC");
+            $stmtCol->execute([':uid' => $uid]);
+            $userCollections = $stmtCol->fetchAll();
+
+            $stmtFav = $db->prepare("SELECT 1 FROM favorites WHERE user_id = :uid AND document_id = :doc_id LIMIT 1");
+            $stmtFav->execute([':uid' => $uid, ':doc_id' => $id]);
+            $isFavorited = (bool) $stmtFav->fetchColumn();
+
+            if (empty($_SESSION['tv4_token'])) {
+                $_SESSION['tv4_token'] = bin2hex(random_bytes(16));
+            }
+            $tv4Token = $_SESSION['tv4_token'];
+        }
+
         $pageTitle       = $document['title'];
-        $pageDescription = !empty($document['description']) 
-            ? mb_substr(strip_tags($document['description']), 0, 160) . '...' 
+        $pageDescription = !empty($document['description'])
+            ? mb_substr(strip_tags($document['description']), 0, 160) . '...'
             : 'Tài liệu học tập ' . $document['title'];
         $reportReasons = self::REPORT_REASONS;
 
@@ -184,7 +186,7 @@ class CommunityController
         header('Content-Type: application/pdf');
         header(
             'Content-Disposition: attachment; filename="' . $fallbackName
-            . '"; filename*=UTF-8\'\'' . rawurlencode($downloadName)
+                . '"; filename*=UTF-8\'\'' . rawurlencode($downloadName)
         );
         header('X-Content-Type-Options: nosniff');
         header('Cache-Control: private, no-store');
@@ -194,9 +196,84 @@ class CommunityController
         exit;
     }
 
-    /**
-     * Thêm bình luận
-     */
+    public function download(): void
+    {
+        Auth::requireLogin();
+
+        $id = (int) get('id', 0);
+        $document = $id > 0 ? $this->model->getDocumentById($id) : false;
+
+        if (
+            !$document
+            || $document['visibility'] !== 'public'
+            || $document['moderation_status'] !== 'approved'
+        ) {
+            http_response_code(404);
+            exit('Không tìm thấy tài liệu.');
+        }
+
+        $relativePath = str_replace('\\', '/', (string) $document['file_path']);
+        if (str_starts_with($relativePath, 'documents/')) {
+            $relativePath = substr($relativePath, strlen('documents/'));
+        }
+
+        if (
+            $relativePath === ''
+            || str_contains($relativePath, '..')
+            || str_contains($relativePath, "\0")
+            || basename($relativePath) !== $relativePath
+            || strtolower(pathinfo($relativePath, PATHINFO_EXTENSION)) !== 'pdf'
+        ) {
+            http_response_code(404);
+            exit('Không tìm thấy tài liệu.');
+        }
+
+        $documentsDirectory = realpath(STORAGE_DOCUMENTS);
+        $filePath = $documentsDirectory === false
+            ? false
+            : realpath($documentsDirectory . DIRECTORY_SEPARATOR . $relativePath);
+
+        if (
+            $documentsDirectory === false
+            || $filePath === false
+            || !is_file($filePath)
+            || !str_starts_with($filePath, $documentsDirectory . DIRECTORY_SEPARATOR)
+        ) {
+            http_response_code(404);
+            exit('Không tìm thấy tài liệu.');
+        }
+
+        $file = fopen($filePath, 'rb');
+        if ($file === false) {
+            http_response_code(404);
+            exit('Không thể đọc tài liệu.');
+        }
+
+        $this->model->incrementDownloadCount($id);
+
+        $downloadName = basename(str_replace('\\', '/', (string) $document['original_file_name']));
+        $downloadName = str_replace(["\r", "\n"], '', $downloadName);
+        if ($downloadName === '') {
+            $downloadName = 'document-' . $id . '.pdf';
+        }
+        $fallbackName = preg_replace('/[^A-Za-z0-9._-]/', '_', $downloadName);
+        if ($fallbackName === '') {
+            $fallbackName = 'document-' . $id . '.pdf';
+        }
+
+        header('Content-Type: application/pdf');
+        header(
+            'Content-Disposition: attachment; filename="' . $fallbackName
+                . '"; filename*=UTF-8\'\'' . rawurlencode($downloadName)
+        );
+        header('X-Content-Type-Options: nosniff');
+        header('Cache-Control: private, no-store');
+
+        fpassthru($file);
+        fclose($file);
+        exit;
+    }
+
     public function comment(): void
     {
         Auth::requireActiveUser();
@@ -217,9 +294,6 @@ class CommunityController
         redirect('?module=community&action=show&id=' . $documentId, 'Đã gửi bình luận thành công!', 'success');
     }
 
-    /**
-     * Sửa bình luận
-     */
     public function editComment(): void
     {
         Auth::requireActiveUser();
@@ -234,7 +308,6 @@ class CommunityController
             redirect('?module=community&action=show&id=' . $documentId, 'Bình luận không tồn tại.', 'error');
         }
 
-        // Kiểm tra quyền sở hữu
         if (!Auth::owns((int) $comment['user_id']) && !Auth::isAdmin()) {
             redirect('?module=community&action=show&id=' . $documentId, 'Bạn không có quyền sửa bình luận này.', 'error');
         }
@@ -247,9 +320,6 @@ class CommunityController
         redirect('?module=community&action=show&id=' . $documentId, 'Cập nhật bình luận thành công!', 'success');
     }
 
-    /**
-     * Xóa bình luận
-     */
     public function deleteComment(): void
     {
         Auth::requireActiveUser();
@@ -263,7 +333,6 @@ class CommunityController
             redirect('?module=community&action=show&id=' . $documentId, 'Bình luận không tồn tại.', 'error');
         }
 
-        // Kiểm tra quyền sở hữu hoặc Admin
         if (!Auth::owns((int) $comment['user_id']) && !Auth::isAdmin()) {
             redirect('?module=community&action=show&id=' . $documentId, 'Bạn không có quyền xóa bình luận này.', 'error');
         }
@@ -272,64 +341,35 @@ class CommunityController
         redirect('?module=community&action=show&id=' . $documentId, 'Đã xóa bình luận.', 'info');
     }
 
-    /**
-     * Báo cáo vi phạm (tài liệu hoặc bình luận)
-     */
     public function report(): void
     {
         Auth::requireActiveUser();
         verifyCsrf();
 
-        $targetType = (string) post('target_type', '');
-        $targetId   = (int) post('target_id', 0);
-        $reason     = (string) post('reason', '');
-        $details    = mb_substr(trim((string) post('details', '')), 0, 1000);
+        $reason     = trim((string) post('reason', ''));
+        $details    = trim((string) post('details', ''));
+        $documentId = (int) post('document_id', 0);
+        $commentId  = (int) post('comment_id', 0);
 
-        if (!in_array($targetType, ['document', 'comment'], true) || $targetId <= 0) {
-            redirect('?module=community&action=index', 'Đối tượng báo cáo không hợp lệ.', 'error');
-        }
-
-        if ($targetType === 'document') {
-            $document = $this->model->getDocumentById($targetId);
-            if (!$document) {
-                redirect('?module=community&action=index', 'Không tìm thấy tài liệu cần báo cáo.', 'error');
-            }
-            $documentId = $targetId;
-            $commentId = null;
-        } else {
-            $comment = $this->model->getCommentById($targetId);
-            if (!$comment) {
-                redirect('?module=community&action=index', 'Không tìm thấy bình luận cần báo cáo.', 'error');
-            }
-            $documentId = (int) $comment['document_id'];
-            $commentId = $targetId;
-        }
-
-        if (!in_array($reason, self::REPORT_REASONS, true)) {
-            redirect('?module=community&action=show&id=' . $documentId, 'Vui lòng chọn lý do báo cáo hợp lệ.', 'error');
+        if (empty($reason)) {
+            $redirectUrl = $_SERVER['HTTP_REFERER'] ?? url('?module=community&action=index');
+            redirect($redirectUrl, 'Vui lòng chọn lý do báo cáo.', 'error');
         }
 
         $reportData = [
             'reason'      => $reason,
             'details'     => $details,
-            'document_id' => $documentId,
-            'comment_id'  => $commentId,
+            'document_id' => $documentId > 0 ? $documentId : null,
+            'comment_id'  => $commentId > 0 ? $commentId : null,
             'reporter_id' => (int) Auth::id(),
         ];
 
         $this->model->createReport($reportData);
 
-        $anchor = $targetType === 'comment' ? '#comments' : '';
-        redirect(
-            '?module=community&action=show&id=' . $documentId . $anchor,
-            'Cảm ơn bạn đã gửi báo cáo. Ban quản trị sẽ sớm xem xét.',
-            'success'
-        );
+        $redirectUrl = $_SERVER['HTTP_REFERER'] ?? url('?module=community&action=index');
+        redirect($redirectUrl, 'Cảm ơn bạn đã gửi báo cáo. Ban quản trị sẽ sớm xem xét.', 'success');
     }
 
-    /**
-     * Gửi duyệt chia sẻ tài liệu lên cộng đồng
-     */
     public function submit(): void
     {
         Auth::requireActiveUser();
@@ -354,9 +394,6 @@ class CommunityController
         redirect('?module=documents&action=index', 'Đã gửi yêu cầu duyệt chia sẻ tài liệu thành công!', 'success');
     }
 
-    /**
-     * Thu hồi chia sẻ tài liệu về riêng tư
-     */
     public function revoke(): void
     {
         Auth::requireActiveUser();

@@ -1,18 +1,27 @@
 <?php
-/**
- * EDIT.PHP — Chỉnh sửa tài liệu cá nhân
- * Phụ trách: TV2
- */
+
 $pageTitle = $pageTitle ?? ('Sửa: ' . $doc['title']);
 require_once BASE_PATH . '/app/views/layouts/header.php';
 
-$errors = $_SESSION['form_errors'] ?? [];
-unset($_SESSION['form_errors']);
+$errors   = $_SESSION['form_errors'] ?? [];
+$formData = $_SESSION['form_data']   ?? [];
+unset($_SESSION['form_errors'], $_SESSION['form_data']);
+
+$f = [
+    'title'       => $formData['title']       ?? $doc['title'],
+    'subject_id'  => $formData['subject_id']  ?? $doc['subject_id'],
+    'description' => $formData['description'] ?? ($doc['description'] ?? ''),
+    'visibility'  => $formData['visibility']  ?? $doc['visibility'],
+    'tags'        => $formData['tags']        ?? ($tagString ?? ''),
+];
+if (is_array($f['tags'])) { $f['tags'] = implode(', ', $f['tags']); }
 ?>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
 
 <div class="container py-4">
 
-    <!-- BREADCRUMB -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb small">
             <li class="breadcrumb-item"><a href="<?= url('/') ?>">Trang chủ</a></li>
@@ -22,7 +31,6 @@ unset($_SESSION['form_errors']);
         </ol>
     </nav>
 
-    <!-- TIÊU ĐỀ TRANG -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="page-title mb-1">Chỉnh sửa tài liệu</h1>
@@ -33,7 +41,6 @@ unset($_SESSION['form_errors']);
         </a>
     </div>
 
-    <!-- CẢNH BÁO QUY ĐỊNH DUYỆT LẠI (NẾU TÀI LIỆU ĐANG APPROVED) -->
     <?php if ($doc['moderation_status'] === 'approved'): ?>
         <div class="alert alert-info d-flex align-items-center gap-2 small mb-4 py-2" role="alert">
             <i class="bi bi-info-circle-fill fs-5"></i>
@@ -44,7 +51,6 @@ unset($_SESSION['form_errors']);
         </div>
     <?php endif; ?>
 
-    <!-- KHUNG FORM CHỈNH SỬA -->
     <div class="row justify-content-center">
         <div class="col-12 col-lg-10">
             <form method="POST" action="<?= url('?module=documents&action=update') ?>"
@@ -52,7 +58,6 @@ unset($_SESSION['form_errors']);
                 <?php csrfField(); ?>
                 <input type="hidden" name="id" value="<?= $doc['id'] ?>">
 
-                <!-- 1. TIÊU ĐỀ VÀ MÔN HỌC -->
                 <div class="row g-3 mb-3">
                     <div class="col-12 col-md-8">
                         <label for="titleInput" class="form-label fw-semibold">
@@ -60,7 +65,7 @@ unset($_SESSION['form_errors']);
                         </label>
                         <input type="text" id="titleInput" name="title"
                                class="form-control <?= isset($errors['title']) ? 'is-invalid' : '' ?>"
-                               value="<?= h($doc['title']) ?>" required maxlength="255">
+                               value="<?= h($f['title']) ?>" required maxlength="255">
                         <?php if (isset($errors['title'])): ?>
                             <div class="invalid-feedback"><?= h($errors['title']) ?></div>
                         <?php endif; ?>
@@ -74,7 +79,7 @@ unset($_SESSION['form_errors']);
                                 class="form-select <?= isset($errors['subject_id']) ? 'is-invalid' : '' ?>" required>
                             <option value="">-- Chọn môn học --</option>
                             <?php foreach ($subjects as $s): ?>
-                                <option value="<?= $s['id'] ?>" <?= $doc['subject_id'] == $s['id'] ? 'selected' : '' ?>>
+                                <option value="<?= $s['id'] ?>" <?= $f['subject_id'] == $s['id'] ? 'selected' : '' ?>>
                                     <?= h($s['name']) ?>
                                 </option>
                             <?php endforeach; ?>
@@ -85,7 +90,6 @@ unset($_SESSION['form_errors']);
                     </div>
                 </div>
 
-                <!-- 2. THAY THẾ FILE PDF (NẾU CẦN) -->
                 <div class="mb-4 p-3 rounded border bg-light-subtle">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <label class="form-label fw-semibold mb-0">File tài liệu hiện tại</label>
@@ -103,36 +107,60 @@ unset($_SESSION['form_errors']);
                         Tải lên file PDF mới để thay thế (để trống nếu không muốn đổi file):
                     </label>
                     <input type="file" id="documentFileInput" name="document_file"
-                           accept="application/pdf,.pdf" class="form-control form-control-sm">
+                           accept="application/pdf,.pdf"
+                           class="form-control form-control-sm <?= isset($errors['document_file']) ? 'is-invalid' : '' ?>">
+                    <?php if (isset($errors['document_file'])): ?>
+                        <div class="invalid-feedback d-block"><?= h($errors['document_file']) ?></div>
+                    <?php endif; ?>
                 </div>
 
-                <!-- 3. QUẢN LÝ ẢNH MINH HOẠ ĐÃ CÓ -->
                 <?php if (!empty($images)): ?>
-                    <div class="mb-4 p-3 rounded border bg-light-subtle">
+                    <div class="mb-4 p-3 rounded border bg-light-subtle" id="existingImagesSection">
                         <label class="form-label fw-semibold mb-2">
-                            Ảnh minh hoạ hiện có (Tích chọn để xoá ảnh)
+                            Ảnh minh hoạ hiện có <small class="text-muted fw-normal">(Nhấn × ở góc phải để xoá ảnh)</small>
                         </label>
                         <div class="row g-2">
                             <?php foreach ($images as $img): ?>
-                                <div class="col-4 col-md-3 col-lg-2">
-                                    <div class="border rounded p-1 bg-white text-center position-relative shadow-xs">
+                                <div class="col-4 col-md-3 col-lg-2 existing-img-item">
+                                    <div class="border rounded p-1 bg-white position-relative shadow-xs existing-img-card" data-img-card="<?= (int) $img['id'] ?>">
+                                        <input class="d-none existing-img-checkbox" type="checkbox" name="delete_images[]"
+                                               value="<?= (int) $img['id'] ?>" id="delImg<?= (int) $img['id'] ?>">
+                                        <button type="button"
+                                                class="btn btn-danger btn-sm rounded-circle position-absolute top-0 end-0 m-1 d-flex align-items-center justify-content-center p-0 shadow-sm existing-img-remove-btn"
+                                                style="width: 22px; height: 22px; z-index: 2; line-height: 1;"
+                                                data-target-checkbox="delImg<?= (int) $img['id'] ?>"
+                                                title="Xoá ảnh này"
+                                                aria-label="Xoá ảnh này">
+                                            <i class="bi bi-x" style="font-size: 15px;"></i>
+                                        </button>
                                         <img src="<?= storageUrl($img['image_path']) ?>" alt="Minh hoạ"
-                                             class="w-100 rounded object-fit-cover" style="height: 80px;">
-                                        <div class="form-check mt-1 d-flex justify-content-center align-items-center gap-1">
-                                            <input class="form-check-input" type="checkbox" name="delete_images[]"
-                                                   value="<?= $img['id'] ?>" id="delImg<?= $img['id'] ?>">
-                                            <label class="form-check-label text-danger small" for="delImg<?= $img['id'] ?>" style="font-size: 11px;">
-                                                Xóa ảnh
-                                            </label>
-                                        </div>
+                                             class="w-100 rounded object-fit-cover" style="height: 88px;">
                                     </div>
                                 </div>
                             <?php endforeach; ?>
                         </div>
                     </div>
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const section = document.getElementById('existingImagesSection');
+                        document.querySelectorAll('.existing-img-remove-btn').forEach(function (btn) {
+                            btn.addEventListener('click', function () {
+                                const cb = document.getElementById(btn.getAttribute('data-target-checkbox'));
+                                const item = btn.closest('.existing-img-item');
+                                if (!cb || !item) return;
+
+                                cb.checked = true;
+                                item.classList.add('d-none');
+
+                                if (section && section.querySelectorAll('.existing-img-item:not(.d-none)').length === 0) {
+                                    section.classList.add('d-none');
+                                }
+                            });
+                        });
+                    });
+                    </script>
                 <?php endif; ?>
 
-                <!-- 4. THÊM ẢNH MINH HOẠ MỚI -->
                 <div class="mb-4">
                     <label for="imagesInput" class="form-label fw-semibold">
                         Thêm ảnh minh hoạ mới <small class="text-muted fw-normal">(Tối đa 10 ảnh toàn bộ)</small>
@@ -141,34 +169,31 @@ unset($_SESSION['form_errors']);
                            accept="image/jpeg,image/png,image/webp,image/gif" class="form-control form-control-sm">
                 </div>
 
-                <!-- 5. MÔ TẢ NỘI DUNG -->
                 <div class="mb-4">
                     <label for="descriptionInput" class="form-label fw-semibold">
                         Mô tả tài liệu
                     </label>
                     <textarea id="descriptionInput" name="description" rows="5"
                               class="form-control"
-                              placeholder="Mô tả nội dung chi tiết..."><?= h($doc['description'] ?? '') ?></textarea>
+                              placeholder="Mô tả nội dung chi tiết..."><?= h($f['description']) ?></textarea>
                 </div>
 
-                <!-- 6. TỪ KHOÁ (TAGS) -->
                 <div class="mb-4">
                     <label for="tagsInput" class="form-label fw-semibold">
                         Từ khoá (phân cách bởi dấu phẩy)
                     </label>
                     <input type="text" id="tagsInput" name="tags"
                            class="form-control"
-                           value="<?= h($tagString ?? '') ?>"
+                           value="<?= h($f['tags']) ?>"
                            placeholder="bài tập, ôn thi, lý thuyết...">
                 </div>
 
-                <!-- 7. CHẾ ĐỘ HIỂN THỊ -->
                 <div class="p-3 mb-4 rounded border bg-light-subtle">
                     <div class="fw-semibold text-dark mb-2">Chế độ chia sẻ</div>
-                    
+
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="radio" name="visibility" id="visPrivate" value="private"
-                               <?= $doc['visibility'] === 'private' ? 'checked' : '' ?>>
+                               <?= $f['visibility'] === 'private' ? 'checked' : '' ?>>
                         <label class="form-check-label" for="visPrivate">
                             <span class="fw-semibold text-dark"><i class="bi bi-lock me-1"></i> Riêng tư (Chỉ mình tôi)</span>
                         </label>
@@ -176,14 +201,13 @@ unset($_SESSION['form_errors']);
 
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="visibility" id="visPublic" value="public"
-                               <?= $doc['visibility'] === 'public' ? 'checked' : '' ?>>
+                               <?= $f['visibility'] === 'public' ? 'checked' : '' ?>>
                         <label class="form-check-label" for="visPublic">
                             <span class="fw-semibold text-primary"><i class="bi bi-globe me-1"></i> Chia sẻ cộng đồng</span>
                         </label>
                     </div>
                 </div>
 
-                <!-- 8. NÚT SUBMIT -->
                 <div class="d-flex justify-content-end gap-2 pt-2 border-top">
                     <a href="<?= url('?module=documents&action=show&id=' . $doc['id']) ?>" class="btn btn-light-subtle btn-sm px-4">
                         Hủy
@@ -199,5 +223,39 @@ unset($_SESSION['form_errors']);
     </div>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    const descTextarea = document.getElementById('descriptionInput');
+    let easyMDE = null;
+    if (descTextarea && typeof EasyMDE !== 'undefined') {
+        easyMDE = new EasyMDE({
+            element: descTextarea,
+            placeholder: 'Mô tả nội dung chi tiết...',
+            spellChecker: false,
+            autosave: { enabled: false },
+            status: false,
+            minHeight: '200px',
+            toolbar: [
+                'bold', 'italic', 'heading', '|',
+                'quote', 'unordered-list', 'ordered-list', '|',
+                'link', 'table', '|',
+                'preview', 'side-by-side', 'fullscreen', '|',
+                'guide'
+            ]
+        });
+
+        const form = descTextarea.closest('form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                if (easyMDE) {
+                    descTextarea.value = easyMDE.value();
+                }
+            });
+        }
+    }
+});
+</script>
 
 <?php require_once BASE_PATH . '/app/views/layouts/footer.php'; ?>

@@ -1,42 +1,11 @@
 <?php
-/**
- * QUESTIONCONTROLLER.PHP — Hỏi đáp học tập
- * Phụ trách: TV5
- *
- * Actions:
- *   index          — Danh sách câu hỏi (Guest + User)
- *   show           — Chi tiết câu hỏi và câu trả lời
- *   create         — Form tạo câu hỏi (User)
- *   store          — Lưu câu hỏi mới
- *   edit           — Sửa câu hỏi
- *   update         — Cập nhật câu hỏi
- *   delete         — Xóa câu hỏi (chủ sở hữu hoặc admin)
- *   answer         — Đăng câu trả lời (User)
- *   editAnswer     — Sửa câu trả lời
- *   deleteAnswer   — Xóa câu trả lời
- *   acceptAnswer   — Đánh dấu câu trả lời được chấp nhận (chủ câu hỏi)
- *   unacceptAnswer — Bỏ đánh dấu
- *   report         — Báo cáo câu hỏi hoặc câu trả lời (User)
- *
- * Lưu ý bắt buộc:
- *   - Chỉ chủ câu hỏi mới được acceptAnswer/unacceptAnswer
- *   - Câu trả lời phải thuộc câu hỏi đó (tránh giả mạo ID)
- *   - Guest xem được index và show
- *   - Xóa câu hỏi: soft delete (deleted_at), cần kiểm tra không làm hỏng accepted_answer_id
- *
- * Về nội dung câu hỏi / câu trả lời:
- *   Lưu dạng văn bản thuần. Khi hiển thị luôn dùng nl2br(h($text)) nên không thể
- *   chèn HTML/JS (chống XSS). Nếu sau này đổi sang editor HTML (Quill...) thì
- *   BẮT BUỘC lọc HTML an toàn trước khi lưu hoặc trước khi hiển thị.
- */
 
 require_once BASE_PATH . '/app/modules/questions/QuestionModel.php';
 
-class QuestionsController
+class QuestionController
 {
     private QuestionModel $model;
 
-    /** Lý do báo cáo cho người dùng chọn. */
     private const REPORT_REASONS = [
         'Spam / quảng cáo',
         'Nội dung không phù hợp',
@@ -56,17 +25,15 @@ class QuestionsController
         $this->model = new QuestionModel();
     }
 
-    // ============================================================
-    // DANH SÁCH + CHI TIẾT (Guest được xem)
-    // ============================================================
-
     public function index(): void
     {
+        $allowedStatuses = Auth::check() ? ['answered', 'unanswered', 'mine'] : ['answered', 'unanswered'];
         $filters = [
             'q'          => mb_substr((string) get('q'), 0, 100),
             'subject_id' => (int) get('subject'),
             'tag_id'     => (int) get('tag'),
-            'status'     => in_array(get('status'), ['answered', 'unanswered'], true) ? get('status') : '',
+            'status'     => in_array(get('status'), $allowedStatuses, true) ? get('status') : '',
+            'user_id'    => Auth::check() ? (int) Auth::id() : 0,
         ];
 
         $total     = $this->model->countQuestions($filters);
@@ -90,7 +57,7 @@ class QuestionsController
 
         $tags         = $this->model->getQuestionTags((int) $question['id']);
         $images       = $this->model->getQuestionImages((int) $question['id']);
-        $answers      = $this->model->getAnswers((int) $question['id']);
+        $answers      = $this->model->getAnswers((int) $question['id'], Auth::id());
         $isOwner      = Auth::check() && Auth::owns((int) $question['user_id']);
         $isAdmin      = Auth::isAdmin();
         $canAnswer    = Auth::isActive() && $question['status'] === 'visible';
@@ -102,10 +69,6 @@ class QuestionsController
         $extraJs   = ['questions.js'];
         require_once BASE_PATH . '/app/modules/questions/views/show.php';
     }
-
-    // ============================================================
-    // ĐẶT CÂU HỎI
-    // ============================================================
 
     public function create(): void
     {
@@ -147,7 +110,7 @@ class QuestionsController
             $db->commit();
         } catch (Throwable $e) {
             if ($db->getPdo()->inTransaction()) $db->rollBack();
-            foreach ($uploaded as $path) Upload::delete($path);   // dọn file đã lỡ lưu
+            foreach ($uploaded as $path) Upload::delete($path);
             $errors['images'] = $e instanceof RuntimeException
                 ? $e->getMessage()
                 : 'Không thể lưu câu hỏi, vui lòng thử lại.';
@@ -157,10 +120,6 @@ class QuestionsController
 
         redirect('?module=questions&action=show&id=' . $id, 'Đã đăng câu hỏi của bạn.', 'success');
     }
-
-    // ============================================================
-    // SỬA / XÓA CÂU HỎI
-    // ============================================================
 
     public function edit(): void
     {
@@ -189,7 +148,6 @@ class QuestionsController
             ? array_map('intval', $_POST['remove_images']) : [];
         $files     = isset($_FILES['images']) ? Upload::normalizeMultiple($_FILES['images']) : [];
 
-        // Tổng số ảnh sau khi sửa không được vượt giới hạn
         $current = $this->model->getQuestionImages($qid);
         $keep    = count(array_filter($current, fn($im) => !in_array((int) $im['id'], $removeIds, true)));
         if ($keep + count($files) > MAX_IMAGES_PER_Q) {
@@ -228,7 +186,6 @@ class QuestionsController
             return;
         }
 
-        // Chỉ xóa file thật SAU KHI DB đã commit thành công
         foreach ($removed as $path) Upload::delete($path);
 
         redirect('?module=questions&action=show&id=' . $qid, 'Đã cập nhật câu hỏi.', 'success');
@@ -247,14 +204,9 @@ class QuestionsController
             redirect('?module=questions&action=show&id=' . $question['id'], 'Bạn không có quyền xóa câu hỏi này.', 'error');
         }
 
-        // Xóa mềm: giữ nguyên accepted_answer_id, câu hỏi biến mất khỏi mọi truy vấn thường
         $this->model->softDeleteQuestion((int) $question['id']);
         redirect('?module=questions&action=index', 'Đã xóa câu hỏi.', 'success');
     }
-
-    // ============================================================
-    // CÂU TRẢ LỜI
-    // ============================================================
 
     public function answer(): void
     {
@@ -285,7 +237,6 @@ class QuestionsController
         $qid    = (int) post('question_id');
         $answer = $this->model->findAnswer((int) post('answer_id'));
 
-        // Phải tồn tại, thuộc đúng câu hỏi, và do chính người dùng viết
         if (!$answer || (int) $answer['question_id'] !== $qid || !Auth::owns((int) $answer['user_id'])) {
             $this->backToQuestion($qid, 'Bạn không có quyền sửa câu trả lời này.', 'error');
         }
@@ -315,7 +266,6 @@ class QuestionsController
             $this->backToQuestion($qid, 'Bạn không có quyền xóa câu trả lời này.', 'error');
         }
 
-        // Nếu đang là câu trả lời được chấp nhận → model tự gỡ chấp nhận trước khi xóa
         $this->model->softDeleteAnswer((int) $answer['id'], $qid);
         $this->backToQuestion($qid, 'Đã xóa câu trả lời.', 'success');
     }
@@ -332,11 +282,11 @@ class QuestionsController
         if (!$question) {
             redirect('?module=questions&action=index', 'Câu hỏi không tồn tại.', 'error');
         }
-        // QUAN TRỌNG: chỉ chủ câu hỏi mới được chấp nhận
+
         if (!Auth::owns((int) $question['user_id'])) {
             $this->backToQuestion($qid, 'Chỉ người đặt câu hỏi mới được chấp nhận câu trả lời.', 'error');
         }
-        // QUAN TRỌNG: câu trả lời phải thuộc đúng câu hỏi này
+
         if (!$this->model->answerBelongsToQuestion($aid, $qid)) {
             $this->backToQuestion($qid, 'Câu trả lời không hợp lệ.', 'error');
         }
@@ -364,9 +314,26 @@ class QuestionsController
         $this->backToQuestion($qid, 'Đã bỏ đánh dấu chấp nhận.', 'success');
     }
 
-    // ============================================================
-    // BÁO CÁO
-    // ============================================================
+    public function toggleLike(): void
+    {
+        Auth::requireActiveUser();
+        verifyCsrf();
+
+        $qid      = (int) post('question_id');
+        $aid      = (int) post('answer_id');
+        $question = $this->model->findQuestion($qid);
+        $answer   = $this->model->findAnswer($aid);
+
+        if (!$question || !$this->canView($question)) {
+            redirect('?module=questions&action=index', 'Câu hỏi không tồn tại hoặc không thể truy cập.', 'error');
+        }
+        if (!$answer || (int) $answer['question_id'] !== $qid || $answer['status'] !== 'visible') {
+            $this->backToQuestion($qid, 'Câu trả lời không tồn tại.', 'error');
+        }
+
+        $this->model->toggleAnswerLike($aid, (int) Auth::id());
+        redirect("?module=questions&action=show&id={$qid}#answer-{$aid}");
+    }
 
     public function report(): void
     {
@@ -387,7 +354,6 @@ class QuestionsController
             $this->backToQuestion($qid, 'Vui lòng chọn lý do báo cáo.', 'error');
         }
 
-        // Xác định đối tượng bị báo cáo và chủ của nó
         if ($type === 'answer') {
             $answer = $this->model->findAnswer($targetId);
             if (!$answer || (int) $answer['question_id'] !== $qid) {
@@ -412,11 +378,6 @@ class QuestionsController
         $this->backToQuestion($qid, 'Đã gửi báo cáo. Cảm ơn bạn!', 'success');
     }
 
-    // ============================================================
-    // HÀM PHỤ (private)
-    // ============================================================
-
-    /** Câu hỏi hiển thị được cho người xem hiện tại? (bị ẩn → chỉ chủ và admin thấy) */
     private function canView(array $question): bool
     {
         if ($question['status'] === 'visible') return true;
@@ -430,7 +391,6 @@ class QuestionsController
         exit;
     }
 
-    /** Lấy câu hỏi và bắt buộc người dùng hiện tại là chủ; nếu không thì chuyển hướng. */
     private function findOwnedQuestion(int $id): array
     {
         $question = $this->model->findQuestion($id);
@@ -449,7 +409,6 @@ class QuestionsController
         redirect('?module=questions&action=show&id=' . $questionId . $anchor, $message, $type);
     }
 
-    /** @return string|null thông báo lỗi, hoặc null nếu hợp lệ */
     private function checkContent(string $content, string $label): ?string
     {
         $len = mb_strlen($content);
@@ -458,10 +417,6 @@ class QuestionsController
         return null;
     }
 
-    /**
-     * Đọc và kiểm tra dữ liệu form câu hỏi (dùng chung cho store và update).
-     * @return array{0:array,1:array} [dữ liệu đã làm sạch, mảng lỗi theo tên field]
-     */
     private function validateQuestionInput(): array
     {
         $errors = [];

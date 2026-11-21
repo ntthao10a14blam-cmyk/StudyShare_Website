@@ -1,5 +1,5 @@
 <?php
-/** Form đặt câu hỏi — TV5. Biến: $subjects, $tags, $old, $errors */
+
 $pageTitle = $pageTitle ?? 'Đặt câu hỏi';
 require_once BASE_PATH . '/app/views/layouts/header.php';
 ?>

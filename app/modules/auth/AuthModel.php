@@ -1,8 +1,4 @@
 <?php
-/**
- * AUTHMODEL.PHP — Truy vấn database liên quan đến tài khoản
- * Phụ trách: TV1
- */
 
 class AuthModel
 {
@@ -13,9 +9,6 @@ class AuthModel
         $this->db = Database::getInstance();
     }
 
-    /**
-     * Tìm user theo email.
-     */
     public function findByEmail(string $email): array|false
     {
         $stmt = $this->db->prepare(
@@ -26,9 +19,6 @@ class AuthModel
         return $stmt->fetch();
     }
 
-    /**
-     * Tìm user theo ID.
-     */
     public function findById(int $id): array|false
     {
         $stmt = $this->db->prepare(
@@ -39,9 +29,6 @@ class AuthModel
         return $stmt->fetch();
     }
 
-    /**
-     * Kiểm tra email đã tồn tại chưa.
-     */
     public function emailExists(string $email): bool
     {
         $stmt = $this->db->prepare("SELECT COUNT(*) FROM users WHERE email = :email");
@@ -49,9 +36,6 @@ class AuthModel
         return (int) $stmt->fetchColumn() > 0;
     }
 
-    /**
-     * Tạo tài khoản mới.
-     */
     public function createUser(string $fullName, string $email, string $hashedPassword): int
     {
         $stmt = $this->db->prepare(
@@ -65,9 +49,6 @@ class AuthModel
         return (int) $this->db->lastInsertId();
     }
 
-    /**
-     * Cập nhật hồ sơ.
-     */
     public function updateProfile(int $id, string $fullName, ?string $avatarPath): void
     {
         $stmt = $this->db->prepare(
@@ -80,9 +61,6 @@ class AuthModel
         ]);
     }
 
-    /**
-     * Cập nhật mật khẩu.
-     */
     public function updatePassword(int $id, string $hashedPassword): void
     {
         $stmt = $this->db->prepare("UPDATE users SET password = :password WHERE id = :id");

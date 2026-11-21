@@ -1,8 +1,5 @@
 <?php
-/**
- * VIEW: Hồ sơ cá nhân
- * Phụ trách: TV1
- */
+
 $pageTitle  = $pageTitle ?? 'Hồ sơ cá nhân';
 $extraCss   = ['auth.css'];
 $extraJs    = ['auth.js'];
@@ -11,7 +8,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
 
 <div class="container py-4">
 
-    <!-- Tiêu đề trang -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="page-title mb-0">
             <i class="bi bi-person-circle me-2" style="color: var(--color-primary);"></i>
@@ -24,11 +20,9 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
 
     <div class="row g-4">
 
-        <!-- ===== CỘT TRÁI: Thẻ thông tin / Avatar ===== -->
         <div class="col-lg-4">
             <div class="card community-card p-4 text-center">
 
-                <!-- Avatar -->
                 <div class="profile-avatar-wrap mx-auto mb-3" id="avatarPreviewWrap">
                     <?php if (!empty($user['avatar_path'])): ?>
                         <img
@@ -45,7 +39,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                     <?php endif; ?>
                 </div>
 
-                <!-- Tên & vai trò -->
                 <h2 class="fs-5 fw-bold mb-1" style="color: var(--color-text);">
                     <?= h($user['full_name']) ?>
                 </h2>
@@ -53,7 +46,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                     <?= $user['role'] === 'admin' ? 'Quản trị viên' : 'Thành viên' ?>
                 </span>
 
-                <!-- Trạng thái -->
                 <?php if ($user['status'] === 'active'): ?>
                     <div class="d-flex align-items-center justify-content-center gap-1 small" style="color: var(--color-success);">
                         <i class="bi bi-check-circle-fill"></i> Tài khoản hoạt động
@@ -66,7 +58,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
 
                 <hr class="my-3">
 
-                <!-- Thông tin meta -->
                 <ul class="list-unstyled text-start small d-flex flex-column gap-2 mb-0" style="color: var(--color-text-muted);">
                     <li class="d-flex align-items-center gap-2">
                         <i class="bi bi-envelope flex-shrink-0" style="color: var(--color-primary);"></i>
@@ -80,7 +71,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
             </div>
         </div>
 
-        <!-- ===== CỘT PHẢI: Form chỉnh sửa hồ sơ ===== -->
         <div class="col-lg-8">
             <div class="card community-card p-4">
                 <h2 class="fs-6 fw-bold mb-4" style="color: var(--color-text);">
@@ -97,7 +87,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                 >
                     <?php csrfField(); ?>
 
-                    <!-- Họ và tên -->
                     <div class="mb-3">
                         <label for="full_name" class="form-label fw-medium">
                             Họ và tên <span class="text-danger">*</span>
@@ -116,7 +105,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                         <?php endif; ?>
                     </div>
 
-                    <!-- Email (chỉ đọc) -->
                     <div class="mb-4">
                         <label for="email_display" class="form-label fw-medium">Email</label>
                         <input
@@ -133,11 +121,9 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                         </div>
                     </div>
 
-                    <!-- Upload avatar -->
                     <div class="mb-4">
                         <label for="avatar" class="form-label fw-medium">Ảnh đại diện</label>
 
-                        <!-- Vùng kéo thả / chọn file -->
                         <div class="profile-upload-area" id="avatarDropZone">
                             <input
                                 type="file"
@@ -163,7 +149,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                             </div>
                         <?php endif; ?>
 
-                        <!-- Preview tên file được chọn -->
                         <div class="profile-file-info mt-2 d-none" id="fileInfo">
                             <i class="bi bi-image me-1" style="color: var(--color-primary);"></i>
                             <span id="fileName" class="small fw-medium"></span>
@@ -171,7 +156,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                         </div>
                     </div>
 
-                    <!-- Nút lưu -->
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary btn-sm">
                             <i class="bi bi-check-lg me-1"></i> Lưu thay đổi
@@ -183,7 +167,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                 </form>
             </div>
 
-            <!-- ===== Liên kết đổi mật khẩu (phụ) ===== -->
             <div class="card community-card p-4 mt-3">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -202,7 +185,7 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
             </div>
         </div>
 
-    </div><!-- /row -->
+    </div>
 </div>
 
 <?php require_once BASE_PATH . '/app/views/layouts/footer.php'; ?>

@@ -1,22 +1,7 @@
-/**
- * AUTH.JS — Tương tác phía client cho module xác thực
- * Phụ trách: TV1
- *
- * Chức năng:
- *  1. Toggle hiện/ẩn mật khẩu (tất cả các form auth)
- *  2. Thanh đánh giá độ mạnh mật khẩu (register + password-change)
- *  3. Validate realtime: mật khẩu xác nhận khớp chưa + Email RFC regex
- *  4. Preview ảnh avatar trước khi upload (profile)
- *  5. Drag & Drop avatar (profile)
- *  6. Xoá ảnh đã chọn (profile)
- */
+
 
 (function () {
     'use strict';
-
-    /* ============================================================
-       1. TOGGLE HIỆN / ẨN MẬT KHẨU
-       ============================================================ */
 
     function initPasswordToggle() {
         document.querySelectorAll('.auth-toggle-pw').forEach(function (btn) {
@@ -43,10 +28,6 @@
             });
         });
     }
-
-    /* ============================================================
-       2. ĐỘ MẠNH MẬT KHẨU
-       ============================================================ */
 
     function calcStrength(pwd) {
         if (!pwd) return 0;
@@ -83,17 +64,12 @@
         });
     }
 
-    /* ============================================================
-       3. VALIDATE REALTIME: MẬT KHẨU XÁC NHẬN & EMAIL RFC REGEX
-       ============================================================ */
-
     function initFormRealtimeValidation() {
         var pwInput      = document.getElementById('password') || document.getElementById('new_password');
         var confirmInput = document.getElementById('password_confirm') || document.getElementById('confirm_password');
         var emailInput   = document.getElementById('email');
         var regForm      = document.getElementById('registerForm') || document.getElementById('passwordForm');
 
-        // Regex RFC 5322 chuẩn kiểm tra email
         function isValidEmail(email) {
             var re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
             return re.test(email);
@@ -183,10 +159,6 @@
         }
     }
 
-    /* ============================================================
-       4. PREVIEW + DRAG & DROP + XÓA ẢNH AVATAR (profile.php)
-       ============================================================ */
-
     function initAvatarUpload() {
         var fileInput    = document.getElementById('avatar');
         var dropZone     = document.getElementById('avatarDropZone');
@@ -260,9 +232,6 @@
         }
     }
 
-    /* ============================================================
-       KHỞI ĐỘNG
-       ============================================================ */
     document.addEventListener('DOMContentLoaded', function () {
         initPasswordToggle();
         initPasswordStrength();

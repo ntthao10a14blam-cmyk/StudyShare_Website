@@ -1,28 +1,10 @@
 <?php
-/**
- * HELPERS.PHP — Các hàm tiện ích dùng chung
- *
- * Không import hay khai báo class — chỉ là các hàm toàn cục.
- * Gọi trực tiếp ở bất cứ đâu sau khi bootstrap đã require file này.
- */
 
-// ============================================================
-// OUTPUT & SECURITY
-// ============================================================
-
-/**
- * Escape HTML an toàn — dùng khi in dữ liệu từ DB ra view.
- * Thay thế echo $var bằng echo h($var).
- */
 function h(mixed $value): string
 {
     return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
-/**
- * Lấy và xóa flash message khỏi session.
- * Dùng trong layout để hiển thị thông báo một lần.
- */
 function getFlash(): array
 {
     $message = $_SESSION['flash_message'] ?? '';
@@ -31,40 +13,22 @@ function getFlash(): array
     return ['message' => $message, 'type' => $type];
 }
 
-/**
- * Set flash message mà không redirect.
- */
 function setFlash(string $message, string $type = 'info'): void
 {
     $_SESSION['flash_message'] = $message;
     $_SESSION['flash_type']    = $type;
 }
 
-// ============================================================
-// URL & REDIRECT
-// ============================================================
-
-/**
- * Tạo URL đầy đủ từ path tương đối.
- * Ví dụ: url('/documents/list') → http://localhost/study_website/public/documents/list
- */
 function url(string $path = ''): string
 {
     return BASE_URL . '/' . ltrim($path, '/');
 }
 
-/**
- * Tạo URL tới file trong storage/ thông qua file-serve.php (có kiểm tra quyền).
- * KHÔNG dùng để trỏ thẳng vào storage/.
- */
 function storageUrl(string $relativePath): string
 {
     return BASE_URL . '/serve.php?file=' . urlencode($relativePath);
 }
 
-/**
- * Redirect và thoát.
- */
 function redirect(string $path, string $message = '', string $type = 'info'): void
 {
     if ($message !== '') setFlash($message, $type);
@@ -72,15 +36,6 @@ function redirect(string $path, string $message = '', string $type = 'info'): vo
     exit;
 }
 
-// ============================================================
-// PHÂN TRANG
-// ============================================================
-
-/**
- * Tính số trang và offset từ query string.
- *
- * @return array{page:int, offset:int, limit:int}
- */
 function paginate(int $total, int $perPage = ITEMS_PER_PAGE): array
 {
     $page  = max(1, (int) ($_GET['page'] ?? 1));
@@ -97,13 +52,6 @@ function paginate(int $total, int $perPage = ITEMS_PER_PAGE): array
     ];
 }
 
-// ============================================================
-// ĐỊNH DẠNG
-// ============================================================
-
-/**
- * Định dạng kích thước file cho người dùng.
- */
 function formatFileSize(int $bytes): string
 {
     if ($bytes < 1024)       return $bytes . ' B';
@@ -112,10 +60,6 @@ function formatFileSize(int $bytes): string
     return round($bytes / 1073741824, 2) . ' GB';
 }
 
-/**
- * Định dạng ngày giờ tiếng Việt.
- * Ví dụ: '2025-06-01 14:30:00' → '01/06/2025 14:30'
- */
 function formatDateTime(string $datetime, string $format = 'd/m/Y H:i'): string
 {
     if (empty($datetime)) return '—';
@@ -127,10 +71,6 @@ function formatDateTime(string $datetime, string $format = 'd/m/Y H:i'): string
     }
 }
 
-/**
- * Trả về thời gian tương đối.
- * Ví dụ: '3 phút trước', '2 ngày trước'
- */
 function timeAgo(string $datetime): string
 {
     if (empty($datetime)) return '—';
@@ -149,13 +89,6 @@ function timeAgo(string $datetime): string
     }
 }
 
-// ============================================================
-// CSRF (BẢO VỆ FORM)
-// ============================================================
-
-/**
- * Tạo và lưu CSRF token vào session.
- */
 function csrfToken(): string
 {
     if (empty($_SESSION['csrf_token'])) {
@@ -164,18 +97,11 @@ function csrfToken(): string
     return $_SESSION['csrf_token'];
 }
 
-/**
- * In hidden input chứa CSRF token — gọi trong mỗi form.
- */
 function csrfField(): void
 {
     echo '<input type="hidden" name="csrf_token" value="' . h(csrfToken()) . '">';
 }
 
-/**
- * Xác minh CSRF token từ POST request.
- * Gọi đầu mỗi xử lý POST — sẽ exit nếu không hợp lệ.
- */
 function verifyCsrf(): void
 {
     $token = $_POST['csrf_token'] ?? '';
@@ -185,29 +111,16 @@ function verifyCsrf(): void
     }
 }
 
-// ============================================================
-// INPUT VALIDATION
-// ============================================================
-
-/**
- * Lấy giá trị POST, loại bỏ khoảng trắng thừa.
- */
 function post(string $key, mixed $default = ''): mixed
 {
     return isset($_POST[$key]) ? trim($_POST[$key]) : $default;
 }
 
-/**
- * Lấy giá trị GET, loại bỏ khoảng trắng thừa.
- */
 function get(string $key, mixed $default = ''): mixed
 {
     return isset($_GET[$key]) ? trim($_GET[$key]) : $default;
 }
 
-/**
- * Kiểm tra chuỗi không rỗng sau khi trim.
- */
 function notEmpty(string $value): bool
 {
     return trim($value) !== '';

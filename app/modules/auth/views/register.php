@@ -1,8 +1,5 @@
 <?php
-/**
- * VIEW: Đăng ký tài khoản
- * Phụ trách: TV1
- */
+
 $pageTitle  = $pageTitle ?? 'Đăng ký tài khoản';
 $extraCss   = ['auth.css'];
 $extraJs    = ['auth.js'];
@@ -12,7 +9,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
 <div class="auth-page">
     <div class="auth-card auth-card-wide">
 
-        <!-- Logo / Brand -->
         <div class="auth-brand">
             <a href="<?= url('/') ?>" class="text-decoration-none d-flex align-items-center justify-content-center gap-2">
                 <div class="auth-brand-icon">
@@ -24,11 +20,9 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
             <p class="auth-subtitle">Tham gia cộng đồng học tập và chia sẻ tài liệu miễn phí.</p>
         </div>
 
-        <!-- Form đăng ký -->
         <form method="POST" action="<?= url('?module=auth&action=register') ?>" novalidate id="registerForm">
             <?php csrfField(); ?>
 
-            <!-- Họ và tên -->
             <div class="mb-3">
                 <label for="full_name" class="form-label">
                     Họ và tên <span class="text-danger">*</span>
@@ -55,7 +49,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                 </div>
             </div>
 
-            <!-- Email -->
             <div class="mb-3">
                 <label for="email" class="form-label">
                     Email <span class="text-danger">*</span>
@@ -80,7 +73,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                 </div>
             </div>
 
-            <!-- Mật khẩu -->
             <div class="mb-3">
                 <label for="password" class="form-label">
                     Mật khẩu <span class="text-danger">*</span>
@@ -106,7 +98,7 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                         <div class="invalid-feedback"><?= h($errors['password']) ?></div>
                     <?php endif; ?>
                 </div>
-                <!-- Thanh độ mạnh mật khẩu -->
+
                 <div class="password-strength mt-1" id="pwStrengthBar" aria-hidden="true">
                     <div class="password-strength-track">
                         <div class="password-strength-fill" id="pwStrengthFill"></div>
@@ -115,7 +107,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                 </div>
             </div>
 
-            <!-- Xác nhận mật khẩu -->
             <div class="mb-4">
                 <label for="password_confirm" class="form-label">
                     Xác nhận mật khẩu <span class="text-danger">*</span>
@@ -142,16 +133,13 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                 </div>
             </div>
 
-            <!-- Nút đăng ký -->
             <button type="submit" class="btn btn-primary w-100 auth-btn-submit">
                 <i class="bi bi-person-plus me-1"></i> Tạo tài khoản
             </button>
         </form>
 
-        <!-- Divider -->
         <div class="auth-divider"><span>hoặc</span></div>
 
-        <!-- Chuyển sang đăng nhập -->
         <p class="auth-switch-text">
             Đã có tài khoản?
             <a href="<?= url('?module=auth&action=login') ?>" class="fw-semibold">Đăng nhập</a>

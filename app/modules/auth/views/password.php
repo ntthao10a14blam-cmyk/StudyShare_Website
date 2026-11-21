@@ -1,8 +1,5 @@
 <?php
-/**
- * VIEW: Đổi mật khẩu
- * Phụ trách: TV1
- */
+
 $pageTitle  = $pageTitle ?? 'Đổi mật khẩu';
 $extraCss   = ['auth.css'];
 $extraJs    = ['auth.js'];
@@ -14,7 +11,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
     <div class="row justify-content-center">
         <div class="col-lg-6 col-md-8">
 
-            <!-- Tiêu đề -->
             <div class="d-flex align-items-center gap-2 mb-4">
                 <a href="<?= url('?module=auth&action=profile') ?>" class="btn btn-light-subtle btn-sm" aria-label="Quay lại hồ sơ">
                     <i class="bi bi-arrow-left"></i>
@@ -26,7 +22,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                 <form method="POST" action="<?= url('?module=auth&action=password') ?>" novalidate id="passwordForm">
                     <?php csrfField(); ?>
 
-                    <!-- Mật khẩu hiện tại -->
                     <div class="mb-3">
                         <label for="current_password" class="form-label fw-medium">
                             Mật khẩu hiện tại <span class="text-danger">*</span>
@@ -56,7 +51,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
 
                     <hr class="my-3">
 
-                    <!-- Mật khẩu mới -->
                     <div class="mb-3">
                         <label for="new_password" class="form-label fw-medium">
                             Mật khẩu mới <span class="text-danger">*</span>
@@ -82,7 +76,7 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                                 <div class="invalid-feedback"><?= h($errors['new_password']) ?></div>
                             <?php endif; ?>
                         </div>
-                        <!-- Thanh độ mạnh -->
+
                         <div class="password-strength mt-1" id="pwStrengthBar" aria-hidden="true">
                             <div class="password-strength-track">
                                 <div class="password-strength-fill" id="pwStrengthFill"></div>
@@ -91,7 +85,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                         </div>
                     </div>
 
-                    <!-- Xác nhận mật khẩu mới -->
                     <div class="mb-4">
                         <label for="confirm_password" class="form-label fw-medium">
                             Xác nhận mật khẩu mới <span class="text-danger">*</span>
@@ -118,7 +111,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                         </div>
                     </div>
 
-                    <!-- Nút hành động -->
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary btn-sm">
                             <i class="bi bi-check-lg me-1"></i> Lưu mật khẩu mới

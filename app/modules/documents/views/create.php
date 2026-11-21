@@ -1,8 +1,5 @@
 <?php
-/**
- * CREATE.PHP — Form thêm tài liệu mới
- * Phụ trách: TV2
- */
+
 $pageTitle = $pageTitle ?? 'Thêm tài liệu mới';
 require_once BASE_PATH . '/app/views/layouts/header.php';
 
@@ -11,9 +8,11 @@ $formData = $_SESSION['form_data']   ?? [];
 unset($_SESSION['form_errors'], $_SESSION['form_data']);
 ?>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+
 <div class="container py-4">
 
-    <!-- BREADCRUMB -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb small">
             <li class="breadcrumb-item"><a href="<?= url('/') ?>">Trang chủ</a></li>
@@ -22,7 +21,6 @@ unset($_SESSION['form_errors'], $_SESSION['form_data']);
         </ol>
     </nav>
 
-    <!-- TIÊU ĐỀ TRANG -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="page-title mb-1">Thêm tài liệu mới</h1>
@@ -33,14 +31,12 @@ unset($_SESSION['form_errors'], $_SESSION['form_data']);
         </a>
     </div>
 
-    <!-- KHUNG FORM UPLOAD -->
     <div class="row justify-content-center">
         <div class="col-12 col-lg-10">
             <form method="POST" action="<?= url('?module=documents&action=store') ?>"
                   enctype="multipart/form-data" class="card community-card p-4 shadow-xs">
                 <?php csrfField(); ?>
 
-                <!-- 1. TIÊU ĐỀ VÀ MÔN HỌC -->
                 <div class="row g-3 mb-3">
                     <div class="col-12 col-md-8">
                         <label for="titleInput" class="form-label fw-semibold">
@@ -74,7 +70,6 @@ unset($_SESSION['form_errors'], $_SESSION['form_data']);
                     </div>
                 </div>
 
-                <!-- 2. TẢI FILE PDF (BẮT BUỘC) -->
                 <div class="mb-4">
                     <label class="form-label fw-semibold">
                         File tài liệu (PDF) <span class="text-danger">*</span>
@@ -82,7 +77,7 @@ unset($_SESSION['form_errors'], $_SESSION['form_data']);
                     <div class="p-4 border border-2 border-dashed rounded text-center bg-light" id="pdfDropzone" style="border-color: #cbd5e1 !important;">
                         <i class="bi bi-file-earmark-pdf text-danger fs-1 mb-2 d-block"></i>
                         <div class="fw-semibold text-dark mb-1" id="pdfFileName">Kéo thả file PDF vào đây hoặc nhấn để chọn file</div>
-                        <div class="text-muted small mb-3">Định dạng hỗ trợ: PDF (Dung lượng tối đa: 20 MB)</div>
+                        <div class="text-muted small mb-3">Định dạng hỗ trợ: PDF (Dung lượng tối đa: 100 MB)</div>
                         <label for="documentFileInput" class="btn btn-outline-primary btn-sm px-3">
                             <i class="bi bi-folder2-open me-1"></i> Chọn file PDF từ máy tính
                         </label>
@@ -96,7 +91,6 @@ unset($_SESSION['form_errors'], $_SESSION['form_data']);
                     <?php endif; ?>
                 </div>
 
-                <!-- 3. TẢI ẢNH MINH HOẠ / XEM TRƯỚC (NHIỀU ẢNH) -->
                 <div class="mb-4">
                     <label for="imagesInput" class="form-label fw-semibold">
                         Ảnh chụp trang / Ảnh minh hoạ <small class="text-muted fw-normal">(Không bắt buộc, tối đa 10 ảnh)</small>
@@ -109,7 +103,6 @@ unset($_SESSION['form_errors'], $_SESSION['form_data']);
                     <div id="imagePreviewContainer" class="d-flex flex-wrap gap-2 mt-2"></div>
                 </div>
 
-                <!-- 4. MÔ TẢ TÀI LIỆU -->
                 <div class="mb-4">
                     <label for="descriptionInput" class="form-label fw-semibold">
                         Mô tả nội dung & Ghi chú
@@ -120,7 +113,6 @@ unset($_SESSION['form_errors'], $_SESSION['form_data']);
                     <div class="form-text small">Mô tả rõ ràng sẽ giúp tài liệu được duyệt nhanh hơn và thu hút nhiều lượt quan tâm.</div>
                 </div>
 
-                <!-- 5. TỪ KHOÁ (TAGS) -->
                 <div class="mb-4">
                     <label for="tagsInput" class="form-label fw-semibold">
                         Từ khoá tìm kiếm <small class="text-muted fw-normal">(phân cách bởi dấu phẩy)</small>
@@ -129,8 +121,7 @@ unset($_SESSION['form_errors'], $_SESSION['form_data']);
                            class="form-control"
                            placeholder="bài tập, ôn thi cuối kỳ, tóm tắt công thức, đề cương..."
                            value="<?= h($formData['tags'] ?? '') ?>">
-                    
-                    <!-- Gợi ý từ khoá phổ biến -->
+
                     <?php if (!empty($allTags)): ?>
                         <div class="mt-2 d-flex flex-wrap align-items-center gap-1">
                             <small class="text-muted me-1">Gợi ý:</small>
@@ -144,10 +135,9 @@ unset($_SESSION['form_errors'], $_SESSION['form_data']);
                     <?php endif; ?>
                 </div>
 
-                <!-- 6. CHẾ ĐỘ HIỂN THỊ & GỬI DUYỆT -->
                 <div class="p-3 mb-4 rounded border bg-light-subtle">
                     <div class="fw-semibold text-dark mb-2">Quyền riêng tư & Chia sẻ</div>
-                    
+
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="radio" name="visibility" id="visPrivate" value="private"
                                <?= ($formData['visibility'] ?? 'private') === 'private' ? 'checked' : '' ?>>
@@ -166,7 +156,6 @@ unset($_SESSION['form_errors'], $_SESSION['form_data']);
                         </label>
                     </div>
 
-                    <!-- Lựa chọn gửi duyệt ngay (khi chọn công khai) -->
                     <div class="ms-4 mt-2" id="submitForReviewBox" style="display: none;">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="submit_for_review" id="submitReviewCheck" value="1" checked>
@@ -177,7 +166,6 @@ unset($_SESSION['form_errors'], $_SESSION['form_data']);
                     </div>
                 </div>
 
-                <!-- 7. NÚT SUBMIT -->
                 <div class="d-flex justify-content-end gap-2 pt-2 border-top">
                     <a href="<?= url('?module=documents&action=index') ?>" class="btn btn-light-subtle btn-sm px-4">
                         Hủy bỏ
@@ -196,7 +184,36 @@ unset($_SESSION['form_errors'], $_SESSION['form_data']);
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Hiển thị tên file PDF khi chọn
+
+    const descTextarea = document.getElementById('descriptionInput');
+    let easyMDE = null;
+    if (descTextarea && typeof EasyMDE !== 'undefined') {
+        easyMDE = new EasyMDE({
+            element: descTextarea,
+            placeholder: 'Mô tả tóm tắt tài liệu: gồm các chương nào, đề thi kỳ nào, tác giả biên soạn, lưu ý khi ôn tập...',
+            spellChecker: false,
+            autosave: { enabled: false },
+            status: false,
+            minHeight: '180px',
+            toolbar: [
+                'bold', 'italic', 'heading', '|',
+                'quote', 'unordered-list', 'ordered-list', '|',
+                'link', 'table', '|',
+                'preview', 'side-by-side', 'fullscreen', '|',
+                'guide'
+            ]
+        });
+
+        const form = descTextarea.closest('form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                if (easyMDE) {
+                    descTextarea.value = easyMDE.value();
+                }
+            });
+        }
+    }
+
     const pdfInput = document.getElementById('documentFileInput');
     const pdfFileName = document.getElementById('pdfFileName');
     if (pdfInput && pdfFileName) {
@@ -209,7 +226,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 2. Ẩn/hiện hộp gửi duyệt tuỳ theo Visibility
     const visPublic = document.getElementById('visPublic');
     const visPrivate = document.getElementById('visPrivate');
     const reviewBox = document.getElementById('submitForReviewBox');
@@ -227,7 +243,6 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleReviewBox();
     }
 
-    // 3. Click gợi ý tag
     const tagsInput = document.getElementById('tagsInput');
     document.querySelectorAll('.tag-suggestion-btn').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -245,7 +260,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // 4. Preview ảnh tải lên
     const imagesInput = document.getElementById('imagesInput');
     const previewContainer = document.getElementById('imagePreviewContainer');
     if (imagesInput && previewContainer) {

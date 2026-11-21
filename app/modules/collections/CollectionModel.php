@@ -14,6 +14,7 @@ class CollectionModel
         $sql = "SELECT c.*, (SELECT COUNT(*) FROM collection_documents cd
                 JOIN documents d ON d.id = cd.document_id
                 WHERE cd.collection_id = c.id AND d.deleted_at IS NULL
+                AND d.moderation_status <> 'hidden'
                 AND (d.user_id = c.user_id OR (d.visibility = 'public' AND d.moderation_status = 'approved'))) AS total
                 FROM collections c WHERE c.user_id = ? ORDER BY c.created_at DESC";
         $stmt = $this->db->prepare($sql);
@@ -64,6 +65,7 @@ class CollectionModel
         $sql = "SELECT d.id, d.title, d.user_id, d.visibility
                 FROM collection_documents cd JOIN documents d ON d.id = cd.document_id
                 WHERE cd.collection_id = ? AND d.deleted_at IS NULL
+                AND d.moderation_status <> 'hidden'
                 AND (d.user_id = ? OR (d.visibility = 'public' AND d.moderation_status = 'approved'))
                 ORDER BY cd.added_at DESC";
         $stmt = $this->db->prepare($sql);
@@ -74,6 +76,7 @@ class CollectionModel
     public function accessibleDocument(int $documentId, int $userId): bool
     {
         $sql = "SELECT id FROM documents WHERE id = ? AND deleted_at IS NULL
+                AND moderation_status <> 'hidden'
                 AND (user_id = ? OR (visibility = 'public' AND moderation_status = 'approved'))";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$documentId, $userId]);
@@ -83,6 +86,7 @@ class CollectionModel
     public function addableDocuments(int $userId, int $collectionId): array
     {
         $sql = "SELECT id, title FROM documents WHERE deleted_at IS NULL
+                AND moderation_status <> 'hidden'
                 AND (user_id = ? OR (visibility = 'public' AND moderation_status = 'approved'))
                 AND id NOT IN (SELECT document_id FROM collection_documents WHERE collection_id = ?)
                 ORDER BY created_at DESC LIMIT 100";
@@ -109,6 +113,7 @@ class CollectionModel
         $sql = "SELECT d.id, d.title, d.user_id, d.visibility
                 FROM favorites f JOIN documents d ON d.id = f.document_id
                 WHERE f.user_id = ? AND d.deleted_at IS NULL
+                AND d.moderation_status <> 'hidden'
                 AND (d.user_id = ? OR (d.visibility = 'public' AND d.moderation_status = 'approved'))
                 ORDER BY f.created_at DESC";
         $stmt = $this->db->prepare($sql);
@@ -119,6 +124,7 @@ class CollectionModel
     public function addableFavorites(int $userId): array
     {
         $sql = "SELECT id, title FROM documents WHERE deleted_at IS NULL
+                AND moderation_status <> 'hidden'
                 AND (user_id = ? OR (visibility = 'public' AND moderation_status = 'approved'))
                 AND id NOT IN (SELECT document_id FROM favorites WHERE user_id = ?)
                 ORDER BY created_at DESC LIMIT 100";

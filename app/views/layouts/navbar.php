@@ -1,22 +1,33 @@
 <?php
-/**
- * NAVBAR.PHP — Thanh điều hướng chuẩn hóa theo 6 chức năng của StudyShare
- */
+
 $currentUser = Auth::currentUser();
 $isLoggedIn  = Auth::check();
 $isAdmin     = Auth::isAdmin();
 $isActive    = Auth::isActive();
 
-// Xác định trang hiện tại để đánh dấu active
+if ($isAdmin && file_exists(__DIR__ . '/admin_navbar.php')) {
+    $adminName = $currentUser['full_name'] ?? 'Quản trị viên';
+    if (!isset($pendingCount)) {
+        $pendingCount = 0;
+        try {
+            $pendingCount = (int) Database::getInstance()->query(
+                "SELECT COUNT(*) FROM documents WHERE moderation_status = 'pending' AND deleted_at IS NULL"
+            )->fetchColumn();
+        } catch (Throwable $e) {
+            $pendingCount = 0;
+        }
+    }
+    require __DIR__ . '/admin_navbar.php';
+    return;
+}
+
 $currentModule = preg_replace('/[^a-z0-9_-]/i', '', get('module', 'home'));
 $currentAction = preg_replace('/[^a-z0-9_-]/i', '', get('action', 'index'));
 ?>
 
-<!-- HEADER CHÍNH -->
 <header class="public-header sticky-top" id="publicHeader">
     <div class="container header-inner d-flex align-items-center justify-content-between">
-        
-        <!-- 1. LOGO THƯƠNG HIỆU -->
+
         <a class="public-brand d-flex align-items-center gap-2 text-decoration-none" href="<?= url('/') ?>">
             <div class="brand-symbol">
                 <i class="bi bi-mortarboard-fill"></i>
@@ -27,46 +38,48 @@ $currentAction = preg_replace('/[^a-z0-9_-]/i', '', get('action', 'index'));
             </div>
         </a>
 
-        <!-- Nút toggle menu mobile -->
         <button class="mobile-menu-btn d-lg-none" type="button"
                 data-bs-toggle="collapse" data-bs-target="#publicMenu"
                 aria-controls="publicMenu" aria-expanded="false" aria-label="Mở menu">
             <i class="bi bi-list"></i>
         </button>
 
-        <!-- 2. MENU ĐIỀU HƯỚNG CHÍNH -->
         <nav class="public-menu collapse d-lg-flex align-items-center gap-1" id="publicMenu">
-            <!-- Trang chủ -->
+
             <a class="<?= $currentModule === 'home' ? 'active' : '' ?>" href="<?= url('/') ?>">
                 <i class="bi bi-house-door"></i> Trang chủ
             </a>
 
-            <!-- Kho tài liệu cộng đồng (Chức năng 3) -->
             <a class="<?= $currentModule === 'community' ? 'active' : '' ?>" href="<?= url('?module=community&action=index') ?>">
                 <i class="bi bi-folder2-open"></i> Tài liệu
             </a>
 
-            <!-- Hỏi đáp học tập (Chức năng 5) -->
             <a class="<?= $currentModule === 'questions' ? 'active' : '' ?>" href="<?= url('?module=questions&action=index') ?>">
                 <i class="bi bi-question-circle"></i> Hỏi đáp
             </a>
 
-            <!-- Lối tắt riêng cho User đã đăng nhập (Chức năng 2 & 4) -->
             <?php if ($isLoggedIn && $isActive): ?>
                 <a class="<?= $currentModule === 'documents' ? 'active' : '' ?>" href="<?= url('?module=documents&action=index') ?>">
                     <i class="bi bi-file-earmark-person"></i> Tài liệu của tôi
                 </a>
-                <a class="<?= $currentModule === 'collections' ? 'active' : '' ?>" href="<?= url('?module=collections&action=index') ?>">
-                    <i class="bi bi-collection"></i> Bộ sưu tập
-                </a>
+              
+<a class="<?= $currentModule === 'collections' && $currentAction !== 'favorites' ? 'active' : '' ?>"
+   href="<?= url('?module=collections&action=index') ?>">
+    <i class="bi bi-collection"></i> Bộ sưu tập
+</a>
+ 
+<a class="<?= $currentModule === 'collections' && $currentAction === 'favorites' ? 'active' : '' ?>"
+   href="<?= url('?module=collections&action=favorites') ?>">
+    <i class="bi bi-bookmark-heart"></i> Yêu thích
+</a>
+                
             <?php endif; ?>
         </nav>
 
-        <!-- 3. KHU VỰC TÁC VỤ & TÀI KHOẢN -->
         <div class="header-actions d-none d-lg-flex align-items-center gap-2">
-            
+
             <?php if ($isLoggedIn && $isActive): ?>
-                <!-- NÚT ĐĂNG TẢI NHANH (Upload tài liệu hoặc Đặt câu hỏi) -->
+
                 <div class="dropdown">
                     <button class="btn btn-primary btn-sm dropdown-toggle d-flex align-items-center gap-1 px-3 py-2 fw-semibold"
                             type="button" id="quickPostDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -96,7 +109,6 @@ $currentAction = preg_replace('/[^a-z0-9_-]/i', '', get('action', 'index'));
                     </ul>
                 </div>
 
-                <!-- DROPDOWN TÀI KHOẢN USER / ADMIN -->
                 <div class="dropdown ms-1">
                     <a class="dropdown-toggle d-flex align-items-center gap-2 py-1 px-2 border rounded-pill text-decoration-none text-dark bg-white" href="#"
                        id="userMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -108,9 +120,9 @@ $currentAction = preg_replace('/[^a-z0-9_-]/i', '', get('action', 'index'));
                             <?= h($currentUser['full_name']) ?>
                         </span>
                     </a>
-                    
+
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border mt-2" style="min-width: 240px;" aria-labelledby="userMenuDropdown">
-                        <!-- Header thông tin tài khoản -->
+
                         <li class="px-3 py-2 border-bottom">
                             <div class="fw-bold small text-dark"><?= h($currentUser['full_name']) ?></div>
                             <div class="text-muted small text-truncate"><?= h($currentUser['email'] ?? '') ?></div>
@@ -119,7 +131,6 @@ $currentAction = preg_replace('/[^a-z0-9_-]/i', '', get('action', 'index'));
                             </span>
                         </li>
 
-                        <!-- Nhóm chức năng cá nhân (Chức năng 1, 2, 4, 5) -->
                         <li>
                             <a class="dropdown-item py-2" href="<?= url('?module=auth&action=profile') ?>">
                                 <i class="bi bi-person-circle me-2 text-muted"></i>Hồ sơ cá nhân
@@ -141,7 +152,6 @@ $currentAction = preg_replace('/[^a-z0-9_-]/i', '', get('action', 'index'));
                             </a>
                         </li>
 
-                        <!-- Nhóm chức năng dành riêng cho Admin (Chức năng 6) -->
                         <?php if ($isAdmin): ?>
                             <li><hr class="dropdown-divider my-1"></li>
                             <li class="dropdown-header small text-uppercase fw-bold text-danger pb-1">
@@ -174,7 +184,6 @@ $currentAction = preg_replace('/[^a-z0-9_-]/i', '', get('action', 'index'));
                             </li>
                         <?php endif; ?>
 
-                        <!-- Đổi mật khẩu & Đăng xuất -->
                         <li><hr class="dropdown-divider my-1"></li>
                         <li>
                             <a class="dropdown-item py-2" href="<?= url('?module=auth&action=changePassword') ?>">
@@ -190,7 +199,7 @@ $currentAction = preg_replace('/[^a-z0-9_-]/i', '', get('action', 'index'));
                 </div>
 
             <?php else: ?>
-                <!-- Nút cho Khách (Chưa đăng nhập) -->
+
                 <div class="d-flex align-items-center gap-2">
                     <a class="text-secondary small fw-semibold text-decoration-none px-2" href="<?= url('?module=auth&action=login') ?>">
                         Đăng nhập

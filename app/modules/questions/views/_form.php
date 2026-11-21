@@ -1,12 +1,13 @@
 <?php
-/**
- * Phần form dùng chung cho create.php và edit.php — TV5
- * Biến cần có: $subjects, $tags, $old, $errors, $images (chỉ khi sửa)
- */
+
 $errors = $errors ?? [];
 $images = $images ?? [];
 $err = fn(string $k) => isset($errors[$k]) ? '<div class="invalid-feedback d-block">' . h($errors[$k]) . '</div>' : '';
 ?>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.css">
+<script src="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js"></script>
+
 <div class="mb-3">
     <label class="form-label" for="q-title">Tiêu đề <span class="text-danger">*</span></label>
     <input type="text" id="q-title" name="title" maxlength="255" required
@@ -32,9 +33,9 @@ $err = fn(string $k) => isset($errors[$k]) ? '<div class="invalid-feedback d-blo
 
 <div class="mb-3">
     <label class="form-label" for="q-content">Nội dung <span class="text-danger">*</span></label>
-    <textarea id="q-content" name="content" rows="9" required data-counter="#q-content-count" data-counter-max="20000"
-              class="form-control <?= isset($errors['content']) ? 'is-invalid' : '' ?>"
-              placeholder="Mô tả chi tiết vấn đề bạn gặp phải..."><?= h($old['content']) ?></textarea>
+    <textarea id="q-content" name="content" rows="9" data-counter="#q-content-count" data-counter-max="20000"
+          class="form-control md-editor <?= isset($errors['content']) ? 'is-invalid' : '' ?>"
+          placeholder="Mô tả chi tiết vấn đề bạn gặp phải..."><?= h($old['content']) ?></textarea>
     <div class="form-text text-end"><span id="q-content-count">0</span>/20000</div>
     <?= $err('content') ?>
 </div>

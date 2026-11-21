@@ -1,9 +1,5 @@
-/* ============================================================
-   COMMUNITY.CSS — Giao diện phân hệ Cộng đồng StudyHub
-   Phong cách chuẩn tailieu.vn & Tuân thủ QUY_CHUAN_THIET_KE_UI.md
-   ============================================================ */
 
-/* --- Hero Search Box (Phong cách tailieu.vn) --- */
+
 .community-hero {
     background: #f8fafc;
     border: 1px solid var(--color-border);
@@ -48,7 +44,6 @@
     box-shadow: none;
 }
 
-/* --- Sidebar Box (tailieu.vn style) --- */
 .community-sidebar-card {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
@@ -105,7 +100,6 @@
     color: #ffffff;
 }
 
-/* --- Document Card Grid (tailieu.vn Book Card Style) --- */
 .tailieu-card {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
@@ -124,7 +118,6 @@
     border-color: var(--color-primary-border, #bfdbfe);
 }
 
-/* Book Cover Thumbnail mô phỏng trang tài liệu tailieu.vn */
 .tailieu-thumb-book {
     width: 64px;
     height: 84px;
@@ -218,7 +211,6 @@
     gap: 0.3rem;
 }
 
-/* --- Document Detail Show Page (tailieu.vn style) --- */
 .tailieu-breadcrumb {
     font-size: 0.85rem;
     margin-bottom: 1.25rem;
@@ -269,7 +261,6 @@
     gap: 0.75rem;
 }
 
-/* Online PDF Reader Box */
 .tailieu-reader-wrapper {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
@@ -337,8 +328,8 @@
 .tailieu-preview-image {
     display: block;
     width: 100%;
-    aspect-ratio: 4 / 3;
-    object-fit: contain;
+    height: 110px;
+    object-fit: cover;
     background: var(--color-bg);
     border-radius: calc(var(--border-radius-sm) - 0.125rem);
 }
@@ -357,7 +348,6 @@
     }
 }
 
-/* Tóm tắt & Trích đoạn nội dung */
 .tailieu-content-box {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
@@ -381,7 +371,6 @@
     color: var(--color-text);
 }
 
-/* Sidebar Specifications Card */
 .tailieu-spec-table td {
     padding: 0.55rem 0;
     font-size: 0.85rem;
@@ -403,7 +392,6 @@
     text-align: right;
 }
 
-/* Mini Related Documents */
 .tailieu-related-item {
     display: flex;
     gap: 0.75rem;
