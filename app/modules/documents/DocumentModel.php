@@ -53,8 +53,8 @@ class DocumentModel
         $params = [':user_id' => $userId];
 
         if (!empty($filters['q'])) {
-            $sql .= " AND (d.title LIKE :query OR d.description LIKE :query)";
-            $params[':query'] = '%' . $filters['q'] . '%';
+            $sql .= " AND (d.title LIKE :query_title OR d.description LIKE :query_desc)";
+            $params[':query_title'] = $params[':query_desc'] = '%' . $filters['q'] . '%';
         }
 
         if (!empty($filters['subject_id'])) {
@@ -99,8 +99,8 @@ class DocumentModel
         $params = [':user_id' => $userId];
 
         if (!empty($filters['q'])) {
-            $sql .= " AND (d.title LIKE :query OR d.description LIKE :query)";
-            $params[':query'] = '%' . $filters['q'] . '%';
+            $sql .= " AND (d.title LIKE :query_title OR d.description LIKE :query_desc)";
+            $params[':query_title'] = $params[':query_desc'] = '%' . $filters['q'] . '%';
         }
 
         if (!empty($filters['subject_id'])) {
@@ -269,8 +269,8 @@ class DocumentModel
         $params = [];
 
         if (!empty($filters['q'])) {
-            $sql .= " AND (d.title LIKE :query OR d.description LIKE :query)";
-            $params[':query'] = '%' . $filters['q'] . '%';
+            $sql .= " AND (d.title LIKE :query_title OR d.description LIKE :query_desc)";
+            $params[':query_title'] = $params[':query_desc'] = '%' . $filters['q'] . '%';
         }
 
         if (!empty($filters['subject_id'])) {
@@ -306,8 +306,8 @@ class DocumentModel
         $params = [];
 
         if (!empty($filters['q'])) {
-            $sql .= " AND (d.title LIKE :query OR d.description LIKE :query)";
-            $params[':query'] = '%' . $filters['q'] . '%';
+            $sql .= " AND (d.title LIKE :query_title OR d.description LIKE :query_desc)";
+            $params[':query_title'] = $params[':query_desc'] = '%' . $filters['q'] . '%';
         }
 
         if (!empty($filters['subject_id'])) {
@@ -480,6 +480,13 @@ class DocumentModel
         ");
         $stmt->execute([':document_id' => $documentId]);
         return $stmt->fetchAll();
+    }
+
+    public function subjectExists(int $id): bool
+    {
+        $stmt = $this->db->prepare("SELECT 1 FROM subjects WHERE id = :id LIMIT 1");
+        $stmt->execute([':id' => $id]);
+        return (bool) $stmt->fetchColumn();
     }
 
     public function getAllSubjects(): array

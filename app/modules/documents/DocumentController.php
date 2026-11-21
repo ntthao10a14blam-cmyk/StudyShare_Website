@@ -116,6 +116,8 @@ class DocumentController
 
         if (empty($subjectId) || !is_numeric($subjectId)) {
             $errors['subject_id'] = 'Vui lòng chọn môn học phù hợp.';
+        } elseif (!$this->model->subjectExists((int) $subjectId)) {
+            $errors['subject_id'] = 'Môn học không tồn tại.';
         }
 
         if (!in_array($visibility, ['private', 'public'], true)) {
@@ -296,6 +298,8 @@ class DocumentController
         }
         if (empty($subjectId) || !is_numeric($subjectId)) {
             $errors['subject_id'] = 'Vui lòng chọn môn học.';
+        } elseif (!$this->model->subjectExists((int) $subjectId)) {
+            $errors['subject_id'] = 'Môn học không tồn tại.';
         }
         if (!in_array($visibility, ['private', 'public'], true)) {
             $visibility = 'private';
@@ -350,6 +354,9 @@ class DocumentController
             }
 
             Upload::delete($doc['file_path']);
+            foreach (glob(STORAGE_TEMP . '/preview_doc_' . $id . '-*.png') ?: [] as $cached) {
+                @unlink($cached);
+            }
 
             $updateData['file_path']          = $pdfResult['path'];
             $updateData['original_file_name'] = $pdfResult['original'];
@@ -450,6 +457,11 @@ class DocumentController
             return;
         }
 
+        if (!in_array($doc['moderation_status'], ['not_submitted', 'rejected'], true)) {
+            redirect('?module=documents&action=show&id=' . $id, 'Tài liệu này không ở trạng thái có thể gửi duyệt.', 'error');
+            return;
+        }
+
         $this->model->submitForReview($id);
 
         $redirectTo = post('redirect_to');
@@ -471,6 +483,11 @@ class DocumentController
         }
 
         Auth::requireOwnerOrAdmin((int) $doc['user_id']);
+
+        if ($doc['moderation_status'] === 'hidden') {
+            redirect('?module=documents&action=show&id=' . $id, 'Tài liệu này đã bị quản trị viên khóa do vi phạm.', 'error');
+            return;
+        }
 
         $this->model->revokeShare($id);
 

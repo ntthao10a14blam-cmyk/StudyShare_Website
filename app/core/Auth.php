@@ -101,7 +101,7 @@ class Auth
     public static function requireLogin(): void
     {
         if (!self::check()) {
-            self::redirect('/auth/login', 'Vui lòng đăng nhập để tiếp tục.');
+            self::redirect('/?module=auth&action=login', 'Vui lòng đăng nhập để tiếp tục.');
         }
     }
 
@@ -110,7 +110,7 @@ class Auth
         self::requireLogin();
         if ($_SESSION[self::KEY_STATUS] === 'locked') {
             self::logout();
-            self::redirect('/auth/login', 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.');
+            self::redirect('/?module=auth&action=login', 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.');
         }
     }
 

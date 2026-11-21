@@ -119,6 +119,14 @@ if (!function_exists('mdPlainPreview')) {
             'color' => '#dc2626',
             'items' => [],
         ],
+        'hidden' => [
+            'label' => '5. Bị ẩn do vi phạm',
+            'empty' => 'Không có tài liệu nào bị ẩn.',
+            'icon'  => 'bi-eye-slash-fill',
+            'bg'    => '#e5e7eb',
+            'color' => '#374151',
+            'items' => [],
+        ],
         'not_submitted' => [
             'label' => '4. Bản nháp',
             'empty' => 'Chưa có bản nháp nào.',
@@ -224,7 +232,7 @@ if (!function_exists('mdPlainPreview')) {
                                               onsubmit="return confirm('Bạn có chắc muốn gửi tài liệu này để ban quản trị phê duyệt?');">
                                             <?php csrfField(); ?>
                                             <input type="hidden" name="id" value="<?= $doc['id'] ?>">
-                                            <input type="hidden" name="redirect_to" value="<?= h($_SERVER['REQUEST_URI'] ?? '?module=documents&action=index') ?>">
+                                            <input type="hidden" name="redirect_to" value="<?= h('?' . ($_SERVER['QUERY_STRING'] ?? 'module=documents&action=index')) ?>">
                                             <button type="submit" class="btn btn-outline-success btn-sm py-1 px-2" title="Gửi yêu cầu duyệt">
                                                 <i class="bi bi-send-check"></i>
                                             </button>
@@ -234,7 +242,7 @@ if (!function_exists('mdPlainPreview')) {
                                               onsubmit="return confirm('Thu hồi tài liệu về chế độ riêng tư?');">
                                             <?php csrfField(); ?>
                                             <input type="hidden" name="id" value="<?= $doc['id'] ?>">
-                                            <input type="hidden" name="redirect_to" value="<?= h($_SERVER['REQUEST_URI'] ?? '?module=documents&action=index') ?>">
+                                            <input type="hidden" name="redirect_to" value="<?= h('?' . ($_SERVER['QUERY_STRING'] ?? 'module=documents&action=index')) ?>">
                                             <button type="submit" class="btn btn-outline-warning btn-sm py-1 px-2" title="Thu hồi về riêng tư">
                                                 <i class="bi bi-lock"></i>
                                             </button>
