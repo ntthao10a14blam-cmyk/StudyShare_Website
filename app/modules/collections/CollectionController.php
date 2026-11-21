@@ -1,26 +1,5 @@
 <?php
-/**
- * COLLECTIONCONTROLLER.PHP — Bộ sưu tập và yêu thích
- * Phụ trách: TV4
- *
- * Actions:
- *   index       — Danh sách bộ sưu tập của tôi
- *   create      — Form tạo bộ sưu tập
- *   store       — Lưu bộ sưu tập mới
- *   show        — Chi tiết bộ sưu tập (danh sách tài liệu)
- *   edit        — Sửa tên/mô tả bộ sưu tập
- *   update      — Cập nhật
- *   delete      — Xóa bộ sưu tập
- *   addDoc      — Thêm tài liệu vào bộ sưu tập
- *   removeDoc   — Bỏ tài liệu khỏi bộ sưu tập
- *   favorites   — Danh sách tài liệu yêu thích
- *   toggleFav   — Lưu / bỏ lưu yêu thích
- *
- * Lưu ý bắt buộc:
- *   - Khi mở tài liệu trong bộ sưu tập: kiểm tra tài liệu còn approved không
- *   - Lưu bộ sưu tập không thay đổi quyền truy cập tài liệu
- *   - Tài liệu bị thu hồi / ẩn: vẫn còn trong DB collection_documents nhưng không xem được
- */
+
 require_once __DIR__ . '/CollectionModel.php';
 
 class CollectionController
