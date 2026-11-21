@@ -62,9 +62,17 @@ $currentAction = preg_replace('/[^a-z0-9_-]/i', '', get('action', 'index'));
                 <a class="<?= $currentModule === 'documents' ? 'active' : '' ?>" href="<?= url('?module=documents&action=index') ?>">
                     <i class="bi bi-file-earmark-person"></i> Tài liệu của tôi
                 </a>
-                <a class="<?= $currentModule === 'collections' ? 'active' : '' ?>" href="<?= url('?module=collections&action=index') ?>">
-                    <i class="bi bi-collection"></i> Bộ sưu tập
-                </a>
+              
+<a class="<?= $currentModule === 'collections' && $currentAction !== 'favorites' ? 'active' : '' ?>"
+   href="<?= url('?module=collections&action=index') ?>">
+    <i class="bi bi-collection"></i> Bộ sưu tập
+</a>
+ 
+<a class="<?= $currentModule === 'collections' && $currentAction === 'favorites' ? 'active' : '' ?>"
+   href="<?= url('?module=collections&action=favorites') ?>">
+    <i class="bi bi-bookmark-heart"></i> Yêu thích
+</a>
+                
             <?php endif; ?>
         </nav>
 
