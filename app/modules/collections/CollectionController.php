@@ -102,7 +102,11 @@ class CollectionController
                 if (!$this->model->accessibleDocument($documentId, $this->userId)) {
                     $this->fail('Tài liệu không tồn tại hoặc bạn không có quyền truy cập.');
                 }
-                $this->model->addDocument((int) $collection['id'], $documentId);
+                $this->model->addDocument((int) $collection['id'], $documentId);            
+                setFlash(
+                    'Đã lưu tài liệu vào bộ sưu tập "' . $collection['name'] . '" thành công!',
+                    'success'
+                );
                 $this->returnAfterSave($documentId, 'show', (int) $collection['id']);
                 break;
             case 'removeDocument':
