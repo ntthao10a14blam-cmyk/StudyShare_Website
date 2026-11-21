@@ -36,8 +36,10 @@ class CommunityModel
         }
 
         if (!empty($filters['keyword'])) {
-            $sql .= " AND (d.title LIKE :keyword OR d.description LIKE :keyword)";
-            $params[':keyword'] = '%' . trim($filters['keyword']) . '%';
+            $sql .= " AND (d.title LIKE :keyword_title OR d.description LIKE :keyword_description)";
+            $keyword = '%' . trim($filters['keyword']) . '%';
+            $params[':keyword_title'] = $keyword;
+            $params[':keyword_description'] = $keyword;
         }
 
         if (!empty($filters['subject_id'])) {
@@ -94,8 +96,10 @@ class CommunityModel
         }
 
         if (!empty($filters['keyword'])) {
-            $sql .= " AND (d.title LIKE :keyword OR d.description LIKE :keyword)";
-            $params[':keyword'] = '%' . trim($filters['keyword']) . '%';
+            $sql .= " AND (d.title LIKE :keyword_title OR d.description LIKE :keyword_description)";
+            $keyword = '%' . trim($filters['keyword']) . '%';
+            $params[':keyword_title'] = $keyword;
+            $params[':keyword_description'] = $keyword;
         }
 
         if (!empty($filters['subject_id'])) {
