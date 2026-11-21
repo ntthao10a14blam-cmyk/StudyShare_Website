@@ -8,7 +8,7 @@ class AdminModel
     {
         $this->db = Database::getInstance();
     }
-    // Thống kê tổng quan
+
     public function countUsers(): int
     {
         return (int) $this->db->query(
@@ -187,8 +187,6 @@ class AdminModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Truy vấn dùng chung để lấy nội dung báo cáo
-
     private function getReportSelectSql(): string
     {
     return "
@@ -288,8 +286,6 @@ class AdminModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Quản lý tài khoản
-
     public function getUsers(
         string $keyword = '',
         int $page = 1,
@@ -380,8 +376,6 @@ class AdminModel
 
         return $stmt->rowCount() > 0;
     }
-
-    // Quản lý môn học
 
     public function getSubjects(): array
     {
@@ -494,8 +488,6 @@ class AdminModel
         )->fetchColumn();
     }
 
-    // Quản lý thẻ
-
     public function getTags(): array
     {
         $stmt = $this->db->query("
@@ -580,8 +572,6 @@ class AdminModel
 
         return $stmt->rowCount() > 0;
     }
-
-    // Quản lý tài liệu
 
     public function getPendingDocuments(): array
     {
@@ -733,8 +723,6 @@ class AdminModel
         }
     }
 
-    // Ẩn tài liệu đang được công khai
-
     public function hidePublicDocument(
         int $documentId,
         int $adminId,
@@ -747,8 +735,6 @@ class AdminModel
             $reason
         );
     }
-
-    // Quản lý báo cáo
 
     public function getReports(string $status = ''): array
     {
@@ -848,8 +834,6 @@ class AdminModel
             throw $e;
         }
     }
-
-    // Ẩn nội dung bị báo cáo và đóng báo cáo
 
     public function hideReportedContent(
         int $reportId,
@@ -994,7 +978,6 @@ class AdminModel
                 throw new RuntimeException('Không thể cập nhật trạng thái báo cáo.');
             }
 
-            // Tự động đóng các báo cáo đang chờ khác cùng nội dung đã ẩn
             $targetCol = null;
             $targetVal = null;
             foreach (['document_id', 'question_id', 'answer_id', 'comment_id'] as $col) {

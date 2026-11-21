@@ -1,6 +1,4 @@
-/* =========================================================
-   STUDYSHARE ADMIN
-   ========================================================= */
+
 
 :root {
     --admin-primary: #4f46e5;
@@ -29,10 +27,6 @@
     --admin-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
 }
 
-/* =========================================================
-   PAGE
-   ========================================================= */
-
 .admin-page {
     min-height: calc(100vh - 70px);
     background: var(--admin-bg);
@@ -44,10 +38,6 @@
     max-width: 1400px;
     margin: 0 auto;
 }
-
-/* =========================================================
-   PAGE HEADER
-   ========================================================= */
 
 .page-header {
     display: flex;
@@ -70,10 +60,6 @@
     color: var(--admin-muted);
     font-size: 14px;
 }
-
-/* =========================================================
-   BUTTONS
-   ========================================================= */
 
 .btn-primary,
 .btn-secondary,
@@ -146,10 +132,6 @@
     background: #e5e7eb;
 }
 
-/* =========================================================
-   STAT CARDS
-   ========================================================= */
-
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -198,10 +180,6 @@
     font-weight: 750;
 }
 
-/* =========================================================
-   SECTION
-   ========================================================= */
-
 .admin-section {
     margin-bottom: 28px;
 }
@@ -236,10 +214,6 @@
 .view-all:hover {
     text-decoration: underline;
 }
-
-/* =========================================================
-   TABLE CARD
-   ========================================================= */
 
 .table-card {
     overflow-x: auto;
@@ -313,10 +287,6 @@
     color: var(--admin-text);
 }
 
-/* =========================================================
-   STATUS
-   ========================================================= */
-
 .status,
 .tag {
     display: inline-flex;
@@ -362,10 +332,6 @@
     background: var(--admin-primary-light);
 }
 
-/* =========================================================
-   ACTIONS
-   ========================================================= */
-
 .action-buttons {
     display: flex;
     align-items: center;
@@ -376,10 +342,6 @@
 .action-buttons form {
     margin: 0;
 }
-
-/* =========================================================
-   SEARCH / FILTER
-   ========================================================= */
 
 .admin-toolbar {
     display: flex;
@@ -427,10 +389,6 @@
     min-width: 170px;
 }
 
-/* =========================================================
-   FORM
-   ========================================================= */
-
 .admin-form {
     display: grid;
     gap: 16px;
@@ -457,10 +415,6 @@
     resize: vertical;
 }
 
-/* =========================================================
-   EMPTY STATE
-   ========================================================= */
-
 .empty-state {
     padding: 55px 20px;
     text-align: center;
@@ -482,10 +436,6 @@
     margin: 0;
     font-size: 13px;
 }
-
-/* =========================================================
-   MODAL
-   ========================================================= */
 
 .admin-modal {
     position: fixed;
@@ -560,10 +510,6 @@
     }
 }
 
-/* =========================================================
-   TOAST
-   ========================================================= */
-
 .admin-toast {
     position: fixed;
     right: 25px;
@@ -586,10 +532,6 @@
     opacity: 1;
     transform: translateY(0);
 }
-
-/* =========================================================
-   PAGINATION
-   ========================================================= */
 
 .pagination {
     display: flex;
@@ -621,10 +563,6 @@
     background: var(--admin-primary);
     border-color: var(--admin-primary);
 }
-
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
 
 @media (max-width: 1100px) {
     .stats-grid {
@@ -765,13 +703,6 @@
     }
 }
 
-/* =========================================================
-   COMPATIBILITY - ADMIN VIEWS TV6
-   Bổ sung class cho các trang Admin mới
-   ========================================================= */
-
-/* ==================== STAT CARDS ==================== */
-
 .admin-stat-card {
     display: flex;
     align-items: center;
@@ -815,8 +746,6 @@
     font-weight: 750;
 }
 
-/* ==================== PANELS ==================== */
-
 .admin-panel {
     margin-bottom: 25px;
     overflow: hidden;
@@ -854,8 +783,6 @@
     font-size: 13px;
 }
 
-/* ==================== TABLE ==================== */
-
 .admin-panel .admin-table {
     min-width: 750px;
     margin-bottom: 0;
@@ -888,8 +815,6 @@
     border-bottom: 0;
 }
 
-/* ==================== USER AVATAR ==================== */
-
 .admin-user-avatar {
     width: 40px;
     height: 40px;
@@ -903,8 +828,6 @@
     font-size: 16px;
     font-weight: 750;
 }
-
-/* ==================== PAGINATION ==================== */
 
 .admin-pagination {
     display: flex;
@@ -936,8 +859,6 @@
     color: #9ca3af;
 }
 
-/* ==================== FORMS ==================== */
-
 .admin-panel .form-control,
 .admin-panel .form-select,
 .admin-page .modal .form-control,
@@ -955,8 +876,6 @@
     border-color: var(--admin-primary);
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
-
-/* ==================== MODALS ==================== */
 
 .admin-page .modal-content {
     overflow: hidden;
@@ -985,8 +904,6 @@
     border-top: 1px solid var(--admin-border);
 }
 
-/* ==================== BUTTONS ==================== */
-
 .admin-page .btn {
     border-radius: 8px;
     font-size: 13px;
@@ -1003,14 +920,10 @@
     border-color: var(--admin-primary-dark);
 }
 
-/* ==================== ALERTS ==================== */
-
 .admin-page .alert {
     border-radius: 10px;
     font-size: 14px;
 }
-
-/* ==================== RESPONSIVE ==================== */
 
 @media (max-width: 768px) {
     .admin-page {
@@ -1050,10 +963,6 @@
         margin: 12px;
     }
 }
-
-/* =========================================================
-   CLEOPATRA-INSPIRED ADMIN DASHBOARD LAYOUT
-   ========================================================= */
 
 .admin-dash-shell {
     display: flex;
@@ -1175,7 +1084,6 @@
     padding: 22px;
 }
 
-/* Row 1: Top 3-column grid */
 .dash-top-grid {
     display: grid;
     grid-template-columns: minmax(260px, 1.05fr) minmax(320px, 1.45fr) minmax(240px, 0.95fr);
@@ -1259,7 +1167,6 @@
     opacity: 0.95;
 }
 
-/* Middle Chart Card */
 .dash-chart-card {
     display: flex;
     flex-direction: column;
@@ -1353,7 +1260,6 @@
     margin-right: 5px;
 }
 
-/* Right Stacked Cards */
 .dash-right-stack {
     display: flex;
     flex-direction: column;
@@ -1439,7 +1345,6 @@
     margin-top: 8px;
 }
 
-/* Row 2: 5 Compact KPI Cards */
 .dash-kpi-grid {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -1476,7 +1381,6 @@
     margin: 0;
 }
 
-/* Row 3: Bottom 2 Table Cards */
 .dash-bottom-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
@@ -1588,10 +1492,6 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
-
-/* =========================================================
-   COLORED TOP ACCENT BORDER FOR ADMIN CARDS & PANELS
-   ========================================================= */
 
 .admin-stat-card,
 .stat-card,

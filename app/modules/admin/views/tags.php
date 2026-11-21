@@ -11,7 +11,6 @@ $csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
 <div class="admin-page">
     <div class="admin-content">
 
-        <!-- HEADER -->
         <div class="page-header">
             <div>
                 <h1>
@@ -30,7 +29,6 @@ $csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
             </button>
         </div>
 
-        <!-- THÔNG BÁO -->
         <?php if (!empty($_SESSION['success'])): ?>
             <div class="alert alert-success alert-dismissible fade show">
                 <i class="bi bi-check-circle-fill"></i>
@@ -49,7 +47,6 @@ $csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
             <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
 
-        <!-- DANH SÁCH TAGS -->
         <div class="admin-panel">
 
             <div class="admin-panel-header">
@@ -125,7 +122,6 @@ $csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-2">
 
-                                        <!-- SỬA -->
                                         <button
                                             type="button"
                                             class="btn btn-sm btn-outline-primary"
@@ -138,7 +134,6 @@ $csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
                                             Sửa
                                         </button>
 
-                                        <!-- XÓA -->
                                         <form
                                             method="POST"
                                             action="<?= url('?module=admin&action=deleteTag') ?>"
@@ -173,7 +168,6 @@ $csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
     </div>
 </div>
 
-<!-- MODAL THÊM TAG -->
 <div class="modal fade" id="addTagModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -232,7 +226,6 @@ $csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
     </div>
 </div>
 
-<!-- MODAL SỬA TAG -->
 <div class="modal fade" id="editTagModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">

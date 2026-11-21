@@ -1,8 +1,5 @@
 <?php
-/**
- * EDIT.PHP — Chỉnh sửa tài liệu cá nhân
- * Phụ trách: TV2
- */
+
 $pageTitle = $pageTitle ?? ('Sửa: ' . $doc['title']);
 require_once BASE_PATH . '/app/views/layouts/header.php';
 
@@ -10,7 +7,6 @@ $errors   = $_SESSION['form_errors'] ?? [];
 $formData = $_SESSION['form_data']   ?? [];
 unset($_SESSION['form_errors'], $_SESSION['form_data']);
 
-// Giá trị hiển thị trong form: ưu tiên dữ liệu người dùng vừa nhập (khi validate lỗi), nếu không dùng dữ liệu DB
 $f = [
     'title'       => $formData['title']       ?? $doc['title'],
     'subject_id'  => $formData['subject_id']  ?? $doc['subject_id'],
@@ -21,13 +17,11 @@ $f = [
 if (is_array($f['tags'])) { $f['tags'] = implode(', ', $f['tags']); }
 ?>
 
-<!-- EasyMDE Markdown Editor (CDN) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
 <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
 
 <div class="container py-4">
 
-    <!-- BREADCRUMB -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb small">
             <li class="breadcrumb-item"><a href="<?= url('/') ?>">Trang chủ</a></li>
@@ -37,7 +31,6 @@ if (is_array($f['tags'])) { $f['tags'] = implode(', ', $f['tags']); }
         </ol>
     </nav>
 
-    <!-- TIÊU ĐỀ TRANG -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="page-title mb-1">Chỉnh sửa tài liệu</h1>
@@ -48,7 +41,6 @@ if (is_array($f['tags'])) { $f['tags'] = implode(', ', $f['tags']); }
         </a>
     </div>
 
-    <!-- CẢNH BÁO QUY ĐỊNH DUYỆT LẠI (NẾU TÀI LIỆU ĐANG APPROVED) -->
     <?php if ($doc['moderation_status'] === 'approved'): ?>
         <div class="alert alert-info d-flex align-items-center gap-2 small mb-4 py-2" role="alert">
             <i class="bi bi-info-circle-fill fs-5"></i>
@@ -59,7 +51,6 @@ if (is_array($f['tags'])) { $f['tags'] = implode(', ', $f['tags']); }
         </div>
     <?php endif; ?>
 
-    <!-- KHUNG FORM CHỈNH SỬA -->
     <div class="row justify-content-center">
         <div class="col-12 col-lg-10">
             <form method="POST" action="<?= url('?module=documents&action=update') ?>"
@@ -67,7 +58,6 @@ if (is_array($f['tags'])) { $f['tags'] = implode(', ', $f['tags']); }
                 <?php csrfField(); ?>
                 <input type="hidden" name="id" value="<?= $doc['id'] ?>">
 
-                <!-- 1. TIÊU ĐỀ VÀ MÔN HỌC -->
                 <div class="row g-3 mb-3">
                     <div class="col-12 col-md-8">
                         <label for="titleInput" class="form-label fw-semibold">
@@ -100,7 +90,6 @@ if (is_array($f['tags'])) { $f['tags'] = implode(', ', $f['tags']); }
                     </div>
                 </div>
 
-                <!-- 2. THAY THẾ FILE PDF (NẾU CẦN) -->
                 <div class="mb-4 p-3 rounded border bg-light-subtle">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <label class="form-label fw-semibold mb-0">File tài liệu hiện tại</label>
@@ -125,7 +114,6 @@ if (is_array($f['tags'])) { $f['tags'] = implode(', ', $f['tags']); }
                     <?php endif; ?>
                 </div>
 
-                <!-- 3. QUẢN LÝ ẢNH MINH HOẠ ĐÃ CÓ -->
                 <?php if (!empty($images)): ?>
                     <div class="mb-4 p-3 rounded border bg-light-subtle" id="existingImagesSection">
                         <label class="form-label fw-semibold mb-2">
@@ -173,7 +161,6 @@ if (is_array($f['tags'])) { $f['tags'] = implode(', ', $f['tags']); }
                     </script>
                 <?php endif; ?>
 
-                <!-- 4. THÊM ẢNH MINH HOẠ MỚI -->
                 <div class="mb-4">
                     <label for="imagesInput" class="form-label fw-semibold">
                         Thêm ảnh minh hoạ mới <small class="text-muted fw-normal">(Tối đa 10 ảnh toàn bộ)</small>
@@ -182,7 +169,6 @@ if (is_array($f['tags'])) { $f['tags'] = implode(', ', $f['tags']); }
                            accept="image/jpeg,image/png,image/webp,image/gif" class="form-control form-control-sm">
                 </div>
 
-                <!-- 5. MÔ TẢ NỘI DUNG -->
                 <div class="mb-4">
                     <label for="descriptionInput" class="form-label fw-semibold">
                         Mô tả tài liệu
@@ -192,7 +178,6 @@ if (is_array($f['tags'])) { $f['tags'] = implode(', ', $f['tags']); }
                               placeholder="Mô tả nội dung chi tiết..."><?= h($f['description']) ?></textarea>
                 </div>
 
-                <!-- 6. TỪ KHOÁ (TAGS) -->
                 <div class="mb-4">
                     <label for="tagsInput" class="form-label fw-semibold">
                         Từ khoá (phân cách bởi dấu phẩy)
@@ -203,10 +188,9 @@ if (is_array($f['tags'])) { $f['tags'] = implode(', ', $f['tags']); }
                            placeholder="bài tập, ôn thi, lý thuyết...">
                 </div>
 
-                <!-- 7. CHẾ ĐỘ HIỂN THỊ -->
                 <div class="p-3 mb-4 rounded border bg-light-subtle">
                     <div class="fw-semibold text-dark mb-2">Chế độ chia sẻ</div>
-                    
+
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="radio" name="visibility" id="visPrivate" value="private"
                                <?= $f['visibility'] === 'private' ? 'checked' : '' ?>>
@@ -224,7 +208,6 @@ if (is_array($f['tags'])) { $f['tags'] = implode(', ', $f['tags']); }
                     </div>
                 </div>
 
-                <!-- 8. NÚT SUBMIT -->
                 <div class="d-flex justify-content-end gap-2 pt-2 border-top">
                     <a href="<?= url('?module=documents&action=show&id=' . $doc['id']) ?>" class="btn btn-light-subtle btn-sm px-4">
                         Hủy
@@ -243,7 +226,7 @@ if (is_array($f['tags'])) { $f['tags'] = implode(', ', $f['tags']); }
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Khởi tạo Markdown Editor (EasyMDE) cho mô tả tài liệu
+
     const descTextarea = document.getElementById('descriptionInput');
     let easyMDE = null;
     if (descTextarea && typeof EasyMDE !== 'undefined') {
@@ -263,7 +246,6 @@ document.addEventListener('DOMContentLoaded', function() {
             ]
         });
 
-        // Đảm bảo đồng bộ dữ liệu vào textarea trước khi submit form
         const form = descTextarea.closest('form');
         if (form) {
             form.addEventListener('submit', function() {

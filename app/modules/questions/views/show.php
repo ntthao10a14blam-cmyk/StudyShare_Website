@@ -1,9 +1,5 @@
 <?php
-/**
- * Chi tiết câu hỏi + câu trả lời — TV5
- * Biến: $question, $tags, $images, $answers, $isOwner, $isAdmin, $canAnswer,
- *       $currentUid, $reportReasons
- */
+
 $pageTitle = $pageTitle ?? 'Chi tiết câu hỏi';
 require_once BASE_PATH . '/app/views/layouts/header.php';
 
@@ -11,7 +7,6 @@ $qid      = (int) $question['id'];
 $accepted = $question['accepted_answer_id'] !== null;
 $self     = url('?module=questions&action=show&id=' . $qid);
 
-/** Avatar nhỏ: ảnh nếu có, không thì icon */
 $avatar = function (?string $path, string $name): string {
     if ($path) {
         return '<img class="avatar avatar-sm" src="' . h(storageUrl($path)) . '" alt="' . h($name) . '">';
@@ -29,7 +24,6 @@ $avatar = function (?string $path, string $name): string {
         </ol>
     </nav>
 
-    <!-- CÂU HỎI -->
     <article class="card card-body mb-4">
         <?php if ($question['status'] === 'hidden'): ?>
             <div class="alert alert-warning py-2">Câu hỏi này đang bị quản trị viên ẩn — chỉ bạn và admin nhìn thấy.</div>
@@ -52,7 +46,6 @@ $avatar = function (?string $path, string $name): string {
             <?php endforeach; ?>
         </div>
 
-        <!-- Hiển thị an toàn: escape HTML rồi mới đổi xuống dòng -->
         <div class="q-body md-render mb-3"><?= h($question['content']) ?></div>
 
         <?php if ($images): ?>
@@ -72,7 +65,6 @@ $avatar = function (?string $path, string $name): string {
             <?php endif; ?>
         <?php endif; ?>
 
-        <!-- Thao tác -->
         <div class="d-flex flex-wrap gap-2 border-top pt-3">
             <?php if ($isOwner): ?>
                 <a class="btn btn-sm btn-outline-primary" href="<?= url('?module=questions&action=edit&id=' . $qid) ?>">
@@ -97,7 +89,6 @@ $avatar = function (?string $path, string $name): string {
         </div>
     </article>
 
-    <!-- CÂU TRẢ LỜI -->
     <h2 class="h5 mb-3"><?= count($answers) ?> câu trả lời</h2>
 
     <div class="d-flex flex-column gap-3 mb-4">
@@ -173,7 +164,6 @@ $avatar = function (?string $path, string $name): string {
     <?php endforeach; ?>
     </div>
 
-    <!-- FORM TRẢ LỜI -->
     <?php if ($canAnswer): ?>
         <div class="card card-body" id="answer-form">
             <h2 class="h5">Câu trả lời của bạn</h2>
@@ -191,8 +181,6 @@ $avatar = function (?string $path, string $name): string {
         </div>
     <?php endif; ?>
 
-
-<!-- MODAL BÁO CÁO (dùng chung cho câu hỏi và câu trả lời; questions.js điền target) -->
 <?php if (Auth::isActive()): ?>
 <div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
@@ -226,7 +214,6 @@ $avatar = function (?string $path, string $name): string {
 <?php endif; ?>
 </div>
 
-<!-- Thư viện Editor + hiển thị Markdown (nạp trước questions.js ở footer) -->
 <script src="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>

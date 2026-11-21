@@ -1,8 +1,4 @@
 <?php
-/**
- * COMMUNITYCONTROLLER.PHP — Tài liệu công khai, chia sẻ, bình luận
- * Phụ trách: TV3
- */
 
 require_once BASE_PATH . '/app/modules/community/CommunityModel.php';
 
@@ -23,13 +19,9 @@ class CommunityController
         $this->model = new CommunityModel();
     }
 
-    /**
-     * Danh sách tài liệu công khai (Guest + User)
-     * Thiết kế theo phong cách giao diện tailieu.vn & quy chuẩn UI StudyHub
-     */
     public function index(): void
     {
-        // Nhận tham số tìm kiếm, lọc & sắp xếp
+
         $keyword   = trim((string) get('keyword', ''));
         $subjectId = (int) get('subject_id', 0);
         $tagId     = (int) get('tag_id', 0);
@@ -42,20 +34,16 @@ class CommunityController
             'sort'       => $sort,
         ];
 
-        // Đếm tổng số lượng và phân trang
         $totalDocs = $this->model->countPublicDocuments($filters);
-        $perPage   = ITEMS_PER_PAGE; // 12
+        $perPage   = ITEMS_PER_PAGE;
         $pagination = paginate($totalDocs, $perPage);
 
-        // Lấy danh sách tài liệu
         $documents = $this->model->getPublicDocuments($filters, $pagination['limit'], $pagination['offset']);
 
-        // Dữ liệu cho Sidebar: Môn học, Tags, Thống kê
         $subjects = $this->model->getAllSubjectsWithCount();
         $tags     = $this->model->getPopularTags(15);
         $stats    = $this->model->getCommunityStats();
 
-        // Tên môn học hiện tại nếu đang lọc
         $currentSubject = null;
         if ($subjectId > 0) {
             foreach ($subjects as $s) {
@@ -72,10 +60,6 @@ class CommunityController
         require_once BASE_PATH . '/app/modules/community/views/index.php';
     }
 
-    /**
-     * Chi tiết tài liệu công khai (Guest + User xem; User bình luận)
-     * Thiết kế theo phong cách tailieu.vn & quy chuẩn UI StudyHub
-     */
     public function show(): void
     {
         $id = (int) get('id', 0);
@@ -89,8 +73,6 @@ class CommunityController
             redirect('?module=community&action=index', 'Không tìm thấy tài liệu yêu cầu.', 'error');
         }
 
-        // Kiểm tra quyền xem:
-        // Nếu không phải approved thì chỉ Admin hoặc chủ sở hữu mới xem được
         $isOwner = Auth::check() && (int) Auth::id() === (int) $document['user_id'];
         $isAdmin = Auth::isAdmin();
 
@@ -100,13 +82,11 @@ class CommunityController
             }
         }
 
-        // Lấy dữ liệu liên quan
         $images       = $this->model->getDocumentImages($id);
         $tags         = $this->model->getDocumentTags($id);
         $comments     = $this->model->getComments($id);
         $relatedDocs  = $this->model->getRelatedDocuments((int) $document['subject_id'], $id, 5);
 
-        // Lấy danh sách bộ sưu tập & trạng thái yêu thích của User (nếu đã đăng nhập)
         $userCollections = [];
         $isFavorited     = false;
         $tv4Token        = '';
@@ -129,17 +109,14 @@ class CommunityController
         }
 
         $pageTitle       = $document['title'];
-        $pageDescription = !empty($document['description']) 
-            ? mb_substr(strip_tags($document['description']), 0, 160) . '...' 
+        $pageDescription = !empty($document['description'])
+            ? mb_substr(strip_tags($document['description']), 0, 160) . '...'
             : 'Tài liệu học tập ' . $document['title'];
         $reportReasons = self::REPORT_REASONS;
 
         require_once BASE_PATH . '/app/modules/community/views/show.php';
     }
 
-    /**
-     * Tải xuống tài liệu công khai đã được duyệt (bắt buộc đăng nhập).
-     */
     public function download(): void
     {
         Auth::requireLogin();
@@ -218,9 +195,6 @@ class CommunityController
         exit;
     }
 
-    /**
-     * Thêm bình luận
-     */
     public function comment(): void
     {
         Auth::requireActiveUser();
@@ -241,9 +215,6 @@ class CommunityController
         redirect('?module=community&action=show&id=' . $documentId, 'Đã gửi bình luận thành công!', 'success');
     }
 
-    /**
-     * Sửa bình luận
-     */
     public function editComment(): void
     {
         Auth::requireActiveUser();
@@ -258,7 +229,6 @@ class CommunityController
             redirect('?module=community&action=show&id=' . $documentId, 'Bình luận không tồn tại.', 'error');
         }
 
-        // Kiểm tra quyền sở hữu
         if (!Auth::owns((int) $comment['user_id']) && !Auth::isAdmin()) {
             redirect('?module=community&action=show&id=' . $documentId, 'Bạn không có quyền sửa bình luận này.', 'error');
         }
@@ -271,9 +241,6 @@ class CommunityController
         redirect('?module=community&action=show&id=' . $documentId, 'Cập nhật bình luận thành công!', 'success');
     }
 
-    /**
-     * Xóa bình luận
-     */
     public function deleteComment(): void
     {
         Auth::requireActiveUser();
@@ -287,7 +254,6 @@ class CommunityController
             redirect('?module=community&action=show&id=' . $documentId, 'Bình luận không tồn tại.', 'error');
         }
 
-        // Kiểm tra quyền sở hữu hoặc Admin
         if (!Auth::owns((int) $comment['user_id']) && !Auth::isAdmin()) {
             redirect('?module=community&action=show&id=' . $documentId, 'Bạn không có quyền xóa bình luận này.', 'error');
         }
@@ -296,9 +262,6 @@ class CommunityController
         redirect('?module=community&action=show&id=' . $documentId, 'Đã xóa bình luận.', 'info');
     }
 
-    /**
-     * Báo cáo vi phạm (tài liệu hoặc bình luận)
-     */
     public function report(): void
     {
         Auth::requireActiveUser();
@@ -365,9 +328,6 @@ class CommunityController
         );
     }
 
-    /**
-     * Gửi duyệt chia sẻ tài liệu lên cộng đồng
-     */
     public function submit(): void
     {
         Auth::requireActiveUser();
@@ -392,9 +352,6 @@ class CommunityController
         redirect('?module=documents&action=index', 'Đã gửi yêu cầu duyệt chia sẻ tài liệu thành công!', 'success');
     }
 
-    /**
-     * Thu hồi chia sẻ tài liệu về riêng tư
-     */
     public function revoke(): void
     {
         Auth::requireActiveUser();

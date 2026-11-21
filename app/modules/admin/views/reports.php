@@ -31,7 +31,6 @@ $typeLabels = [
 <div class="admin-page">
     <div class="admin-content">
 
-        <!-- HEADER -->
         <div class="page-header">
             <div>
                 <h1>
@@ -42,7 +41,6 @@ $typeLabels = [
             </div>
         </div>
 
-        <!-- THÔNG BÁO -->
         <?php if (!empty($_SESSION['success'])): ?>
             <div class="alert alert-success alert-dismissible fade show">
                 <i class="bi bi-check-circle-fill"></i>
@@ -61,7 +59,6 @@ $typeLabels = [
             <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
 
-        <!-- LỌC TRẠNG THÁI -->
         <div class="admin-panel p-4 mb-4">
             <form method="GET" action="" class="row g-3 align-items-end">
 
@@ -108,7 +105,6 @@ $typeLabels = [
             </form>
         </div>
 
-        <!-- DANH SÁCH BÁO CÁO -->
         <div class="admin-panel">
 
             <div class="admin-panel-header">
@@ -218,7 +214,6 @@ $typeLabels = [
                                 <td>
                                     <div class="d-flex justify-content-center gap-2 flex-wrap">
 
-                                        <!-- XEM CHI TIẾT -->
                                         <button
                                             type="button"
                                             class="btn btn-sm btn-outline-primary"
@@ -251,7 +246,6 @@ $typeLabels = [
 
                                         <?php if ($isPending): ?>
 
-                                            <!-- XỬ LÝ VI PHẠM -->
                                             <button
                                                 type="button"
                                                 class="btn btn-sm btn-danger"
@@ -264,7 +258,6 @@ $typeLabels = [
                                                 Xử lý
                                             </button>
 
-                                            <!-- BỎ QUA -->
                                             <form
                                                 method="POST"
                                                 action="<?= url('?module=admin&action=handleReport') ?>"
@@ -304,7 +297,6 @@ $typeLabels = [
     </div>
 </div>
 
-<!-- MODAL CHI TIẾT BÁO CÁO -->
 <div class="modal fade" id="reportDetailModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -321,7 +313,7 @@ $typeLabels = [
 
             <div class="modal-body">
                 <div class="row g-4">
-                    <!-- Cột thông tin báo cáo & thông tin file -->
+
                     <div id="detailLeftCol" class="col-lg-5">
                         <div class="row g-2 mb-3">
                             <div class="col-6">
@@ -360,7 +352,6 @@ $typeLabels = [
                             </div>
                         </div>
 
-                        <!-- Lý do bị báo cáo -->
                         <div class="p-3 rounded border border-danger-subtle bg-danger-subtle mb-3">
                             <label class="text-danger small fw-semibold d-block mb-1">
                                 <i class="bi bi-exclamation-circle me-1"></i>Lý do bị báo cáo
@@ -370,7 +361,6 @@ $typeLabels = [
                             <div class="small bg-white p-2 rounded border" id="detailDetails"></div>
                         </div>
 
-                        <!-- Thông tin file tài liệu (hiển thị khi báo cáo tài liệu) -->
                         <div id="detailFileInfoBox" class="mb-3 d-none">
                             <label class="text-muted small fw-semibold d-block mb-2">
                                 <i class="bi bi-file-earmark-text me-1"></i>Thông tin tài liệu &amp; file
@@ -405,7 +395,6 @@ $typeLabels = [
                             </div>
                         </div>
 
-                        <!-- Nội dung text bị báo cáo (câu hỏi / câu trả lời / bình luận) -->
                         <div id="detailTextContentBox">
                             <div class="mb-2">
                                 <label class="text-muted small">Tiêu đề nội dung liên quan</label>
@@ -430,7 +419,6 @@ $typeLabels = [
                         </div>
                     </div>
 
-                    <!-- Cột phải: Xem trước file tài liệu -->
                     <div id="detailPreviewCol" class="col-lg-7 d-flex flex-column d-none">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <label class="text-muted small fw-semibold mb-0">
@@ -464,7 +452,6 @@ $typeLabels = [
     </div>
 </div>
 
-<!-- MODAL XỬ LÝ VI PHẠM -->
 <div class="modal fade" id="resolveReportModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">

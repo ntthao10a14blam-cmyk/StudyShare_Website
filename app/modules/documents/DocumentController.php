@@ -1,25 +1,4 @@
 <?php
-/**
- * DOCUMENTCONTROLLER.PHP — Quản lý tài liệu cá nhân
- * Phụ trách: TV2
- *
- * Actions:
- *   index       — Danh sách tài liệu của tôi (tìm kiếm, lọc, phân trang)
- *   create      — Form thêm tài liệu mới
- *   store       — Xử lý lưu tài liệu mới (upload PDF + nhiều ảnh + lưu DB)
- *   show        — Chi tiết tài liệu (xem trước PDF, ảnh, trạng thái duyệt)
- *   edit        — Form chỉnh sửa tài liệu
- *   update      — Xử lý cập nhật (kiểm tra thay đổi file/mô tả để đặt lại pending)
- *   delete      — Xóa mềm tài liệu
- *   submit      — Gửi yêu cầu duyệt tài liệu lên cộng đồng
- *   revoke      — Thu hồi tài liệu về chế độ riêng tư
- *   deleteImage — Xóa ảnh minh hoạ của tài liệu
- *
- * Tuân thủ quy tắc bảo mật & phân quyền:
- *   - Mọi action require Auth::requireActiveUser()
- *   - Kiểm tra Auth::owns() hoặc Auth::isAdmin() trước khi sửa/xóa
- *   - File PDF trong storage/ phục vụ qua serve.php an toàn
- */
 
 require_once BASE_PATH . '/app/modules/documents/DocumentModel.php';
 
@@ -32,14 +11,6 @@ class DocumentController
         $this->model = new DocumentModel();
     }
 
-
-    // ============================================================
-    // HÀM HỖ TRỢ NỘI BỘ
-    // ============================================================
-
-    /**
-     * Tự động kiểm tra và tạo thư mục nếu chưa có.
-     */
     private function ensureDir(string $dir): void
     {
         if (!is_dir($dir)) {
@@ -47,10 +18,6 @@ class DocumentController
         }
     }
 
-    /**
-     * Kiểm tra file PDF upload (lỗi upload, đuôi .pdf, MIME thực tế application/pdf).
-     * Không ghi file ra đĩa. Trả về null nếu hợp lệ, hoặc chuỗi thông báo lỗi.
-     */
     private function validatePdfUpload(array $pdfFile): ?string
     {
         if (($pdfFile['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
@@ -71,15 +38,11 @@ class DocumentController
         return null;
     }
 
-    /**
-     * Danh sách tài liệu cá nhân của user
-     */
     public function index(): void
     {
         Auth::requireActiveUser();
         $userId = Auth::id();
 
-        // 1. Lọc và tìm kiếm (hiển thị cả 4 danh sách trên 1 trang)
         $filters = [
             'q'          => get('q', ''),
             'subject_id' => get('subject_id', ''),
@@ -88,11 +51,9 @@ class DocumentController
             'sort'       => get('sort', 'newest'),
         ];
 
-        // 2. Lấy toàn bộ dữ liệu theo bộ lọc để chia 4 danh sách
         $totalDocs  = $this->model->countByUser($userId, $filters);
         $pagination = paginate($totalDocs, 200);
 
-        // 3. Lấy dữ liệu
         $documents = $this->model->findByUser(
             $userId,
             $filters,
@@ -100,10 +61,8 @@ class DocumentController
             $pagination['offset']
         );
 
-        // 4. Số liệu thống kê cá nhân
         $stats = $this->model->getUserStats($userId);
 
-        // 5. Danh mục môn học phục vụ lọc
         $subjects = $this->model->getAllSubjects();
 
         $pageTitle       = 'Tài liệu của tôi';
@@ -112,9 +71,6 @@ class DocumentController
         require_once BASE_PATH . '/app/modules/documents/views/index.php';
     }
 
-    /**
-     * Form tải lên tài liệu mới
-     */
     public function create(): void
     {
         Auth::requireActiveUser();
@@ -128,9 +84,6 @@ class DocumentController
         require_once BASE_PATH . '/app/modules/documents/views/create.php';
     }
 
-    /**
-     * Xử lý lưu tài liệu mới
-     */
     public function store(): void
     {
         Auth::requireActiveUser();
@@ -148,7 +101,6 @@ class DocumentController
         $userId = Auth::id();
         $errors = [];
 
-        // 1. Nhận dữ liệu POST
         $title            = post('title');
         $subjectId        = post('subject_id');
         $description      = post('description');
@@ -156,7 +108,6 @@ class DocumentController
         $submitForReview  = post('submit_for_review') === '1';
         $tagsInput        = post('tags', '');
 
-        // 2. Validate thông tin nhập
         if (empty($title)) {
             $errors['title'] = 'Vui lòng nhập tiêu đề tài liệu.';
         } elseif (mb_strlen($title, 'UTF-8') > 255) {
@@ -171,7 +122,6 @@ class DocumentController
             $visibility = 'private';
         }
 
-        // 3. Validate file PDF (Bắt buộc) — CHỈ kiểm tra, chưa lưu file lên storage
         $pdfFile = $_FILES['document_file'] ?? null;
         if (empty($pdfFile['name'])) {
             $errors['document_file'] = 'Vui lòng chọn file PDF để tải lên.';
@@ -182,7 +132,6 @@ class DocumentController
             }
         }
 
-        // 4. Nếu có lỗi, quay lại form tạo (chưa có file nào bị ghi ra đĩa)
         if (!empty($errors)) {
             $_SESSION['form_errors'] = $errors;
             $_SESSION['form_data']   = [
@@ -196,7 +145,6 @@ class DocumentController
             return;
         }
 
-        // 4b. Mọi dữ liệu đã hợp lệ → mới thực sự lưu file PDF
         $this->ensureDir(STORAGE_DOCUMENTS);
         $pdfResult = Upload::pdf($pdfFile, STORAGE_DOCUMENTS);
         if (!$pdfResult['success']) {
@@ -212,7 +160,6 @@ class DocumentController
             return;
         }
 
-        // 5. Xác định trạng thái duyệt ban đầu
         $moderationStatus = 'not_submitted';
         $submittedAt      = null;
 
@@ -221,7 +168,6 @@ class DocumentController
             $submittedAt      = date('Y-m-d H:i:s');
         }
 
-        // 6. Lưu bản ghi document vào database
         $documentId = $this->model->create([
             'title'              => $title,
             'description'        => $description,
@@ -235,7 +181,6 @@ class DocumentController
             'subject_id'         => (int) $subjectId,
         ]);
 
-        // 7. Xử lý upload ảnh minh hoạ (nếu có, tối đa MAX_IMAGES_PER_DOC ảnh)
         if (!empty($_FILES['images']['name'])) {
             $this->ensureDir(STORAGE_DOC_IMAGES);
             $imageFiles = Upload::normalizeMultiple($_FILES['images']);
@@ -249,7 +194,6 @@ class DocumentController
             }
         }
 
-        // 8. Đồng bộ từ khoá (tags)
         if (!empty($tagsInput)) {
             $this->model->syncTags($documentId, $tagsInput);
         }
@@ -261,9 +205,6 @@ class DocumentController
         redirect('?module=documents&action=show&id=' . $documentId, $msg, 'success');
     }
 
-    /**
-     * Xem chi tiết tài liệu cá nhân
-     */
     public function show(): void
     {
         Auth::requireActiveUser();
@@ -276,7 +217,6 @@ class DocumentController
             return;
         }
 
-        // Chỉ chủ sở hữu hoặc admin mới có quyền xem qua module cá nhân
         Auth::requireOwnerOrAdmin((int) $doc['user_id']);
 
         $images  = $this->model->getImages($id);
@@ -289,9 +229,6 @@ class DocumentController
         require_once BASE_PATH . '/app/modules/documents/views/show.php';
     }
 
-    /**
-     * Form chỉnh sửa tài liệu
-     */
     public function edit(): void
     {
         Auth::requireActiveUser();
@@ -306,7 +243,6 @@ class DocumentController
 
         Auth::requireOwnerOrAdmin((int) $doc['user_id']);
 
-        // Tài liệu bị ẩn do vi phạm không được phép sửa
         if ($doc['moderation_status'] === 'hidden') {
             redirect(
                 '?module=documents&action=show&id=' . $id,
@@ -328,9 +264,6 @@ class DocumentController
         require_once BASE_PATH . '/app/modules/documents/views/edit.php';
     }
 
-    /**
-     * Xử lý cập nhật tài liệu
-     */
     public function update(): void
     {
         Auth::requireActiveUser();
@@ -391,7 +324,6 @@ class DocumentController
         $fileChanged = false;
         $newPdfFile  = null;
 
-        // Validate file PDF mới (nếu có) TRƯỚC khi thay đổi bất cứ thứ gì
         if (!empty($_FILES['document_file']['name'])) {
             $newPdfFile = $_FILES['document_file'];
             $pdfError   = $this->validatePdfUpload($newPdfFile);
@@ -409,7 +341,6 @@ class DocumentController
             }
         }
 
-        // Mọi validate đã qua → lưu file PDF mới
         if ($newPdfFile !== null) {
             $this->ensureDir(STORAGE_DOCUMENTS);
             $pdfResult = Upload::pdf($newPdfFile, STORAGE_DOCUMENTS);
@@ -417,7 +348,7 @@ class DocumentController
                 redirect('?module=documents&action=edit&id=' . $id, $pdfResult['error'], 'error');
                 return;
             }
-            // Xoá file cũ khỏi storage
+
             Upload::delete($doc['file_path']);
 
             $updateData['file_path']          = $pdfResult['path'];
@@ -426,15 +357,10 @@ class DocumentController
             $fileChanged                      = true;
         }
 
-        // So sánh mô tả (chuẩn hóa dòng mới)
         $oldDesc = trim(str_replace(["\r\n", "\r"], "\n", (string) $doc['description']));
         $newDesc = trim(str_replace(["\r\n", "\r"], "\n", (string) $description));
         $descriptionChanged = ($oldDesc !== $newDesc);
 
-        // QUY TẮC BẮT BUỘC (Bảo toàn tính kiểm duyệt) + tôn trọng lựa chọn hiển thị của người dùng:
-        //  1. Người dùng chọn PRIVATE  → luôn về riêng tư, 'not_submitted' (không ép lại public/pending).
-        //  2. Tài liệu đã approved + đổi file PDF/mô tả (và vẫn public) → bắt buộc về 'pending'.
-        //  3. Tài liệu 'not_submitted' đang private mà chuyển sang PUBLIC → coi như gửi duyệt ('pending').
         $statusNotice = '';
         if ($visibility === 'private') {
             if ($doc['moderation_status'] !== 'not_submitted') {
@@ -455,10 +381,8 @@ class DocumentController
             $statusNotice = ' Tài liệu đã được gửi yêu cầu duyệt vì bạn chuyển sang chế độ công khai. Tài liệu sẽ hiển thị công khai sau khi Ban quản trị phê duyệt.';
         }
 
-        // Cập nhật database
         $this->model->update($id, $updateData);
 
-        // Xoá các ảnh được tích chọn xoá
         $deleteImageIds = $_POST['delete_images'] ?? [];
         if (is_array($deleteImageIds)) {
             foreach ($deleteImageIds as $imgId) {
@@ -466,7 +390,6 @@ class DocumentController
             }
         }
 
-        // Thêm ảnh minh hoạ mới nếu có
         if (!empty($_FILES['images']['name'])) {
             $this->ensureDir(STORAGE_DOC_IMAGES);
             $currentCount = $this->model->countImages($id);
@@ -482,16 +405,12 @@ class DocumentController
             }
         }
 
-        // Đồng bộ lại từ khoá
         $this->model->syncTags($id, $tagsInput);
 
         $flashType = !empty($statusNotice) ? 'warning' : 'success';
         redirect('?module=documents&action=show&id=' . $id, 'Đã cập nhật thông tin tài liệu thành công!' . $statusNotice, $flashType);
     }
 
-    /**
-     * Xóa mềm tài liệu
-     */
     public function delete(): void
     {
         Auth::requireActiveUser();
@@ -511,9 +430,6 @@ class DocumentController
         redirect('?module=documents&action=index', 'Tài liệu đã được xóa vào thùng rác thành công.', 'success');
     }
 
-    /**
-     * Gửi yêu cầu duyệt tài liệu lên cộng đồng
-     */
     public function submit(): void
     {
         Auth::requireActiveUser();
@@ -541,9 +457,6 @@ class DocumentController
         redirect($target, 'Đã gửi tài liệu yêu cầu ban quản trị phê duyệt!', 'success');
     }
 
-    /**
-     * Thu hồi tài liệu về chế độ riêng tư
-     */
     public function revoke(): void
     {
         Auth::requireActiveUser();
@@ -566,9 +479,6 @@ class DocumentController
         redirect($target, 'Đã thu hồi tài liệu về chế độ riêng tư.', 'info');
     }
 
-    /**
-     * Xoá một ảnh minh hoạ đơn lẻ
-     */
     public function deleteImage(): void
     {
         Auth::requireActiveUser();
@@ -590,7 +500,6 @@ class DocumentController
     }
 }
 
-// Hỗ trợ tương thích ngược cho router
 if (!class_exists('DocumentsController')) {
     class_alias('DocumentController', 'DocumentsController');
 }

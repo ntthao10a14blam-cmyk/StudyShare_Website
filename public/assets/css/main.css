@@ -1,71 +1,49 @@
-/*
- * MAIN.CSS — CSS chung của StudyHub (Chuẩn hoá theo phong cách Web Cộng đồng)
- *
- * Đồng bộ toàn diện:
- *   - Bảng màu: Xanh lá ngọc (#0b766e) + Điểm nhấn vàng pastel (#f5d77a) + Nền dịu mắt (#f8faf7)
- *   - Font chữ: Inter thống nhất toàn trang
- *   - Header & Footer: Đồng bộ phong cách tối giản (clean surface, border thanh lịch)
- *   - Format Web cộng đồng: Tối giản, gọn mắt, thoáng đãng, dễ tương tác
- */
 
-/* ============================================================
-   1. CSS VARIABLES — DESIGN TOKENS (BẢNG MÀU & FONT ĐỒNG BỘ)
-   ============================================================ */
+
 :root {
-    /* ===== MÀU CHỦ ĐẠO - XANH LÁ NGỌC ===== */
-    --color-primary:        #0b766e;       /* Xanh ngọc chủ đạo: nút chính, liên kết, icon */
-    --color-primary-dark:   #075e57;       /* Xanh ngọc đậm: navbar, hover nút chính */
-    --color-primary-light:  #d7efeb;       /* Xanh ngọc nhạt: nền banner, tag, vùng nổi bật */
-    --color-primary-border: #8bcbc1;       /* Viền xanh ngọc: ô tìm kiếm, input, card nổi bật */
 
-    /* ===== MÀU NHẤN - VÀNG NHẠT ===== */
-    --color-accent:         #f5d77a;       /* Vàng pastel: nút phụ, icon, điểm nhấn */
-    --color-accent-dark:    #e9c45f;       /* Vàng đậm hơn: hiệu ứng hover nút vàng */
-    --color-accent-light:   #fff3c4;       /* Vàng kem nhạt: nền badge, nhãn, danh mục */
-    --color-cream:          #fffcf3;       /* Trắng kem: nền các khu vực phụ */
+    --color-primary:        #0b766e;
+    --color-primary-dark:   #075e57;
+    --color-primary-light:  #d7efeb;
+    --color-primary-border: #8bcbc1;
 
-    /* ===== MÀU TRẠNG THÁI ===== */
-    --color-secondary:      #607d78;       /* Xám xanh: nút phụ, thành phần thứ cấp */
-    --color-success:        #27865b;       /* Xanh lá: thành công, tài liệu đã duyệt */
-    --color-danger:         #d65b5b;       /* Đỏ dịu: lỗi, xóa, cảnh báo nguy hiểm */
-    --color-warning:        #d99a35;       /* Vàng cam: cảnh báo, tài liệu chờ duyệt */
-    --color-info:           #287f9c;       /* Xanh dương: thông báo, hướng dẫn */
+    --color-accent:         #f5d77a;
+    --color-accent-dark:    #e9c45f;
+    --color-accent-light:   #fff3c4;
+    --color-cream:          #fffcf3;
 
-    /* ===== MÀU NỀN VÀ ĐƯỜNG VIỀN ===== */
-    --color-bg:             #f8faf7;       /* Nền tổng thể của website dịu mắt */
-    --color-surface:        #ffffff;       /* Nền trắng: card, form, bảng, hộp nội dung */
-    --color-border:         #d4e5e1;       /* Viền chính: card, input, bảng dữ liệu */
-    --color-border-subtle:  #eaf3f0;       /* Viền phụ: đường phân cách nhẹ */
+    --color-secondary:      #607d78;
+    --color-success:        #27865b;
+    --color-danger:         #d65b5b;
+    --color-warning:        #d99a35;
+    --color-info:           #287f9c;
 
-    /* ===== MÀU CHỮ ===== */
-    --color-text:           #203b38;       /* Chữ chính: tiêu đề, nội dung */
-    --color-text-muted:     #607d78;       /* Chữ phụ: mô tả, ngày đăng, tác giả */
-    --color-text-light:     #829c96;       /* Chữ ít quan trọng: chú thích, placeholder */
+    --color-bg:             #f8faf7;
+    --color-surface:        #ffffff;
+    --color-border:         #d4e5e1;
+    --color-border-subtle:  #eaf3f0;
 
-    /* ===== TYPOGRAPHY — FONT INTER THỐNG NHẤT ===== */
+    --color-text:           #203b38;
+    --color-text-muted:     #607d78;
+    --color-text-light:     #829c96;
+
     --font-family:          'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --font-size-base:       0.9375rem;     /* 15px chuẩn tỉ lệ */
-    --font-size-sm:         0.8125rem;     /* 13px */
-    --font-size-xs:         0.75rem;       /* 12px */
+    --font-size-base:       0.9375rem;
+    --font-size-sm:         0.8125rem;
+    --font-size-xs:         0.75rem;
 
-    /* ===== BORDER RADIUS ===== */
-    --border-radius-sm:     0.375rem;      /* 6px */
-    --border-radius:        0.5rem;        /* 8px chuẩn phẳng */
-    --border-radius-lg:     0.75rem;       /* 12px */
+    --border-radius-sm:     0.375rem;
+    --border-radius:        0.5rem;
+    --border-radius-lg:     0.75rem;
     --border-radius-pill:   50rem;
 
-    /* ===== BOX SHADOWS — NHẸ NHÀNG, KHÔNG ĐỔ BÓNG NẶNG NỀ ===== */
     --shadow-xs: 0 1px 2px 0 rgba(11, 118, 110, 0.04);
     --shadow-sm: 0 1px 3px 0 rgba(11, 118, 110, 0.08), 0 1px 2px -1px rgba(11, 118, 110, 0.06);
     --shadow-md: 0 4px 6px -1px rgba(11, 118, 110, 0.07), 0 2px 4px -2px rgba(11, 118, 110, 0.05);
 
-    /* ===== TRANSITION ===== */
     --transition: 0.15s ease-in-out;
 }
 
-/* ============================================================
-   2. RESET & BASE
-   ============================================================ */
 *,
 *::before,
 *::after {
@@ -90,7 +68,6 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* Vùng nội dung chính đẩy footer xuống chân trang */
 .main-content {
     flex: 1 0 auto;
     padding-bottom: 2.5rem;
@@ -121,9 +98,6 @@ img {
     height: auto;
 }
 
-/* ============================================================
-   3. TYPOGRAPHY ĐỒNG BỘ
-   ============================================================ */
 h1,
 h2,
 h3,
@@ -156,11 +130,6 @@ h6 {
     border-radius: 2px;
 }
 
-/* ============================================================
-   4. HEADER (NAVBAR) & FOOTER CHUẨN KHOTAILIEUSINHVIEN.COM
-   ============================================================ */
-
-/* --- 4.1. Topline (Thanh thông báo & Liên hệ trên cùng) --- */
 .public-topline {
     height: 36px;
     background-color: #0f3d56;
@@ -184,7 +153,6 @@ h6 {
     color: #ffffff;
 }
 
-/* --- 4.2. Main Header (Sticky header có viền vàng nổi bật) --- */
 .public-header {
     background: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(14px);
@@ -297,7 +265,6 @@ h6 {
     filter: brightness(1.05);
 }
 
-/* --- 4.3. Pre-Footer CTA (Băng kêu gọi tra cứu nhanh) --- */
 .footer-cta {
     padding: 42px 0 20px;
     background-color: #edf6f7;
@@ -338,7 +305,6 @@ h6 {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* --- 4.4. Public Footer (Chân trang 4 cột chuyên nghiệp) --- */
 .public-footer {
     background-color: #0b3448;
     color: #b8c5da;
@@ -426,7 +392,6 @@ h6 {
     color: #ffffff;
 }
 
-/* --- 4.5. Back to top button --- */
 .back-to-top {
     position: fixed;
     right: 24px;
@@ -480,11 +445,6 @@ h6 {
     }
 }
 
-/* ============================================================
-   5. COMPONENTS WEB CỘNG ĐỒNG (BASIC & GỌN MẮT)
-   ============================================================ */
-
-/* --- Card phẳng, gọn mắt --- */
 .card,
 .community-card {
     border: 1px solid var(--color-border);
@@ -511,7 +471,6 @@ h6 {
     padding: 1.15rem;
 }
 
-/* --- Feed List Item (Dạng danh sách gọn mắt như GitHub/Dev.to) --- */
 .feed-item {
     border: 1px solid var(--color-border);
     background-color: var(--color-surface);
@@ -547,7 +506,6 @@ h6 {
     gap: 0.85rem;
 }
 
-/* Thông báo khi chưa có tài liệu / bộ sưu tập */
 .empty-state {
     padding: 2rem 1rem;
     text-align: center;
@@ -557,7 +515,6 @@ h6 {
     border-radius: var(--border-radius);
 }
 
-/* --- Search Bar Tối Giản --- */
 .community-search-box {
     position: relative;
 }
@@ -583,7 +540,6 @@ h6 {
     pointer-events: none;
 }
 
-/* --- Tag & Badge --- */
 .badge-tag {
     display: inline-flex;
     align-items: center;
@@ -612,7 +568,6 @@ h6 {
     padding: 0.15rem 0.45rem;
 }
 
-/* Badge màu nhấn (Accent) */
 .badge-accent {
     display: inline-flex;
     align-items: center;
@@ -626,24 +581,23 @@ h6 {
     padding: 0.15rem 0.5rem;
 }
 
-/* Badge trạng thái */
 .badge-status-not_submitted {
-    background-color: #64748b; /* Bản nháp - Xám */
+    background-color: #64748b;
     color: #ffffff;
 }
 
 .badge-status-pending {
-    background-color: #d97706; /* Chờ duyệt - Vàng hổ phách */
+    background-color: #d97706;
     color: #ffffff;
 }
 
 .badge-status-approved {
-    background-color: #16a34a; /* Đã duyệt - Xanh lá */
+    background-color: #16a34a;
     color: #ffffff;
 }
 
 .badge-status-rejected {
-    background-color: #dc2626; /* Bị từ chối - Đỏ */
+    background-color: #dc2626;
     color: #ffffff;
 }
 
@@ -652,7 +606,6 @@ h6 {
     color: #ffffff;
 }
 
-/* EasyMDE Markdown Editor Theme Integration */
 .EasyMDEContainer {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
@@ -723,7 +676,6 @@ h6 {
     color: #fff;
 }
 
-/* --- Buttons --- */
 .btn {
     font-family: var(--font-family);
     font-weight: 500;
@@ -758,7 +710,6 @@ h6 {
     color: var(--color-primary-dark) !important;
 }
 
-/* Nút nhấn Accent (Vàng Pastel) */
 .btn-accent {
     background-color: var(--color-accent) !important;
     border-color: var(--color-accent-dark) !important;
@@ -784,7 +735,6 @@ h6 {
     color: var(--color-primary-dark);
 }
 
-/* Phân trang danh sách */
 .pagination .page-link {
     color: var(--color-primary);
     border-color: var(--color-border);
@@ -795,7 +745,6 @@ h6 {
     border-color: var(--color-primary);
 }
 
-/* --- Form Controls --- */
 .form-label {
     font-size: 0.875rem;
     font-weight: 500;
@@ -817,7 +766,6 @@ h6 {
     box-shadow: 0 0 0 3px rgba(11, 118, 110, 0.15);
 }
 
-/* --- Avatars --- */
 .avatar {
     width: 36px;
     height: 36px;
@@ -836,7 +784,6 @@ h6 {
     height: 56px;
 }
 
-/* --- Stat Box (Khối thống kê đơn giản) --- */
 .stat-box {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
@@ -859,7 +806,6 @@ h6 {
     font-size: 1.25rem;
 }
 
-/* --- Alerts --- */
 .alert {
     border-radius: var(--border-radius-sm);
     font-size: 0.875rem;
@@ -890,9 +836,6 @@ h6 {
     color: #92400e;
 }
 
-/* ============================================================
-   6. BOOTSTRAP OVERRIDES (ĐỒNG BỘ MÀU TOÀN DIỆN VỚI :root)
-   ============================================================ */
 .text-primary {
     color: var(--color-primary) !important;
 }
@@ -914,9 +857,6 @@ h6 {
     background-color: var(--color-cream) !important;
 }
 
-/* ============================================================
-   7. UTILITIES
-   ============================================================ */
 .text-truncate-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -943,7 +883,6 @@ h6 {
     object-fit: cover;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     .page-title {
         font-size: 1.2rem;
@@ -954,9 +893,6 @@ h6 {
     }
 }
 
-/* ============================================================
-   TRANG CHỦ (HOME V2 LAYOUT — MÀU PHẲNG NỔI BẬT, KHÔNG GRADIENT)
-   ============================================================ */
 .home-v2-hero {
     background-color: #075e57;
     color: #ffffff;

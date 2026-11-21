@@ -1,12 +1,8 @@
 <?php
-/**
- * Danh sách câu hỏi — TV5
- * Biến từ controller: $questions, $subjects, $tags, $filters, $pg, $total
- */
+
 $pageTitle = $pageTitle ?? 'Hỏi đáp học tập';
 require_once BASE_PATH . '/app/views/layouts/header.php';
 
-// Query string giữ nguyên bộ lọc khi chuyển trang
 $baseQuery = array_filter([
     'module'  => 'questions',
     'action'  => 'index',
@@ -17,7 +13,7 @@ $baseQuery = array_filter([
 ]);
 $hasFilter = $filters['q'] !== '' || $filters['subject_id'] || $filters['tag_id'] || $filters['status'] !== '';
 ?>
-<!-- 1. HERO BANNER ĐẦU TRANG (GIỐNG TÀI LIỆU CỦA TÔI) -->
+
 <section class="text-white py-5" style="background-color: #075e57; border-bottom: 3px solid #f5d77a;">
     <div class="container">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
@@ -42,7 +38,6 @@ $hasFilter = $filters['q'] !== '' || $filters['subject_id'] || $filters['tag_id'
             <?php endif; ?>
         </div>
 
-        <!-- THANH TÌM KIẾM VÀ BỘ LỌC NẰM TRONG HERO -->
         <div class="p-2 px-md-3 py-md-2 rounded-pill" style="background-color: #0b766e; border: 1px solid rgba(245, 215, 122, 0.4);">
             <form method="get" action="<?= url('/') ?>" class="row g-2 align-items-center">
                 <input type="hidden" name="module" value="questions">
@@ -94,7 +89,6 @@ $hasFilter = $filters['q'] !== '' || $filters['subject_id'] || $filters['tag_id'
 
 <div class="container py-4">
 
-    <!-- TAB LỌC THEO TRẠNG THÁI -->
     <ul class="nav nav-tabs q-tabs mb-3">
         <?php
         $tabs = ['' => 'Tất cả câu hỏi'];
@@ -114,7 +108,6 @@ $hasFilter = $filters['q'] !== '' || $filters['subject_id'] || $filters['tag_id'
 
     <p class="text-muted small mb-3"><?= (int) $total ?> câu hỏi</p>
 
-    <!-- DANH SÁCH -->
     <?php if (!$questions): ?>
         <div class="card card-body text-center text-muted py-5">
             <i class="bi bi-chat-square-dots display-5"></i>
@@ -165,7 +158,6 @@ $hasFilter = $filters['q'] !== '' || $filters['subject_id'] || $filters['tag_id'
         <?php endforeach; ?>
         </div>
 
-        <!-- PHÂN TRANG -->
         <?php if ($pg['pages'] > 1): ?>
             <nav class="mt-4" aria-label="Phân trang">
                 <ul class="pagination justify-content-center flex-wrap">

@@ -1,10 +1,5 @@
 <?php
 
-/**
- * COMMUNITYMODEL.PHP — Truy vấn database phân hệ Cộng đồng & Chia sẻ tài liệu
- * Phụ trách: TV3
- */
-
 class CommunityModel
 {
     private Database $db;
@@ -14,28 +9,24 @@ class CommunityModel
         $this->db = Database::getInstance();
     }
 
-    /**
-     * Lấy danh sách tài liệu công khai đã được duyệt (approved)
-     */
     public function getPublicDocuments(array $filters = [], int $limit = 12, int $offset = 0): array
     {
-        $sql = "SELECT d.*, 
-                       u.full_name AS author_name, 
-                       u.avatar_path AS author_avatar, 
+        $sql = "SELECT d.*,
+                       u.full_name AS author_name,
+                       u.avatar_path AS author_avatar,
                        s.name AS subject_name,
-                       (SELECT COUNT(*) FROM document_comments c 
+                       (SELECT COUNT(*) FROM document_comments c
                         WHERE c.document_id = d.id AND c.status = 'visible' AND c.deleted_at IS NULL) AS comment_count
                 FROM documents d
                 LEFT JOIN users u ON d.user_id = u.id
                 LEFT JOIN subjects s ON d.subject_id = s.id";
 
-        // Join thêm nếu lọc theo tag
         if (!empty($filters['tag_id'])) {
             $sql .= " INNER JOIN document_tags dt ON d.id = dt.document_id AND dt.tag_id = :tag_id";
         }
 
-        $sql .= " WHERE d.visibility = 'public' 
-                    AND d.moderation_status = 'approved' 
+        $sql .= " WHERE d.visibility = 'public'
+                    AND d.moderation_status = 'approved'
                     AND d.deleted_at IS NULL";
 
         $params = [];
@@ -54,7 +45,6 @@ class CommunityModel
             $params[':subject_id'] = (int) $filters['subject_id'];
         }
 
-        // Sắp xếp
         $sort = $filters['sort'] ?? 'newest';
         switch ($sort) {
             case 'downloads':
@@ -85,9 +75,6 @@ class CommunityModel
         return $stmt->fetchAll();
     }
 
-    /**
-     * Đếm tổng số tài liệu công khai đã được duyệt (phục vụ phân trang)
-     */
     public function countPublicDocuments(array $filters = []): int
     {
         $sql = "SELECT COUNT(DISTINCT d.id) FROM documents d";
@@ -96,8 +83,8 @@ class CommunityModel
             $sql .= " INNER JOIN document_tags dt ON d.id = dt.document_id AND dt.tag_id = :tag_id";
         }
 
-        $sql .= " WHERE d.visibility = 'public' 
-                    AND d.moderation_status = 'approved' 
+        $sql .= " WHERE d.visibility = 'public'
+                    AND d.moderation_status = 'approved'
                     AND d.deleted_at IS NULL";
 
         $params = [];
@@ -121,15 +108,12 @@ class CommunityModel
         return (int) $stmt->fetchColumn();
     }
 
-    /**
-     * Lấy chi tiết tài liệu theo ID
-     */
     public function getDocumentById(int $id): array|false
     {
         $stmt = $this->db->prepare(
-            "SELECT d.*, 
-                    u.full_name AS author_name, 
-                    u.avatar_path AS author_avatar, 
+            "SELECT d.*,
+                    u.full_name AS author_name,
+                    u.avatar_path AS author_avatar,
                     u.role AS author_role,
                     u.created_at AS author_joined_at,
                     s.name AS subject_name,
@@ -143,9 +127,6 @@ class CommunityModel
         return $stmt->fetch();
     }
 
-    /**
-     * Tăng lượt tải của tài liệu.
-     */
     public function incrementDownloadCount(int $documentId): void
     {
         $stmt = $this->db->prepare(
@@ -154,9 +135,6 @@ class CommunityModel
         $stmt->execute([':id' => $documentId]);
     }
 
-    /**
-     * Lấy các tài liệu liên quan / cùng môn học
-     */
     public function getRelatedDocuments(int $subjectId, int $excludeId, int $limit = 5): array
     {
         $stmt = $this->db->prepare(
@@ -164,10 +142,10 @@ class CommunityModel
                     s.name AS subject_name
              FROM documents d
              LEFT JOIN subjects s ON d.subject_id = s.id
-             WHERE d.subject_id = :subject_id 
-               AND d.id != :exclude_id 
-               AND d.visibility = 'public' 
-               AND d.moderation_status = 'approved' 
+             WHERE d.subject_id = :subject_id
+               AND d.id != :exclude_id
+               AND d.visibility = 'public'
+               AND d.moderation_status = 'approved'
                AND d.deleted_at IS NULL
              ORDER BY d.download_count DESC, d.created_at DESC
              LIMIT :limit"
@@ -179,9 +157,6 @@ class CommunityModel
         return $stmt->fetchAll();
     }
 
-    /**
-     * Lấy danh sách ảnh đính kèm của tài liệu
-     */
     public function getDocumentImages(int $documentId): array
     {
         $stmt = $this->db->prepare(
@@ -191,13 +166,10 @@ class CommunityModel
         return $stmt->fetchAll();
     }
 
-    /**
-     * Lấy danh sách tags của tài liệu
-     */
     public function getDocumentTags(int $documentId): array
     {
         $stmt = $this->db->prepare(
-            "SELECT t.id, t.name 
+            "SELECT t.id, t.name
              FROM tags t
              INNER JOIN document_tags dt ON t.id = dt.tag_id
              WHERE dt.document_id = :doc_id
@@ -207,17 +179,14 @@ class CommunityModel
         return $stmt->fetchAll();
     }
 
-    /**
-     * Lấy tất cả môn học kèm số tài liệu công khai
-     */
     public function getAllSubjectsWithCount(): array
     {
         $stmt = $this->db->query(
             "SELECT s.id, s.name, s.description,
-                    (SELECT COUNT(*) FROM documents d 
-                     WHERE d.subject_id = s.id 
-                       AND d.visibility = 'public' 
-                       AND d.moderation_status = 'approved' 
+                    (SELECT COUNT(*) FROM documents d
+                     WHERE d.subject_id = s.id
+                       AND d.visibility = 'public'
+                       AND d.moderation_status = 'approved'
                        AND d.deleted_at IS NULL) AS doc_count
              FROM subjects s
              ORDER BY s.name ASC"
@@ -225,9 +194,6 @@ class CommunityModel
         return $stmt->fetchAll();
     }
 
-    /**
-     * Lấy danh sách tags phổ biến
-     */
     public function getPopularTags(int $limit = 15): array
     {
         $stmt = $this->db->prepare(
@@ -235,8 +201,8 @@ class CommunityModel
              FROM tags t
              INNER JOIN document_tags dt ON t.id = dt.tag_id
              INNER JOIN documents d ON dt.document_id = d.id
-             WHERE d.visibility = 'public' 
-               AND d.moderation_status = 'approved' 
+             WHERE d.visibility = 'public'
+               AND d.moderation_status = 'approved'
                AND d.deleted_at IS NULL
              GROUP BY t.id, t.name
              ORDER BY doc_count DESC, t.name ASC
@@ -246,7 +212,6 @@ class CommunityModel
         $stmt->execute();
         $tags = $stmt->fetchAll();
 
-        // Nếu ít tài liệu có tag, lấy các tag mặc định trong DB
         if (empty($tags)) {
             $stmtFallback = $this->db->query("SELECT id, name, 0 AS doc_count FROM tags LIMIT 12");
             return $stmtFallback->fetchAll();
@@ -254,9 +219,6 @@ class CommunityModel
         return $tags;
     }
 
-    /**
-     * Thống kê cộng đồng
-     */
     public function getCommunityStats(): array
     {
         $stmt1 = $this->db->query(
@@ -279,17 +241,14 @@ class CommunityModel
         ];
     }
 
-    /**
-     * Lấy danh sách bình luận của tài liệu
-     */
     public function getComments(int $documentId): array
     {
         $stmt = $this->db->prepare(
             "SELECT c.*, u.full_name, u.avatar_path, u.role
              FROM document_comments c
              JOIN users u ON c.user_id = u.id
-             WHERE c.document_id = :doc_id 
-               AND c.status = 'visible' 
+             WHERE c.document_id = :doc_id
+               AND c.status = 'visible'
                AND c.deleted_at IS NULL
              ORDER BY c.created_at DESC"
         );
@@ -297,9 +256,6 @@ class CommunityModel
         return $stmt->fetchAll();
     }
 
-    /**
-     * Thêm bình luận mới
-     */
     public function addComment(int $documentId, int $userId, string $content): int
     {
         $stmt = $this->db->prepare(
@@ -313,9 +269,6 @@ class CommunityModel
         return (int) $this->db->lastInsertId();
     }
 
-    /**
-     * Lấy thông tin một bình luận
-     */
     public function getCommentById(int $commentId): array|false
     {
         $stmt = $this->db->prepare(
@@ -325,9 +278,6 @@ class CommunityModel
         return $stmt->fetch();
     }
 
-    /**
-     * Sửa bình luận
-     */
     public function updateComment(int $commentId, string $content): void
     {
         $stmt = $this->db->prepare(
@@ -339,9 +289,6 @@ class CommunityModel
         ]);
     }
 
-    /**
-     * Xóa bình luận (xóa mềm)
-     */
     public function deleteComment(int $commentId): void
     {
         $stmt = $this->db->prepare(
@@ -350,35 +297,26 @@ class CommunityModel
         $stmt->execute([':id' => $commentId]);
     }
 
-    /**
-     * Gửi yêu cầu duyệt tài liệu lên cộng đồng (pending)
-     */
     public function submitForReview(int $documentId): bool
     {
         $stmt = $this->db->prepare(
-            "UPDATE documents 
-             SET visibility = 'public', moderation_status = 'pending', submitted_at = NOW() 
+            "UPDATE documents
+             SET visibility = 'public', moderation_status = 'pending', submitted_at = NOW()
              WHERE id = :id AND moderation_status != 'hidden'"
         );
         return $stmt->execute([':id' => $documentId]);
     }
 
-    /**
-     * Thu hồi chia sẻ (chuyển về private)
-     */
     public function revokeShare(int $documentId): bool
     {
         $stmt = $this->db->prepare(
-            "UPDATE documents 
-             SET visibility = 'private', moderation_status = 'not_submitted' 
+            "UPDATE documents
+             SET visibility = 'private', moderation_status = 'not_submitted'
              WHERE id = :id"
         );
         return $stmt->execute([':id' => $documentId]);
     }
 
-    /**
-     * Kiểm tra người dùng đã gửi báo cáo đang chờ xử lý cho đối tượng này chưa
-     */
     public function hasPendingReport(int $reporterId, string $targetType, int $targetId): bool
     {
         $col = $targetType === 'comment' ? 'comment_id' : 'document_id';
@@ -389,13 +327,10 @@ class CommunityModel
         return (bool) $stmt->fetchColumn();
     }
 
-    /**
-     * Tạo báo cáo vi phạm
-     */
     public function createReport(array $data): int
     {
         $stmt = $this->db->prepare(
-            "INSERT INTO reports (reason, details, document_id, comment_id, reporter_id) 
+            "INSERT INTO reports (reason, details, document_id, comment_id, reporter_id)
              VALUES (:reason, :details, :document_id, :comment_id, :reporter_id)"
         );
         $stmt->execute([

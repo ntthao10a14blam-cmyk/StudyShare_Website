@@ -1,5 +1,5 @@
 <?php
-// TV4: Các câu lệnh SQL cho bộ sưu tập và tài liệu yêu thích.
+
 class CollectionModel
 {
     private PDO $db;
@@ -45,7 +45,7 @@ class CollectionModel
     public function delete(int $id, int $userId): void
     {
         if (!$this->find($id, $userId)) return;
-        // Xóa liên kết trước; KHÔNG xóa tài liệu gốc.
+
         $this->db->beginTransaction();
         try {
             $stmt = $this->db->prepare("DELETE FROM collection_documents WHERE collection_id = ?");

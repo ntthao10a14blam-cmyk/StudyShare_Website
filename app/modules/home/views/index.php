@@ -1,8 +1,5 @@
 <?php
-/**
- * TRANG CHỦ — StudyShare
- * Bố cục hiện đại 7 phân khu, giữ nguyên bảng màu (Xanh ngọc #0b766e, Vàng pastel #f5d77a) và font Inter.
- */
+
 $pageTitle = $pageTitle ?? 'Trang chủ — Kho Tài Liệu Sinh Viên & Cộng Đồng Học Tập';
 require_once BASE_PATH . '/app/views/layouts/header.php';
 
@@ -12,13 +9,10 @@ $askQuestionUrl = url($isLoggedInHome ? '?module=questions&action=create' : '?mo
 $featuredDoc    = $recentDocs[0] ?? null;
 ?>
 
-<!-- =========================================================
-     SECTION 1: HERO BANNER (Nền xanh ngọc đậm, 2 cột + Bento)
-     ========================================================= -->
 <section class="home-v2-hero py-5">
     <div class="container py-lg-3 position-relative" style="z-index: 2;">
         <div class="row align-items-center g-5">
-            <!-- Cột trái: Tiêu đề, tìm kiếm & chỉ số -->
+
             <div class="col-lg-6">
                 <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3"
                      style="background: rgba(255, 255, 255, 0.14); border: 1px solid rgba(255, 255, 255, 0.25); font-size: 0.8rem;">
@@ -34,7 +28,6 @@ $featuredDoc    = $recentDocs[0] ?? null;
                     Tìm kiếm giáo trình, đề thi có đáp án, slide bài giảng và trao đổi hỏi đáp học thuật cùng hàng nghìn sinh viên các trường đại học.
                 </p>
 
-                <!-- Thanh tìm kiếm nhanh -->
                 <form action="<?= url() ?>" method="GET" class="mb-3">
                     <input type="hidden" name="module" value="community">
                     <input type="hidden" name="action" value="index">
@@ -49,7 +42,6 @@ $featuredDoc    = $recentDocs[0] ?? null;
                     </div>
                 </form>
 
-                <!-- 2 Nút CTA -->
                 <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
                     <a href="<?= url('?module=community&action=index') ?>" class="btn home-v2-btn-accent rounded-pill px-4 py-2 fw-semibold">
                         Khám phá tài liệu <i class="bi bi-arrow-right ms-1"></i>
@@ -59,7 +51,6 @@ $featuredDoc    = $recentDocs[0] ?? null;
                     </a>
                 </div>
 
-                <!-- 3 Chỉ số thống kê ngang -->
                 <div class="d-flex flex-wrap gap-4 pt-3 border-top border-white border-opacity-25">
                     <div>
                         <div class="fs-4 fw-bold text-white lh-1"><?= number_format($stats['documents']) ?>+</div>
@@ -76,7 +67,6 @@ $featuredDoc    = $recentDocs[0] ?? null;
                 </div>
             </div>
 
-            <!-- Cột phải: Bento Grid trực quan -->
             <div class="col-lg-6">
                 <div class="row g-3 position-relative">
                     <div class="col-12">
@@ -128,7 +118,6 @@ $featuredDoc    = $recentDocs[0] ?? null;
     </div>
 </section>
 
-<!-- Dải Trust Bar: Môn học nhanh -->
 <section class="home-v2-trust-bar py-3">
     <div class="container">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
@@ -149,9 +138,6 @@ $featuredDoc    = $recentDocs[0] ?? null;
     </div>
 </section>
 
-<!-- =========================================================
-     SECTION 2: TÀI LIỆU VỪA CHIA SẺ (3 Card Top Lượt Tải + Danh sách)
-     ========================================================= -->
 <?php
 $topDocs = !empty($topDownloadedDocs) ? array_slice($topDownloadedDocs, 0, 3) : [];
 if (empty($topDocs) && !empty($recentDocs)) {
@@ -177,7 +163,7 @@ $otherDocs = array_values(array_filter($recentDocs ?? [], fn($d) => !in_array((i
         </div>
 
         <?php if (!empty($topDocs)): ?>
-            <!-- 3 Card Tài liệu có lượt tải nhiều nhất -->
+
             <div class="row g-4 mb-4">
                 <?php foreach ($topDocs as $doc): ?>
                     <div class="col-md-6 col-lg-4">
@@ -212,7 +198,6 @@ $otherDocs = array_values(array_filter($recentDocs ?? [], fn($d) => !in_array((i
                 <?php endforeach; ?>
             </div>
 
-            <!-- Các tài liệu còn lại hiển thị dạng List -->
             <?php if (!empty($otherDocs)): ?>
                 <div class="home-v2-card overflow-hidden">
                     <div class="list-group list-group-flush">
@@ -251,13 +236,10 @@ $otherDocs = array_values(array_filter($recentDocs ?? [], fn($d) => !in_array((i
     </div>
 </section>
 
-<!-- =========================================================
-     SECTION 3: DARK SPLIT HIGHLIGHT (Nền tối xanh ngọc)
-     ========================================================= -->
 <section class="home-v2-dark-section py-4">
     <div class="container py-1">
         <div class="row align-items-center g-4">
-            <!-- Trái: Vòng tròn trung tâm + thông số -->
+
             <div class="col-lg-4 text-center">
                 <div class="home-v2-circle-showcase p-3">
                     <i class="bi bi-mortarboard-fill fs-1 text-warning mb-2"></i>
@@ -266,7 +248,6 @@ $otherDocs = array_values(array_filter($recentDocs ?? [], fn($d) => !in_array((i
                 </div>
             </div>
 
-            <!-- Phải: Nội dung + 4 thanh danh sách (2 cột gọn) -->
             <div class="col-lg-8">
                 <span class="home-v2-eyebrow home-v2-eyebrow-light">CAM KẾT CHẤT LƯỢNG</span>
                 <h2 class="h3 fw-bold text-white mb-2">
@@ -311,13 +292,10 @@ $otherDocs = array_values(array_filter($recentDocs ?? [], fn($d) => !in_array((i
     </div>
 </section>
 
-<!-- =========================================================
-     SECTION 4: ĐÓNG GÓP HỌC LIỆU & MÔN HỌC TRỌNG TÂM (Nền trắng)
-     ========================================================= -->
 <section class="home-v2-section-white py-5">
     <div class="container py-2">
         <div class="row align-items-center g-5">
-            <!-- Cột trái: Chia sẻ tài liệu của bạn (giữ nguyên logic điều hướng login khi chưa đăng nhập) -->
+
             <div class="col-lg-5">
                 <span class="home-v2-eyebrow">CHIA SẺ CÙNG CỘNG ĐỒNG</span>
                 <h2 class="h2 fw-bold text-dark mb-3">
@@ -336,7 +314,6 @@ $otherDocs = array_values(array_filter($recentDocs ?? [], fn($d) => !in_array((i
                     </a>
                 </div>
 
-                <!-- Từ khóa gợi ý -->
                 <?php if (!empty($popularTags)): ?>
                     <div class="d-flex flex-wrap gap-2 align-items-center">
                         <span class="small text-muted fw-medium me-1">Từ khóa:</span>
@@ -350,7 +327,6 @@ $otherDocs = array_values(array_filter($recentDocs ?? [], fn($d) => !in_array((i
                 <?php endif; ?>
             </div>
 
-            <!-- Cột phải: Lưới Môn học trọng tâm -->
             <div class="col-lg-7">
                 <div class="p-4 rounded-4 border" style="background: var(--color-bg); border-color: var(--color-border) !important;">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -382,9 +358,6 @@ $otherDocs = array_values(array_filter($recentDocs ?? [], fn($d) => !in_array((i
     </div>
 </section>
 
-<!-- =========================================================
-     SECTION 5: ĐÁNH GIÁ TỪ SINH VIÊN (3 Cards: 1 Xanh nổi bật + 2 Trắng)
-     ========================================================= -->
 <section class="home-v2-section-light py-5">
     <div class="container py-2">
         <div class="text-center mb-5">
@@ -459,13 +432,10 @@ $otherDocs = array_values(array_filter($recentDocs ?? [], fn($d) => !in_array((i
     </div>
 </section>
 
-<!-- =========================================================
-     SECTION 6: HỎI ĐÁP HỌC TẬP (Dark Mockup trái + Mô tả phải)
-     ========================================================= -->
 <section class="home-v2-section-white py-5">
     <div class="container py-2">
         <div class="row align-items-center g-5">
-            <!-- Trái: Mockup danh sách câu hỏi gần đây -->
+
             <div class="col-lg-6">
                 <div class="home-v2-mockup-frame p-4 text-white">
                     <div class="d-flex justify-content-between align-items-center pb-3 mb-3 border-bottom border-white border-opacity-10">
@@ -501,7 +471,6 @@ $otherDocs = array_values(array_filter($recentDocs ?? [], fn($d) => !in_array((i
                 </div>
             </div>
 
-            <!-- Phải: Giới thiệu Hỏi đáp -->
             <div class="col-lg-6">
                 <span class="home-v2-eyebrow">TRAO ĐỔI HỌC THUẬT</span>
                 <h2 class="h2 fw-bold text-dark mb-3">

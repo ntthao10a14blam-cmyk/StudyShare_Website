@@ -3,14 +3,12 @@ $totalCollections = count($collections ?? []);
 $totalSavedDocs   = array_sum(array_map(fn($c) => (int) ($c['total'] ?? 0), $collections ?? []));
 ?>
 
-<!-- HERO BANNER ĐẦU TRANG (GIỐNG TÀI LIỆU CỦA TÔI) -->
 <section class="text-white py-5" style="background-color: #075e57; border-bottom: 3px solid #f5d77a;">
     <div class="container">
         <div class="row align-items-center g-3">
             <div class="col-lg-8">
                 <h1 class="h2 fw-bold text-white mb-3">Bộ Sưu Tập Của Tôi</h1>
 
-                <!-- THANH TÌM KIẾM BỘ SƯU TẬP NẰM TRONG HERO (PILL TRẮNG + NÚT VÀNG) -->
                 <form id="collectionSearchForm" onsubmit="return false;">
                     <div class="bg-white rounded-pill p-1 shadow-sm d-flex align-items-center" style="max-width: 720px;">
                         <span class="ps-3 text-muted"><i class="bi bi-search"></i></span>

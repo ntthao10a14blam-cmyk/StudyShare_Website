@@ -1,11 +1,9 @@
-    <!-- Kết thúc vùng nội dung trang chính -->
+
 </main>
 
-
-<!-- 2. PUBLIC FOOTER (Chân trang 4 cột chuyên nghiệp chuẩn khotailieusinhvien.com) -->
 <footer class="public-footer">
     <div class="container">
-        <!-- Ribbon định dạng tài liệu -->
+
         <div class="tlga-footer-ribbon d-flex flex-column flex-md-row justify-content-between align-items-md-center py-3">
             <div>
                 <small class="d-block text-warning fw-bold text-uppercase" style="font-size: 11px; letter-spacing: 0.12em;">TÀI LIỆU DÀNH CHO SINH VIÊN</small>
@@ -19,11 +17,9 @@
             </nav>
         </div>
 
-        <!-- 4 Cột nội dung chính -->
         <div class="footer-main py-5">
             <div class="row g-4">
-                
-                <!-- Cột 1: Thông tin giới thiệu & Thương hiệu -->
+
                 <div class="col-lg-4 col-md-6 footer-about">
                     <a class="public-brand footer-brand text-decoration-none d-flex align-items-center gap-2 mb-3" href="<?= url('/') ?>">
                         <div class="brand-symbol">
@@ -44,7 +40,6 @@
                     </div>
                 </div>
 
-                <!-- Cột 2: Phân loại tài liệu -->
                 <div class="col-lg-2 col-md-6 footer-col">
                     <h3 class="footer-heading">Tài liệu</h3>
                     <ul class="list-unstyled d-flex flex-column gap-2 small">
@@ -56,7 +51,6 @@
                     </ul>
                 </div>
 
-                <!-- Cột 3: Về trang web & Quy định -->
                 <div class="col-lg-3 col-md-6 footer-col">
                     <h3 class="footer-heading">Về StudyShare</h3>
                     <ul class="list-unstyled d-flex flex-column gap-2 small">
@@ -68,7 +62,6 @@
                     </ul>
                 </div>
 
-                <!-- Cột 4: Kênh liên hệ & Báo lỗi -->
                 <div class="col-lg-3 col-md-6 footer-contact">
                     <h3 class="footer-heading">Liên hệ &amp; hỗ trợ</h3>
                     <div class="d-flex flex-column gap-2 small text-white-50 mb-3">
@@ -86,7 +79,6 @@
                         </div>
                     </div>
 
-                    <!-- Nút báo link lỗi -->
                     <a class="footer-contact-action d-flex align-items-center gap-2 p-2 rounded mb-2 text-decoration-none"
                        href="mailto:[EMAIL_ADDRESS]?subject=Bao%20link%20loi">
                         <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
@@ -96,7 +88,6 @@
                         </div>
                     </a>
 
-                    <!-- Giờ hỗ trợ -->
                     <div class="footer-support-hours d-flex align-items-center gap-2 text-white-50 small mt-2">
                         <i class="bi bi-clock-history text-info"></i>
                         <span>Thời gian phản hồi: <b>1–2 ngày làm việc</b></span>
@@ -106,7 +97,6 @@
             </div>
         </div>
 
-        <!-- Chân trang bản quyền -->
         <div class="footer-bottom d-flex flex-column flex-md-row justify-content-between align-items-center py-3">
             <span class="text-white-50 small mb-2 mb-md-0">
                 &copy; <?= date('Y') ?> StudyShare. All rights reserved.
@@ -120,18 +110,14 @@
     </div>
 </footer>
 
-<!-- Nút Lên đầu trang (Back to top) -->
 <button class="back-to-top" id="backToTop" type="button" aria-label="Lên đầu trang">
     <i class="bi bi-arrow-up"></i>
 </button>
 
-<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- JS chung -->
 <script src="<?= url('assets/js/main.js') ?>"></script>
 
-<!-- JS riêng từng module -->
 <?php if (!empty($extraJs)): ?>
     <?php foreach ((array) $extraJs as $js): ?>
         <script src="<?= url('assets/js/' . h($js)) ?>"></script>

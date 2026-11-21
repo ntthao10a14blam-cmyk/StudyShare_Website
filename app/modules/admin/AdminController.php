@@ -14,7 +14,6 @@ class AdminController
         $this->model = new AdminModel();
     }
 
-    // Lấy mã tài khoản quản trị đang đăng nhập
     private function getAdminId(): int
     {
         return (int) (Auth::id() ?? 0);
@@ -33,7 +32,6 @@ class AdminController
         return $id;
     }
 
-    // Chuyển đến trang quản trị
     private function redirect(string $action, array $params = []): void
     {
         $url = '?module=admin&action=' . urlencode($action);
@@ -46,7 +44,6 @@ class AdminController
         exit;
     }
 
-    // Lưu thông báo
     private function flash(string $type, string $message): void
     {
         $_SESSION['admin_flash'] = [
@@ -55,7 +52,6 @@ class AdminController
         ];
     }
 
-    // Kiểm tra phương thức gửi và mã bảo mật
     private function requirePost(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -66,14 +62,12 @@ class AdminController
         verifyCsrf();
     }
 
-    // Kiểm tra tên nhập vào
     private function validName(string $name, int $maxLength = 150): bool
     {
         return $name !== ''
             && mb_strlen($name, 'UTF-8') <= $maxLength;
     }
 
-    // Nạp giao diện Admin
     private function renderAdminView(string $view, array $data = []): void
     {
         $allowedViews = [
@@ -108,7 +102,6 @@ class AdminController
         require BASE_PATH . '/app/views/layouts/footer.php';
     }
 
-    // Trang tổng quan quản trị
     public function dashboard(): void
     {
         Auth::requireAdmin();
@@ -135,7 +128,6 @@ class AdminController
         $this->renderAdminView('dashboard.php', get_defined_vars());
     }
 
-    // Quản lý tài khoản người dùng
     public function users(): void
     {
         Auth::requireAdmin();
@@ -164,7 +156,6 @@ class AdminController
         $this->renderAdminView('users.php', get_defined_vars());
     }
 
-    // Khóa hoặc mở khóa tài khoản
     public function toggleLock(): void
     {
         Auth::requireAdmin();
@@ -210,7 +201,6 @@ class AdminController
         $this->redirect('users');
     }
 
-    // Quản lý môn học
     public function subjects(): void
     {
         Auth::requireAdmin();
@@ -324,7 +314,6 @@ class AdminController
         $this->redirect('subjects');
     }
 
-    // Quản lý thẻ
     public function tags(): void
     {
         Auth::requireAdmin();
@@ -427,7 +416,6 @@ class AdminController
         $this->redirect('tags');
     }
 
-    // Duyệt tài liệu đang chờ kiểm duyệt
     public function pendingDocs(): void
     {
         Auth::requireAdmin();
@@ -437,7 +425,6 @@ class AdminController
         $this->renderAdminView('pending_docs.php', get_defined_vars());
     }
 
-    // Xem trước file tài liệu trong trang duyệt
     public function previewDoc(): void
     {
         Auth::requireAdmin();
@@ -532,7 +519,6 @@ class AdminController
         $this->redirect('pendingDocs');
     }
 
-    // Quản lý tài liệu đã công khai
     public function publicDocs(): void
     {
         Auth::requireAdmin();
@@ -577,7 +563,6 @@ class AdminController
         $this->redirect('publicDocs');
     }
 
-    // Quản lý báo cáo vi phạm
     public function reports(): void
     {
         Auth::requireAdmin();
@@ -671,7 +656,6 @@ class AdminController
         $this->redirect('reports');
     }
 
-    // Ẩn nội dung từ báo cáo
     public function hideContent(): void
     {
         Auth::requireAdmin();

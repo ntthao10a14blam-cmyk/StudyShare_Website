@@ -1,15 +1,4 @@
 <?php
-/**
- * AUTHCONTROLLER.PHP — Xử lý tài khoản người dùng
- * Phụ trách: TV1
- *
- * Actions:
- *   login    — Hiển thị form và xử lý đăng nhập
- *   register — Hiển thị form và xử lý đăng ký
- *   logout   — Đăng xuất
- *   profile  — Xem và cập nhật hồ sơ
- *   password — Đổi mật khẩu
- */
 
 require_once BASE_PATH . '/app/modules/auth/AuthModel.php';
 
@@ -22,12 +11,9 @@ class AuthController
         $this->model = new AuthModel();
     }
 
-    // ----------------------------------------------------------
-    // ĐĂNG NHẬP
-    // ----------------------------------------------------------
     public function login(): void
     {
-        // Nếu đã đăng nhập → về trang chủ
+
         if (Auth::check()) {
             redirect('/');
         }
@@ -41,7 +27,6 @@ class AuthController
             $email    = post('email');
             $password = post('password');
 
-            // Validate cơ bản
             if (empty($email))    $errors['email']    = 'Vui lòng nhập email.';
             if (empty($password)) $errors['password'] = 'Vui lòng nhập mật khẩu.';
 
@@ -63,9 +48,6 @@ class AuthController
         require_once BASE_PATH . '/app/modules/auth/views/login.php';
     }
 
-    // ----------------------------------------------------------
-    // ĐĂNG KÝ
-    // ----------------------------------------------------------
     public function register(): void
     {
         if (Auth::check()) redirect('/');
@@ -81,7 +63,6 @@ class AuthController
             $password          = post('password');
             $passwordConfirm   = post('password_confirm');
 
-            // Validate
             if (empty($data['full_name']))           $errors['full_name'] = 'Vui lòng nhập họ tên.';
             if (strlen($data['full_name']) > 100)    $errors['full_name'] = 'Họ tên không quá 100 ký tự.';
             if (empty($data['email']))               $errors['email']     = 'Vui lòng nhập email.';
@@ -104,18 +85,12 @@ class AuthController
         require_once BASE_PATH . '/app/modules/auth/views/register.php';
     }
 
-    // ----------------------------------------------------------
-    // ĐĂNG XUẤT
-    // ----------------------------------------------------------
     public function logout(): void
     {
         Auth::logout();
         redirect('?module=auth&action=login', 'Bạn đã đăng xuất.', 'info');
     }
 
-    // ----------------------------------------------------------
-    // HỒ SƠ CÁ NHÂN
-    // ----------------------------------------------------------
     public function profile(): void
     {
         Auth::requireActiveUser();
@@ -130,12 +105,11 @@ class AuthController
             if (empty($fullName))          $errors['full_name'] = 'Vui lòng nhập họ tên.';
             if (strlen($fullName) > 100)   $errors['full_name'] = 'Họ tên không quá 100 ký tự.';
 
-            // Upload avatar nếu có
             $avatarPath = $user['avatar_path'];
             if (!empty($_FILES['avatar']['name'])) {
                 $result = Upload::avatar($_FILES['avatar'], STORAGE_AVATARS);
                 if ($result['success']) {
-                    // Xóa avatar cũ nếu có
+
                     if ($avatarPath) Upload::delete($avatarPath);
                     $avatarPath = $result['path'];
                 } else {
@@ -145,7 +119,7 @@ class AuthController
 
             if (empty($errors)) {
                 $this->model->updateProfile(Auth::id(), $fullName, $avatarPath);
-                // Cập nhật tên và avatar ngay lập tức trong session
+
                 $_SESSION['auth_full_name'] = $fullName;
                 $_SESSION['auth_avatar']    = $avatarPath;
                 redirect('?module=auth&action=profile', 'Cập nhật hồ sơ thành công!', 'success');
@@ -156,9 +130,6 @@ class AuthController
         require_once BASE_PATH . '/app/modules/auth/views/profile.php';
     }
 
-    // ----------------------------------------------------------
-    // ĐỔI MẬT KHẨU
-    // ----------------------------------------------------------
     public function password(): void
     {
         Auth::requireActiveUser();

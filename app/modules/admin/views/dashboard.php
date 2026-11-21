@@ -19,7 +19,6 @@ $e = static function ($value): string {
 <div class="admin-page">
     <div class="admin-content">
 
-        <!-- HEADER -->
         <div class="page-header">
             <div>
                 <h1><i class="bi bi-speedometer2"></i> Dashboard</h1>
@@ -32,7 +31,6 @@ $e = static function ($value): string {
             </span>
         </div>
 
-        <!-- THỐNG KÊ -->
         <div class="row g-4 mb-4">
 
             <div class="col-xl-4 col-md-6">
@@ -109,7 +107,6 @@ $e = static function ($value): string {
 
         </div>
 
-        <!-- TÀI LIỆU CHỜ DUYỆT -->
         <div class="admin-panel mb-4">
 
             <div class="admin-panel-header">
@@ -183,7 +180,6 @@ $e = static function ($value): string {
             </div>
         </div>
 
-        <!-- BÁO CÁO MỚI NHẤT -->
         <div class="admin-panel">
 
             <div class="admin-panel-header">

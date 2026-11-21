@@ -9,10 +9,8 @@ $e = static function ($value): string {
     return htmlspecialchars((string) ($value ?? ''), ENT_QUOTES, 'UTF-8');
 };
 
-// Lấy ID admin hiện tại từ Auth.
 $currentAdminId = (int) (Auth::id() ?? 0);
 
-// Token CSRF: sử dụng biến mà Controller truyền xuống nếu có.
 $csrfToken = $csrfToken ?? csrfToken();
 
 $buildPageUrl = static function (int $page) use ($keyword): string {
@@ -26,7 +24,6 @@ $buildPageUrl = static function (int $page) use ($keyword): string {
 <div class="admin-page">
     <div class="admin-content">
 
-        <!-- HEADER -->
         <div class="page-header">
             <div>
                 <h1>
@@ -43,7 +40,6 @@ $buildPageUrl = static function (int $page) use ($keyword): string {
             </div>
         </div>
 
-        <!-- THÔNG BÁO -->
         <?php if (!empty($_SESSION['success'])): ?>
             <div class="alert alert-success alert-dismissible fade show">
                 <i class="bi bi-check-circle-fill"></i>
@@ -62,7 +58,6 @@ $buildPageUrl = static function (int $page) use ($keyword): string {
             <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
 
-        <!-- TÌM KIẾM -->
         <div class="admin-panel p-4 mb-4">
             <form method="GET" action="" class="row g-3 align-items-end">
                 <input type="hidden" name="module" value="admin">
@@ -104,7 +99,6 @@ $buildPageUrl = static function (int $page) use ($keyword): string {
             </form>
         </div>
 
-        <!-- DANH SÁCH NGƯỜI DÙNG -->
         <div class="admin-panel">
 
             <div class="admin-panel-header">
@@ -288,7 +282,6 @@ $buildPageUrl = static function (int $page) use ($keyword): string {
                 </table>
             </div>
 
-            <!-- PHÂN TRANG -->
             <?php if ($totalPages > 1): ?>
                 <div class="admin-pagination">
                     <div class="text-muted small">

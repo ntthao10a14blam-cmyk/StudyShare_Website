@@ -1,23 +1,5 @@
 <?php
-/**
- * COMMUNITY VIEWS: INDEX.PHP — Kho Tài Liệu Học Tập Cộng Đồng
- * Phong cách thiết kế: tailieu.vn
- * Tuân thủ quy chuẩn: QUY_CHUAN_THIET_KE_UI.md
- *
- * @var string $keyword
- * @var int $subjectId
- * @var int $tagId
- * @var string $sort
- * @var array $documents
- * @var array $subjects
- * @var array $tags
- * @var array $stats
- * @var array $pagination
- * @var array|null $currentSubject
- * @var int $totalDocs
- */
 
-// Đảm bảo không bị cảnh báo undefined variable khi IDE quét tĩnh
 $keyword        = $keyword ?? '';
 $subjectId      = $subjectId ?? 0;
 $tagId          = $tagId ?? 0;
@@ -34,14 +16,12 @@ $extraCss = ['community.css'];
 require_once BASE_PATH . '/app/views/layouts/header.php';
 ?>
 
-<!-- HERO SEARCH BANNER FULL-WIDTH (Đồng bộ bảng màu #075e57, #0b766e, #f5d77a) -->
 <section class="py-4 text-white" style="background-color: #075e57; border-bottom: 4px solid #f5d77a;">
     <div class="container">
         <div class="row align-items-center g-4">
             <div class="col-lg-8">
                 <h1 class="h3 fw-bold text-white mb-3">Tìm Kiếm Tài Liệu</h1>
 
-                <!-- Thanh tìm kiếm tài liệu -->
                 <form action="<?= url() ?>" method="GET" class="bg-white rounded-pill p-1 shadow-sm d-flex align-items-center mb-3" style="max-width: 680px;">
                     <input type="hidden" name="module" value="community">
                     <input type="hidden" name="action" value="index">
@@ -50,12 +30,12 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                     <?php endif; ?>
 
                     <i class="bi bi-search text-muted ms-3 fs-5"></i>
-                    <input type="text" name="keyword" class="form-control border-0 bg-transparent shadow-none text-dark px-3" 
+                    <input type="text" name="keyword" class="form-control border-0 bg-transparent shadow-none text-dark px-3"
                            placeholder="Nhập tên giáo trình, đề thi, môn học hoặc từ khóa cần tìm..."
                            value="<?= h($keyword) ?>">
 
                     <?php if (!empty($keyword)): ?>
-                        <a href="<?= url('?module=community&action=index' . ($subjectId ? '&subject_id=' . $subjectId : '')) ?>" 
+                        <a href="<?= url('?module=community&action=index' . ($subjectId ? '&subject_id=' . $subjectId : '')) ?>"
                            class="btn btn-sm btn-link text-muted px-2" title="Xóa từ khóa">
                             <i class="bi bi-x-circle-fill"></i>
                         </a>
@@ -66,11 +46,10 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                     </button>
                 </form>
 
-                <!-- Gợi ý từ khóa hot ngay dưới ô tìm kiếm -->
                 <div class="d-flex flex-wrap align-items-center gap-2 small">
                     <span class="text-white text-opacity-75">Từ khóa hot:</span>
                     <?php foreach (array_slice($tags, 0, 5) as $hotTag): ?>
-                        <a href="<?= url('?module=community&action=index&tag_id=' . $hotTag['id']) ?>" 
+                        <a href="<?= url('?module=community&action=index&tag_id=' . $hotTag['id']) ?>"
                            class="badge text-white text-decoration-none py-1 px-2 rounded-pill"
                            style="background-color: #0b766e; border: 1px solid rgba(245, 215, 122, 0.45);">
                             #<?= h($hotTag['name']) ?>
@@ -79,7 +58,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                 </div>
             </div>
 
-            <!-- Box kêu gọi đóng góp tài liệu bên phải -->
             <div class="col-lg-4 d-none d-lg-block text-end">
                 <div class="p-4 rounded-4 d-inline-block text-start shadow-sm"
                      style="max-width: 320px; background-color: #0b766e; border: 1px solid rgba(245, 215, 122, 0.5);">
@@ -102,27 +80,24 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
 
 <div class="container py-4">
 
-    <!-- BỐ CỤC 2 CỘT CHUẨN TAILIEU.VN -->
     <div class="row g-4">
 
-        <!-- CỘT TRÁI (SIDEBAR 3 COLS): MÔN HỌC & THỐNG KÊ -->
         <aside class="col-lg-3 col-md-4">
 
-            <!-- Card: Danh mục môn học -->
             <div class="community-sidebar-card shadow-sm">
                 <div class="community-sidebar-header">
                     <i class="bi bi-journal-bookmark-fill text-primary"></i>
                     <span>Danh mục môn học</span>
                 </div>
                 <div class="community-subject-list">
-                    <a href="<?= url('?module=community&action=index' . (!empty($keyword) ? '&keyword=' . urlencode($keyword) : '')) ?>" 
+                    <a href="<?= url('?module=community&action=index' . (!empty($keyword) ? '&keyword=' . urlencode($keyword) : '')) ?>"
                        class="community-subject-item <?= $subjectId === 0 ? 'active' : '' ?>">
                         <span><i class="bi bi-grid-fill me-2 text-muted"></i>Tất cả môn học</span>
                         <span class="community-subject-count"><?= array_sum(array_column($subjects, 'doc_count')) ?></span>
                     </a>
 
                     <?php foreach ($subjects as $s): ?>
-                        <a href="<?= url('?module=community&action=index&subject_id=' . $s['id'] . (!empty($keyword) ? '&keyword=' . urlencode($keyword) : '')) ?>" 
+                        <a href="<?= url('?module=community&action=index&subject_id=' . $s['id'] . (!empty($keyword) ? '&keyword=' . urlencode($keyword) : '')) ?>"
                            class="community-subject-item <?= $subjectId === (int) $s['id'] ? 'active' : '' ?>">
                             <span class="text-truncate" title="<?= h($s['name']) ?>">
                                 <i class="bi bi-book me-2 <?= $subjectId === (int) $s['id'] ? 'text-primary' : 'text-muted' ?>"></i>
@@ -134,7 +109,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                 </div>
             </div>
 
-            <!-- Card: Chủ đề / Từ khóa nổi bật -->
             <div class="community-sidebar-card shadow-sm">
                 <div class="community-sidebar-header">
                     <i class="bi bi-tags-fill text-primary"></i>
@@ -142,7 +116,7 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                 </div>
                 <div class="p-3 d-flex flex-wrap gap-2">
                     <?php foreach ($tags as $t): ?>
-                        <a href="<?= url('?module=community&action=index&tag_id=' . $t['id']) ?>" 
+                        <a href="<?= url('?module=community&action=index&tag_id=' . $t['id']) ?>"
                            class="badge-tag text-decoration-none <?= $tagId === (int) $t['id'] ? 'bg-primary text-white' : '' ?>">
                             #<?= h($t['name']) ?>
                             <?php if (!empty($t['doc_count'])): ?>
@@ -155,10 +129,8 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
 
         </aside>
 
-        <!-- CỘT PHẢI (MAIN CONTENT 9 COLS): FEED TÀI LIỆU -->
         <main class="col-lg-9 col-md-8">
 
-            <!-- Toolbar tiêu đề danh sách & Bộ lọc sắp xếp -->
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
                 <div>
                     <h2 class="fs-5 fw-bold text-dark mb-1">
@@ -175,19 +147,18 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                     </span>
                 </div>
 
-                <!-- Tabs sắp xếp theo kiểu tailieu.vn -->
                 <div class="d-flex align-items-center gap-2 mt-2 mt-sm-0">
                     <span class="small text-muted d-none d-sm-inline">Sắp xếp:</span>
                     <div class="btn-group btn-group-sm">
-                        <a href="<?= url('?module=community&action=index' . ($subjectId ? '&subject_id=' . $subjectId : '') . ($keyword ? '&keyword=' . urlencode($keyword) : '') . '&sort=newest') ?>" 
+                        <a href="<?= url('?module=community&action=index' . ($subjectId ? '&subject_id=' . $subjectId : '') . ($keyword ? '&keyword=' . urlencode($keyword) : '') . '&sort=newest') ?>"
                            class="btn <?= $sort === 'newest' ? 'btn-primary' : 'btn-outline-secondary' ?>">
                             Mới nhất
                         </a>
-                        <a href="<?= url('?module=community&action=index' . ($subjectId ? '&subject_id=' . $subjectId : '') . ($keyword ? '&keyword=' . urlencode($keyword) : '') . '&sort=downloads') ?>" 
+                        <a href="<?= url('?module=community&action=index' . ($subjectId ? '&subject_id=' . $subjectId : '') . ($keyword ? '&keyword=' . urlencode($keyword) : '') . '&sort=downloads') ?>"
                            class="btn <?= $sort === 'downloads' ? 'btn-primary' : 'btn-outline-secondary' ?>">
                             Tải nhiều
                         </a>
-                        <a href="<?= url('?module=community&action=index' . ($subjectId ? '&subject_id=' . $subjectId : '') . ($keyword ? '&keyword=' . urlencode($keyword) : '') . '&sort=title') ?>" 
+                        <a href="<?= url('?module=community&action=index' . ($subjectId ? '&subject_id=' . $subjectId : '') . ($keyword ? '&keyword=' . urlencode($keyword) : '') . '&sort=title') ?>"
                            class="btn <?= $sort === 'title' ? 'btn-primary' : 'btn-outline-secondary' ?>">
                             Tên A-Z
                         </a>
@@ -195,7 +166,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                 </div>
             </div>
 
-            <!-- Trạng thái lọc hiện tại -->
             <?php if ($subjectId > 0 || !empty($keyword) || $tagId > 0): ?>
                 <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
                     <span class="small text-muted me-1">Đang lọc:</span>
@@ -217,41 +187,37 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                 </div>
             <?php endif; ?>
 
-            <!-- DANH SÁCH CARD TÀI LIỆU CHUẨN TAILIEU.VN -->
             <?php if (!empty($documents)): ?>
                 <div class="tailieu-feed-list">
                     <?php foreach ($documents as $doc): ?>
                         <article class="tailieu-card">
-                            <!-- Thumbnail bìa sách mô phỏng tài liệu tailieu.vn -->
-                            <a href="<?= url('?module=community&action=show&id=' . $doc['id']) ?>" 
+
+                            <a href="<?= url('?module=community&action=show&id=' . $doc['id']) ?>"
                                class="tailieu-thumb-book text-decoration-none" title="Xem chi tiết tài liệu">
                                 <span class="pdf-badge">PDF</span>
                                 <i class="bi bi-file-earmark-pdf-fill"></i>
                             </a>
 
-                            <!-- Nội dung chi tiết tài liệu -->
                             <div class="tailieu-card-content">
                                 <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
                                     <h3 class="tailieu-card-title mb-0">
-                                        <a href="<?= url('?module=community&action=show&id=' . $doc['id']) ?>" 
+                                        <a href="<?= url('?module=community&action=show&id=' . $doc['id']) ?>"
                                            class="tailieu-card-title">
                                             <?= h($doc['title']) ?>
                                         </a>
                                     </h3>
                                     <?php if (!empty($doc['subject_name'])): ?>
-                                        <a href="<?= url('?module=community&action=index&subject_id=' . $doc['subject_id']) ?>" 
+                                        <a href="<?= url('?module=community&action=index&subject_id=' . $doc['subject_id']) ?>"
                                            class="badge-tag text-nowrap text-decoration-none">
                                             <?= h($doc['subject_name']) ?>
                                         </a>
                                     <?php endif; ?>
                                 </div>
 
-                                <!-- Đoạn trích mô tả tóm tắt (2 dòng) -->
                                 <p class="tailieu-card-desc">
                                     <?= !empty($doc['description']) ? h($doc['description']) : 'Tài liệu học tập hữu ích dành cho sinh viên, bấm vào để xem nội dung và tải file miễn phí.' ?>
                                 </p>
 
-                                <!-- Dòng Meta thông tin chuẩn tailieu.vn -->
                                 <div class="tailieu-card-meta">
                                     <span>
                                         <i class="bi bi-person text-primary"></i>
@@ -274,9 +240,8 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                                         <strong><?= (int) $doc['comment_count'] ?></strong> bình luận
                                     </span>
 
-                                    <!-- Nút Xem chi tiết -->
                                     <span class="ms-auto d-none d-sm-inline">
-                                        <a href="<?= url('?module=community&action=show&id=' . $doc['id']) ?>" 
+                                        <a href="<?= url('?module=community&action=show&id=' . $doc['id']) ?>"
                                            class="btn btn-outline-primary btn-sm py-0 px-2" style="font-size: 0.8125rem;">
                                             Xem chi tiết <i class="bi bi-arrow-right"></i>
                                         </a>
@@ -287,7 +252,6 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                     <?php endforeach; ?>
                 </div>
 
-                <!-- PHÂN TRANG (Pagination) -->
                 <!-- <?php if ($pagination['pages'] > 1): ?>
                     <nav class="mt-4 d-flex justify-content-center" aria-label="Phân trang tài liệu">
                         <ul class="pagination pagination-sm">
@@ -319,7 +283,7 @@ require_once BASE_PATH . '/app/views/layouts/header.php';
                 <?php endif; ?> -->
 
             <?php else: ?>
-                <!-- Trạng thái trống (Empty State) -->
+
                 <div class="text-center py-5 bg-white rounded-3 border p-4 shadow-sm">
                     <i class="bi bi-folder2-open display-4 text-muted mb-3 d-block opacity-50"></i>
                     <h5 class="fw-bold text-dark mb-2">Chưa tìm thấy tài liệu phù hợp</h5>

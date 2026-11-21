@@ -1,12 +1,8 @@
 <?php
-/**
- * SHOW.PHP — Chi tiết tài liệu cá nhân
- * Phụ trách: TV2
- */
+
 $pageTitle = $pageTitle ?? $doc['title'];
 require_once BASE_PATH . '/app/views/layouts/header.php';
 
-// Trạng thái kiểm duyệt
 $statusMap = [
     'approved'      => ['label' => 'Đã duyệt công khai', 'cls' => 'badge-status-approved',      'icon' => 'bi-check-circle-fill', 'alert' => 'alert-success'],
     'pending'       => ['label' => 'Chờ kiểm duyệt',    'cls' => 'badge-status-pending',       'icon' => 'bi-hourglass-split',   'alert' => 'alert-warning'],
@@ -19,7 +15,6 @@ $statusInfo = $statusMap[$doc['moderation_status']] ?? $statusMap['not_submitted
 
 <div class="container py-4">
 
-    <!-- BREADCRUMB -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb small">
             <li class="breadcrumb-item"><a href="<?= url('/') ?>">Trang chủ</a></li>
@@ -30,7 +25,6 @@ $statusInfo = $statusMap[$doc['moderation_status']] ?? $statusMap['not_submitted
         </ol>
     </nav>
 
-    <!-- HEADER: TIÊU ĐỀ VÀ CÁC NÚT TÁC VỤ -->
     <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
@@ -50,15 +44,13 @@ $statusInfo = $statusMap[$doc['moderation_status']] ?? $statusMap['not_submitted
             <h1 class="page-title fs-4 mb-0"><?= h($doc['title']) ?></h1>
         </div>
 
-        <!-- CỤM NÚT TÁC VỤ -->
         <div class="d-flex flex-wrap align-items-center gap-2">
-            <!-- Tải xuống PDF -->
+
             <a href="<?= storageUrl($doc['file_path']) . '&download=1' ?>" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 shadow-xs">
                 <i class="bi bi-download"></i>
                 <span>Tải xuống (<?= formatFileSize($doc['file_size']) ?>)</span>
             </a>
 
-            <!-- Sửa tài liệu (nếu không bị ẩn) -->
             <?php if ($doc['moderation_status'] !== 'hidden'): ?>
                 <a href="<?= url('?module=documents&action=edit&id=' . $doc['id']) ?>" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
                     <i class="bi bi-pencil-square"></i>
@@ -66,7 +58,6 @@ $statusInfo = $statusMap[$doc['moderation_status']] ?? $statusMap['not_submitted
                 </a>
             <?php endif; ?>
 
-            <!-- Gửi duyệt / Thu hồi -->
             <?php if ($doc['moderation_status'] === 'not_submitted' || $doc['moderation_status'] === 'rejected'): ?>
                 <form method="POST" action="<?= url('?module=documents&action=submit') ?>" class="d-inline"
                       onsubmit="return confirm('Bạn muốn gửi tài liệu này để Quản trị viên duyệt và hiển thị trên trang cộng đồng?');">
@@ -89,7 +80,6 @@ $statusInfo = $statusMap[$doc['moderation_status']] ?? $statusMap['not_submitted
                 </form>
             <?php endif; ?>
 
-            <!-- Xóa tài liệu -->
             <button type="button" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1"
                     data-bs-toggle="modal" data-bs-target="#deleteDocModal">
                 <i class="bi bi-trash3"></i>
@@ -98,7 +88,6 @@ $statusInfo = $statusMap[$doc['moderation_status']] ?? $statusMap['not_submitted
         </div>
     </div>
 
-    <!-- KHỐI THÔNG BÁO TRẠNG THÁI KIỂM DUYỆT -->
     <?php if ($doc['moderation_status'] === 'pending'): ?>
         <div class="alert alert-warning d-flex align-items-center gap-2 small mb-4 py-2" role="alert">
             <i class="bi bi-hourglass-split fs-5"></i>
@@ -149,13 +138,10 @@ $statusInfo = $statusMap[$doc['moderation_status']] ?? $statusMap['not_submitted
         </div>
     <?php endif; ?>
 
-    <!-- NỘI DUNG CHÍNH (2 CỘT) -->
     <div class="row g-4">
-        
-        <!-- CỘT TRÁI: XEM TRƯỚC VÀ NỘI DUNG MÔ TẢ -->
+
         <div class="col-12 col-lg-8">
-            
-            <!-- KHUNG PREVIEW FILE PDF -->
+
             <div class="card community-card mb-4 overflow-hidden">
                 <div class="card-header d-flex justify-content-between align-items-center py-2 px-3">
                     <span class="small fw-semibold text-dark">
@@ -178,7 +164,6 @@ $statusInfo = $statusMap[$doc['moderation_status']] ?? $statusMap['not_submitted
                 </div>
             </div>
 
-            <!-- ẢNH MINH HOẠ NẾU CÓ -->
             <?php if (!empty($images)): ?>
                 <div class="card community-card p-3 mb-4">
                     <h6 class="fw-bold text-dark mb-3">
@@ -196,13 +181,12 @@ $statusInfo = $statusMap[$doc['moderation_status']] ?? $statusMap['not_submitted
                 </div>
             <?php endif; ?>
 
-            <!-- MÔ TẢ TÀI LIỆU -->
             <div class="card community-card p-4">
                 <h6 class="fw-bold text-dark mb-3">
                     <i class="bi bi-card-text me-1 text-primary"></i> Mô tả nội dung tài liệu
                 </h6>
                 <?php if (!empty($doc['description'])): ?>
-                    <!-- Nội dung được escape sẵn (an toàn khi tắt JS); JS sẽ render Markdown + lọc XSS bằng DOMPurify -->
+
                     <div id="docDescription" class="text-secondary doc-markdown" style="line-height: 1.7; white-space: pre-line;"><?= h($doc['description']) ?></div>
                 <?php else: ?>
                     <p class="text-muted small fst-italic mb-0">Chưa có thông tin mô tả chi tiết cho tài liệu này.</p>
@@ -211,10 +195,8 @@ $statusInfo = $statusMap[$doc['moderation_status']] ?? $statusMap['not_submitted
 
         </div>
 
-        <!-- CỘT PHẢI: THÔNG SỐ CHI TIẾT VÀ LỊCH SỬ DUYỆT -->
         <div class="col-12 col-lg-4">
-            
-            <!-- THẺ THÔNG TIN TÀI LIỆU -->
+
             <div class="card community-card p-3 mb-3">
                 <h6 class="fw-bold text-dark mb-3 pb-2 border-bottom">
                     <i class="bi bi-info-circle me-1 text-primary"></i> Thông số tệp tin
@@ -252,7 +234,6 @@ $statusInfo = $statusMap[$doc['moderation_status']] ?? $statusMap['not_submitted
                 </dl>
             </div>
 
-            <!-- THẺ TỪ KHOÁ (TAGS) -->
             <div class="card community-card p-3 mb-3">
                 <h6 class="fw-bold text-dark mb-2 pb-2 border-bottom">
                     <i class="bi bi-tags me-1 text-primary"></i> Từ khoá (Tags)
@@ -268,7 +249,6 @@ $statusInfo = $statusMap[$doc['moderation_status']] ?? $statusMap['not_submitted
                 <?php endif; ?>
             </div>
 
-            <!-- THẺ LỊCH SỬ KIỂM DUYỆT CỦA ADMIN (NẾU CÓ) -->
             <?php if (!empty($reviews)): ?>
                 <div class="card community-card p-3 mb-3">
                     <h6 class="fw-bold text-dark mb-2 pb-2 border-bottom">
@@ -295,7 +275,6 @@ $statusInfo = $statusMap[$doc['moderation_status']] ?? $statusMap['not_submitted
                 </div>
             <?php endif; ?>
 
-            <!-- LIÊN KẾT NHANH -->
             <div class="d-grid gap-2">
                 <a href="<?= url('?module=documents&action=create') ?>" class="btn btn-outline-primary btn-sm">
                     <i class="bi bi-plus-lg me-1"></i> Tải lên thêm tài liệu khác
@@ -308,7 +287,6 @@ $statusInfo = $statusMap[$doc['moderation_status']] ?? $statusMap['not_submitted
 
 </div>
 
-<!-- MODAL XÁC NHẬN XÓA TÀI LIỆU -->
 <div class="modal fade" id="deleteDocModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content">
@@ -340,7 +318,7 @@ $statusInfo = $statusMap[$doc['moderation_status']] ?? $statusMap['not_submitted
 document.addEventListener('DOMContentLoaded', function () {
     const el = document.getElementById('docDescription');
     if (!el || typeof marked === 'undefined' || typeof DOMPurify === 'undefined') return;
-    // textContent trả về đúng chuỗi Markdown gốc (trình duyệt đã giải mã các thực thể HTML)
+
     const html = marked.parse(el.textContent, { breaks: true, gfm: true });
     el.innerHTML = DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
     el.style.whiteSpace = 'normal';

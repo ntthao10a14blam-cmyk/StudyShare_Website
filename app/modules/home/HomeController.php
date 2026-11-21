@@ -1,11 +1,4 @@
 <?php
-/**
- * HOMECONTROLLER.PHP — Trang chủ StudyHub
- * Phụ trách: TV4 (giao diện) + TV1 (tích hợp)
- *
- * Giao diện định dạng chuẩn Web cộng đồng học tập:
- * Basic, gọn mắt, đồng bộ màu sắc và font chữ.
- */
 
 class HomeController
 {
@@ -25,16 +18,13 @@ class HomeController
         $popularSubjects = [];
         $popularTags = [];
 
-        // Thử lấy dữ liệu từ database (an toàn nếu chưa import schema)
         try {
             $db = Database::getInstance();
 
-            // Thống kê
             $stats['documents'] = (int) $db->query("SELECT COUNT(*) FROM documents WHERE visibility = 'public' AND moderation_status = 'approved' AND deleted_at IS NULL")->fetchColumn();
             $stats['questions'] = (int) $db->query("SELECT COUNT(*) FROM questions WHERE status = 'visible' AND deleted_at IS NULL")->fetchColumn();
             $stats['users']     = (int) $db->query("SELECT COUNT(*) FROM users WHERE status = 'active'")->fetchColumn();
 
-            // Top 3 tài liệu có lượt tải nhiều nhất
             $stmtTop = $db->query("
                 SELECT d.id, d.title, d.file_size, d.download_count, d.created_at,
                        s.name AS subject_name, u.full_name AS author_name
@@ -47,7 +37,6 @@ class HomeController
             ");
             $topDownloadedDocs = $stmtTop->fetchAll();
 
-            // Tài liệu mới nhất
             $stmt = $db->query("
                 SELECT d.id, d.title, d.file_size, d.download_count, d.created_at,
                        s.name AS subject_name, u.full_name AS author_name
@@ -60,7 +49,6 @@ class HomeController
             ");
             $recentDocs = $stmt->fetchAll();
 
-            // Câu hỏi mới nhất
             $stmt = $db->query("
                 SELECT q.id, q.title, q.created_at,
                        s.name AS subject_name, u.full_name AS author_name,
@@ -74,13 +62,11 @@ class HomeController
             ");
             $recentQuestions = $stmt->fetchAll();
 
-            // Danh sách môn học
             $popularSubjects = $db->query("SELECT id, name FROM subjects ORDER BY id ASC LIMIT 8")->fetchAll();
 
-            // Từ khóa
             $popularTags = $db->query("SELECT id, name FROM tags ORDER BY id ASC LIMIT 10")->fetchAll();
         } catch (Throwable $e) {
-            // Trường hợp DB chưa khởi tạo hoặc đang trong giai đoạn 1, cung cấp dữ liệu mẫu trực quan
+
             $stats = ['documents' => 128, 'questions' => 45, 'users' => 320];
             $recentDocs = [
                 [

@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    // Mở hộp thoại
     document.querySelectorAll('[data-modal-open]').forEach(function (button) {
         button.addEventListener('click', function () {
             const modalId = button.dataset.modalOpen;
@@ -12,7 +11,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Đóng hộp thoại
     document.querySelectorAll('[data-modal-close]').forEach(function (button) {
         button.addEventListener('click', function () {
             const modal = button.closest('.admin-modal');
@@ -23,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Đóng hộp thoại khi nhấn ra bên ngoài
     document.querySelectorAll('.admin-modal').forEach(function (modal) {
         modal.addEventListener('click', function (event) {
             if (event.target === modal) {
@@ -32,7 +29,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Đóng hộp thoại bằng phím Escape
     document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape') {
             document.querySelectorAll('.admin-modal.show').forEach(function (modal) {
@@ -41,7 +37,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Hiển thị hộp thoại xác nhận trước khi thực hiện thao tác
     document.querySelectorAll('[data-confirm]').forEach(function (element) {
         element.addEventListener('click', function (event) {
             const message = element.dataset.confirm;
@@ -52,7 +47,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Tìm kiếm dữ liệu trên bảng hiện tại
     document.querySelectorAll('[data-table-search]').forEach(function (input) {
         input.addEventListener('input', function () {
             const tableId = input.dataset.tableSearch;
@@ -70,7 +64,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Lọc dữ liệu theo trạng thái
     document.querySelectorAll('[data-status-filter]').forEach(function (select) {
         select.addEventListener('change', function () {
             const tableId = select.dataset.statusFilter;
@@ -92,7 +85,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Tự động ẩn thông báo sau một khoảng thời gian
     document.querySelectorAll('.admin-toast').forEach(function (toast) {
         setTimeout(function () {
             toast.classList.remove('show');
@@ -103,7 +95,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 3500);
     });
 
-    // Ngăn biểu mẫu gửi nhiều lần
     document.querySelectorAll('form').forEach(function (form) {
         form.addEventListener('submit', function () {
             if (form.dataset.submitted === 'true') {
@@ -130,7 +121,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Hiển thị dung lượng tệp được chọn
     document.querySelectorAll('[data-size-preview]').forEach(function (input) {
         input.addEventListener('change', function () {
             const previewId = input.dataset.sizePreview;
@@ -145,7 +135,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Đếm số ký tự đã nhập
     document.querySelectorAll('[data-max-length]').forEach(function (input) {
         const counterId = input.dataset.counter;
         const maxLength = parseInt(input.dataset.maxLength, 10);

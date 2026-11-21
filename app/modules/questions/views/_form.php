@@ -1,13 +1,10 @@
 <?php
-/**
- * Phần form dùng chung cho create.php và edit.php — TV5
- * Biến cần có: $subjects, $tags, $old, $errors, $images (chỉ khi sửa)
- */
+
 $errors = $errors ?? [];
 $images = $images ?? [];
 $err = fn(string $k) => isset($errors[$k]) ? '<div class="invalid-feedback d-block">' . h($errors[$k]) . '</div>' : '';
 ?>
-<!-- Editor Markdown (EasyMDE) — questions.js gắn editor vào mọi <textarea class="md-editor"> -->
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.css">
 <script src="https://cdn.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js"></script>
 

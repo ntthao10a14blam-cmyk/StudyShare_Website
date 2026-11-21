@@ -11,7 +11,6 @@ $csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
 <div class="admin-page">
     <div class="admin-content">
 
-        <!-- HEADER -->
         <div class="page-header">
             <div>
                 <h1>
@@ -27,7 +26,6 @@ $csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
             </span>
         </div>
 
-        <!-- THÔNG BÁO -->
         <?php if (!empty($_SESSION['success'])): ?>
             <div class="alert alert-success alert-dismissible fade show">
                 <i class="bi bi-check-circle-fill"></i>
@@ -46,7 +44,6 @@ $csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
             <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
 
-        <!-- DANH SÁCH -->
         <div class="admin-panel">
 
             <div class="admin-panel-header">
@@ -137,7 +134,6 @@ $csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
                                 <td>
                                     <div class="d-flex justify-content-center gap-2">
 
-                                        <!-- XEM CHI TIẾT -->
                                         <button
                                             type="button"
                                             class="btn btn-sm btn-outline-primary"
@@ -155,7 +151,6 @@ $csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
                                             Chi tiết
                                         </button>
 
-                                        <!-- DUYỆT -->
                                         <form
                                             method="POST"
                                             action="<?= url('?module=admin&action=reviewDoc') ?>"
@@ -178,7 +173,6 @@ $csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
                                             </button>
                                         </form>
 
-                                        <!-- TỪ CHỐI -->
                                         <button
                                             type="button"
                                             class="btn btn-sm btn-outline-danger"
@@ -206,7 +200,6 @@ $csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
     </div>
 </div>
 
-<!-- MODAL CHI TIẾT TÀI LIỆU -->
 <div class="modal fade" id="documentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -223,7 +216,7 @@ $csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
 
             <div class="modal-body">
                 <div class="row g-4">
-                    <!-- Cột trái: Thông tin tài liệu -->
+
                     <div class="col-lg-5">
                         <div class="mb-3">
                             <label class="text-muted small d-block mb-1">Tên tài liệu</label>
@@ -266,7 +259,6 @@ $csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
                         </div>
                     </div>
 
-                    <!-- Cột phải: Xem trước file tài liệu -->
                     <div class="col-lg-7 d-flex flex-column">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <label class="text-muted small fw-semibold mb-0">
@@ -321,7 +313,6 @@ $csrfToken = $csrfToken ?? ($_SESSION['csrf_token'] ?? '');
     </div>
 </div>
 
-<!-- MODAL TỪ CHỐI -->
 <div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">

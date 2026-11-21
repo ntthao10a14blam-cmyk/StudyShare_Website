@@ -1,20 +1,13 @@
 <?php
-/**
- * INDEX.PHP — Danh sách tài liệu cá nhân
- * Phụ trách: TV2
- */
+
 $pageTitle = $pageTitle ?? 'Tài liệu của tôi';
 require_once BASE_PATH . '/app/views/layouts/header.php';
 
-// Giữ lại các tham số query khi phân trang
 $queryParams = $_GET;
 unset($queryParams['page']);
 $queryString = http_build_query($queryParams);
 $paginationBaseUrl = url('?' . ($queryString ? $queryString . '&' : '') . 'page=');
 
-/**
- * Chuyển Markdown mô tả thành văn bản thuần để xem trước trên thẻ (bỏ **, #, [..](..), `...`).
- */
 if (!function_exists('mdPlainPreview')) {
     function mdPlainPreview(?string $md): string
     {
@@ -28,7 +21,6 @@ if (!function_exists('mdPlainPreview')) {
 }
 ?>
 
-<!-- 1. HERO BANNER ĐẦU TRANG (KÈM THANH TÌM KIẾM & BỘ LỌC BÊN TRONG) -->
 <section class="text-white py-5" style="background-color: #075e57; border-bottom: 3px solid #f5d77a;">
     <div class="container">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
@@ -45,13 +37,11 @@ if (!function_exists('mdPlainPreview')) {
             </a>
         </div>
 
-        <!-- THANH TÌM KIẾM VÀ BỘ LỌC NẰM TRONG HERO -->
         <div class="p-2 px-md-3 py-md-2 rounded-pill" style="background-color: #0b766e; border: 1px solid rgba(245, 215, 122, 0.4);">
             <form method="GET" action="<?= url('/') ?>" class="row g-2 align-items-center">
                 <input type="hidden" name="module" value="documents">
                 <input type="hidden" name="action" value="index">
 
-                <!-- Ô tìm kiếm từ khoá -->
                 <div class="col-12 col-md-5">
                     <div class="community-search-box bg-white rounded-pill px-2">
                         <i class="bi bi-search search-icon"></i>
@@ -61,7 +51,6 @@ if (!function_exists('mdPlainPreview')) {
                     </div>
                 </div>
 
-                <!-- Lọc môn học -->
                 <div class="col-6 col-md-3">
                     <select name="subject_id" class="form-select form-select-sm border-0 rounded-pill px-3">
                         <option value="">Tất cả môn học</option>
@@ -73,7 +62,6 @@ if (!function_exists('mdPlainPreview')) {
                     </select>
                 </div>
 
-                <!-- Lọc hiển thị -->
                 <div class="col-6 col-md-2">
                     <select name="visibility" class="form-select form-select-sm border-0 rounded-pill px-3">
                         <option value="all">Tất cả hiển thị</option>
@@ -82,7 +70,6 @@ if (!function_exists('mdPlainPreview')) {
                     </select>
                 </div>
 
-                <!-- Sắp xếp & Nút lọc -->
                 <div class="col-12 col-md-2 d-flex gap-1">
                     <select name="sort" class="form-select form-select-sm border-0 rounded-pill px-3">
                         <option value="newest" <?= get('sort') === 'newest' ? 'selected' : '' ?>>Mới nhất</option>
@@ -149,12 +136,11 @@ if (!function_exists('mdPlainPreview')) {
     }
     ?>
 
-    <!-- 3. 4 LIST TRẠNG THÁI TRÊN CÙNG 1 TRANG -->
     <div class="d-flex flex-column gap-4">
         <?php foreach ($docLists as $stKey => $listGroup): ?>
             <section class="home-v2-card rounded-4 overflow-hidden shadow-sm"
                      style="border-top: 3px solid <?= $listGroup['color'] ?>;">
-                <!-- Header của từng list -->
+
                 <div class="px-4 py-3 border-bottom d-flex justify-content-between align-items-center bg-white">
                     <div class="d-flex align-items-center gap-2">
                         <i class="bi <?= $listGroup['icon'] ?> fs-5" style="color: <?= $listGroup['color'] ?>;"></i>
@@ -165,7 +151,6 @@ if (!function_exists('mdPlainPreview')) {
                     </span>
                 </div>
 
-                <!-- Nội dung list -->
                 <?php if (empty($listGroup['items'])): ?>
                     <div class="px-4 py-3 text-muted small fst-italic bg-white">
                         <?= $listGroup['empty'] ?>
@@ -223,7 +208,6 @@ if (!function_exists('mdPlainPreview')) {
                                     </div>
                                 </div>
 
-                                <!-- Nút tác vụ -->
                                 <div class="d-flex align-items-center gap-1 flex-shrink-0">
                                     <a href="<?= url('?module=documents&action=show&id=' . $doc['id']) ?>"
                                        class="btn btn-outline-primary btn-sm py-1 px-2 d-inline-flex align-items-center gap-1">
@@ -271,7 +255,6 @@ if (!function_exists('mdPlainPreview')) {
 
     <?php foreach ($documents as $doc): ?>
 
-                <!-- MODAL XEM LÝ DO TỪ CHỐI TÀI LIỆU TỪ ADMIN -->
                 <?php if ($doc['moderation_status'] === 'rejected'): ?>
                     <div class="modal fade" id="rejectionModal<?= $doc['id'] ?>" tabindex="-1" aria-labelledby="rejectionModalLabel<?= $doc['id'] ?>" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">
@@ -326,7 +309,6 @@ if (!function_exists('mdPlainPreview')) {
                     </div>
                 <?php endif; ?>
 
-                <!-- MODAL XÁC NHẬN XÓA TÀI LIỆU -->
                 <div class="modal fade" id="deleteDocModal<?= $doc['id'] ?>" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered modal-sm">
                         <div class="modal-content">
