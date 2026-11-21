@@ -10,7 +10,7 @@ class CollectionController
 
     public function __construct()
     {
-
+        // Chỉ dùng API xác thực chung của nhóm; không tự đọc session user_id.
         if (!Auth::check()) {
             header('Location: index.php?module=auth&action=login');
             exit;
@@ -101,9 +101,6 @@ class CollectionController
                     $this->fail('Tài liệu không tồn tại hoặc bạn không có quyền truy cập.');
                 }
                 $this->model->addDocument((int) $collection['id'], $documentId);
-                if (($_POST['return_to'] ?? '') === 'community') {
-                    redirect('?module=community&action=show&id=' . $documentId, 'Đã lưu tài liệu vào bộ sưu tập "' . $collection['name'] . '"!', 'success');
-                }
                 $this->go('show', (int) $collection['id']);
                 break;
             case 'removeDocument':
@@ -121,15 +118,12 @@ class CollectionController
             case 'toggleFavorite':
                 $this->checkPost();
                 $documentId = (int) ($_POST['document_id'] ?? 0);
-
+                // Có thể bỏ yêu thích cũ; chỉ thêm mới khi có quyền xem tài liệu.
                 if (!$this->model->isFavorite($this->userId, $documentId)
                     && !$this->model->accessibleDocument($documentId, $this->userId)) {
                     $this->fail('Không thể yêu thích tài liệu này.');
                 }
                 $this->model->toggleFavorite($this->userId, $documentId);
-                if (($_POST['return_to'] ?? '') === 'community') {
-                    redirect('?module=community&action=show&id=' . $documentId, 'Đã cập nhật trạng thái yêu thích!', 'success');
-                }
                 $this->go('favorites');
                 break;
             default:
